@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type { HappyHourRow } from "@/backend/mappers/happy-hours.mapper";
 import type {
   HappyHourCreateDTO,
@@ -38,7 +38,7 @@ function toUpdatePayload(dto: HappyHourUpdateDTO) {
 
 export class HappyHoursRepository {
   static async listByRestaurant(restaurantId: string): Promise<HappyHourRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("happy_hours")
       .select(HAPPY_HOUR_SELECT)
@@ -50,7 +50,7 @@ export class HappyHoursRepository {
   }
 
   static async findById(restaurantId: string, happyHourId: string): Promise<HappyHourRow | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("happy_hours")
       .select(HAPPY_HOUR_SELECT)
@@ -63,7 +63,7 @@ export class HappyHoursRepository {
   }
 
   static async create(restaurantId: string, dto: HappyHourCreateDTO): Promise<HappyHourRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("happy_hours")
       .insert(toInsertPayload(restaurantId, dto))
@@ -79,7 +79,7 @@ export class HappyHoursRepository {
     happyHourId: string,
     dto: HappyHourUpdateDTO
   ): Promise<HappyHourRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("happy_hours")
       .update(toUpdatePayload(dto))
@@ -93,7 +93,7 @@ export class HappyHoursRepository {
   }
 
   static async delete(restaurantId: string, happyHourId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("happy_hours")
       .delete()

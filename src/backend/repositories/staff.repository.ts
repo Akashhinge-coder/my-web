@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { mapStaffRow, mapStaffRows, type StaffRow } from "@/backend/mappers/staff.mapper";
 import type { CreateStaffDTO, UpdateStaffDTO } from "@/backend/validations/staff.schema";
 import type { Staff } from "@/types/domain";
 
 export class StaffRepository {
   static async listByRestaurant(restaurantId: string): Promise<Staff[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("staff")
       .select("*")
@@ -17,7 +17,7 @@ export class StaffRepository {
   }
 
   static async findById(restaurantId: string, staffId: string): Promise<Staff | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("staff")
       .select("*")
@@ -30,7 +30,7 @@ export class StaffRepository {
   }
 
   static async create(restaurantId: string, dto: CreateStaffDTO): Promise<Staff> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("staff")
       .insert({
@@ -62,7 +62,7 @@ export class StaffRepository {
     if (dto.shift_start !== undefined) payload.shift_start = dto.shift_start || null;
     if (dto.shift_end !== undefined) payload.shift_end = dto.shift_end || null;
 
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("staff")
       .update(payload)
@@ -76,7 +76,7 @@ export class StaffRepository {
   }
 
   static async delete(restaurantId: string, staffId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("staff")
       .delete()

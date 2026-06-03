@@ -1,4 +1,4 @@
-import { createClient, createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { AuthError } from "@/backend/errors/AuthError";
 import { requireRole } from "@/backend/middleware/rbac.middleware";
 import { BillingRepository } from "@/backend/repositories/billing.repository";
@@ -14,26 +14,13 @@ export interface RestaurantAccess {
   role: UserRole;
 }
 
+/**
+ * Resolves the authenticated user's restaurant context from their session.
+ * NEVER trusts client-supplied restaurant IDs.
+ * NEVER uses the service-role / admin client.
+ * Throws AuthError if the user is not authenticated or has no restaurant access.
+ */
 export async function resolveRestaurantAccess(): Promise<RestaurantAccess> {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
-    const supabase = createAdminClient();
-    const { data: owned } = await supabase
-      .from("restaurants")
-      .select("id, name, slug, phone")
-      .limit(1)
-      .single();
-
-    if (owned) {
-      return {
-        restaurantId: owned.id,
-        restaurantName: owned.name,
-        restaurantSlug: owned.slug,
-        restaurantPhone: owned.phone,
-        role: "admin",
-      };
-    }
-  }
-
   const supabase = await createClient();
   const {
     data: { user },

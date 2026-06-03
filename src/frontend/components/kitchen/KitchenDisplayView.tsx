@@ -10,7 +10,7 @@ import type { Order } from "@/types/domain";
 
 
 export default function KitchenDisplayView({ restaurantId }: { restaurantId: string }) {
-  const { data: orders = [], loading, refresh } = useKitchenOrders(restaurantId);
+  const { data: orders = [], loading, refresh } = useKitchenOrders(Boolean(restaurantId));
   const [online, setOnline] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<{ name: string } | null>(null);

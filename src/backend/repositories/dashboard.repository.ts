@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type {
   DashboardOrderRow,
   DashboardPaymentRow,
@@ -9,7 +9,7 @@ import type {
 
 export class DashboardRepository {
   static async getDashboardRows(restaurantId: string, fromISO: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const [
       { data: todayOrders, error: todayOrdersError },
       { data: activeSessions, error: activeSessionsError },

@@ -19,7 +19,8 @@ type FilterType = "all" | "pending" | "cooking" | "served";
 
 export default function AdminOrdersView() {
   const { restaurantId, loading: restaurantLoading } = useAdminRestaurant();
-  const { data: orders = [], loading, refresh } = useRestaurantOrders(restaurantId, "today");
+  const sessionLoaded = !restaurantLoading && Boolean(restaurantId);
+  const { data: orders = [], loading, refresh } = useRestaurantOrders(sessionLoaded, "today");
   const [filter, setFilter] = useState<FilterType>("all");
   const [updating, setUpdating] = useState<string | null>(null);
 

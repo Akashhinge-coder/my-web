@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type { CouponRow } from "@/backend/mappers/coupon.mapper";
 import type { CouponCreateDTO, CouponUpdateDTO } from "@/backend/validations/coupon.validation";
 
@@ -33,7 +33,7 @@ function toUpdatePayload(dto: CouponUpdateDTO) {
 
 export class CouponRepository {
   static async listByRestaurant(restaurantId: string): Promise<CouponRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
       .select(COUPON_SELECT)
@@ -45,7 +45,7 @@ export class CouponRepository {
   }
 
   static async findById(restaurantId: string, couponId: string): Promise<CouponRow | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
       .select(COUPON_SELECT)
@@ -58,7 +58,7 @@ export class CouponRepository {
   }
 
   static async findByCode(restaurantId: string, code: string): Promise<CouponRow | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
       .select(COUPON_SELECT)
@@ -71,7 +71,7 @@ export class CouponRepository {
   }
 
   static async create(restaurantId: string, dto: CouponCreateDTO): Promise<CouponRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
       .insert(toInsertPayload(restaurantId, dto))
@@ -83,7 +83,7 @@ export class CouponRepository {
   }
 
   static async update(restaurantId: string, couponId: string, dto: CouponUpdateDTO): Promise<CouponRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
       .update(toUpdatePayload(dto))
@@ -97,7 +97,7 @@ export class CouponRepository {
   }
 
   static async delete(restaurantId: string, couponId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("coupons")
       .delete()

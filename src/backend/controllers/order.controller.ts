@@ -4,6 +4,7 @@ import { handleError } from "@/backend/errors/handler";
 import { ValidationError } from "@/backend/errors/ValidationError";
 import { validate } from "@/backend/middleware/validation.middleware";
 import { OrderService } from "@/backend/services/order.service";
+import { resolveRestaurantAccess } from "@/backend/utils/resolveRestaurantAccess";
 import {
   billQuerySchema,
   createOrderSchema,
@@ -27,10 +28,15 @@ function parseQuery<T>(schema: { parse: (input: unknown) => T }, searchParams: U
   }
 }
 
+/**
+ * Lists orders for the authenticated admin's restaurant.
+ * restaurantId is resolved from the session — NEVER from the query string.
+ */
 export async function listOrders(req: NextRequest) {
   try {
+    const { restaurantId } = await resolveRestaurantAccess();
     const query = parseQuery(listOrdersQuerySchema, req.nextUrl.searchParams);
-    const orders = await OrderService.list(query);
+    const orders = await OrderService.list({ ...query, restaurantId });
     return ok(orders);
   } catch (error) {
     return handleError(error);

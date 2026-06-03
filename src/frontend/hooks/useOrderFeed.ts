@@ -59,17 +59,19 @@ export function useOrderFeed<T>({
   return { data, loading, error, refresh, setData };
 }
 
+/**
+ * Admin hook — restaurantId is NOT passed to the API.
+ * The server derives it from the session. The hook only controls
+ * whether the request is enabled (when the session is loaded).
+ */
 export function useRestaurantOrders(
-  restaurantId: string | null,
+  sessionLoaded: boolean,
   scope: OrderListScope = "today"
 ) {
   return useOrderFeed({
-    enabled: Boolean(restaurantId),
+    enabled: sessionLoaded,
     fetcher: () =>
-      ordersApi.list({
-        restaurantId: restaurantId!,
-        scope,
-      }) as Promise<unknown[]>,
+      ordersApi.list({ scope }) as Promise<unknown[]>,
   });
 }
 
@@ -80,13 +82,15 @@ export function useSessionOrders(sessionId: string | null) {
   });
 }
 
-export function useKitchenOrders(restaurantId: string) {
+/**
+ * Kitchen display hook — restaurantId is NOT passed to the API.
+ * The server derives it from the session cookie.
+ * Kitchen staff must be logged in to use this screen.
+ */
+export function useKitchenOrders(sessionLoaded: boolean) {
   return useOrderFeed({
-    enabled: Boolean(restaurantId),
+    enabled: sessionLoaded,
     fetcher: () =>
-      ordersApi.list({
-        restaurantId,
-        scope: "kitchen",
-      }) as Promise<unknown[]>,
+      ordersApi.list({ scope: "kitchen" }) as Promise<unknown[]>,
   });
 }

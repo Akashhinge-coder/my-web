@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import {
   mapAdminDishRow,
   mapAdminDishRows,
@@ -32,7 +32,7 @@ const ADMIN_DISH_SELECT = "*, categories(name), dish_ar_assets(is_published)";
 
 export class MenuRepository {
   static async listCategories(restaurantId: string, activeOnly = false): Promise<Category[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     let query = supabase
       .from("categories")
       .select("*")
@@ -47,7 +47,7 @@ export class MenuRepository {
   }
 
   static async createCategory(restaurantId: string, dto: CreateCategoryDTO): Promise<Category> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("categories")
       .insert({
@@ -69,7 +69,7 @@ export class MenuRepository {
     categoryId: string,
     dto: UpdateCategoryDTO
   ): Promise<Category> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const patch: Record<string, unknown> = {};
     if (dto.name !== undefined) patch.name = dto.name.trim();
     if (dto.nameHindi !== undefined) patch.name_hindi = dto.nameHindi;
@@ -89,7 +89,7 @@ export class MenuRepository {
   }
 
   static async deleteCategory(restaurantId: string, categoryId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("categories")
       .delete()
@@ -100,7 +100,7 @@ export class MenuRepository {
   }
 
   static async countDishesInCategory(restaurantId: string, categoryId: string): Promise<number> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { count, error } = await supabase
       .from("dishes")
       .select("id", { count: "exact", head: true })
@@ -116,7 +116,7 @@ export class MenuRepository {
     dishIds: string[]
   ): Promise<Array<{ id: string; categoryId: string; price: number; is_available: boolean }>> {
     if (dishIds.length === 0) return [];
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("dishes")
       .select("id, category_id, name, price, food_type, image_url, is_available")
@@ -131,7 +131,7 @@ export class MenuRepository {
     restaurantId: string,
     options: { availableOnly?: boolean; admin?: boolean } = {}
   ): Promise<AdminDish[] | CustomerDish[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     let query = supabase
       .from("dishes")
       .select(options.admin ? ADMIN_DISH_SELECT : CUSTOMER_DISH_SELECT)
@@ -154,7 +154,7 @@ export class MenuRepository {
     dishId: string,
     options: { includeAr?: boolean } = {}
   ): Promise<CustomerDish> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const select: string = options.includeAr ? CUSTOMER_DISH_SELECT : "*";
 
     const { data, error } = await supabase
@@ -169,7 +169,7 @@ export class MenuRepository {
   }
 
   static async createDish(restaurantId: string, dto: CreateDishDTO): Promise<AdminDish> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("dishes")
       .insert({
@@ -201,7 +201,7 @@ export class MenuRepository {
     dishId: string,
     dto: UpdateDishDTO
   ): Promise<AdminDish> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
     if (dto.name !== undefined) patch.name = dto.name.trim();
@@ -240,7 +240,7 @@ export class MenuRepository {
   }
 
   static async deleteDish(restaurantId: string, dishId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("dishes")
       .delete()
@@ -254,7 +254,7 @@ export class MenuRepository {
     restaurantId: string,
     dishId: string
   ): Promise<DishARAsset | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("dish_ar_assets")
       .select("*, dishes!inner(restaurant_id)")
@@ -271,7 +271,7 @@ export class MenuRepository {
     dishId: string,
     dto: UpsertArAssetDTO
   ): Promise<DishARAsset> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const payload = {
       dish_id: dishId,
       angle_front: dto.angleFront || null,
@@ -299,7 +299,7 @@ export class MenuRepository {
     dishId: string,
     enabled: boolean
   ): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("dishes")
       .update({ ar_enabled: enabled })
@@ -309,7 +309,7 @@ export class MenuRepository {
   }
 
   static async listCombos(restaurantId: string): Promise<Combo[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("combos")
       .select("*")
@@ -329,7 +329,7 @@ export class MenuRepository {
     restaurantId: string,
     dto: CreateComboDTO & { savingsAmount: number }
   ): Promise<Combo> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("combos")
       .insert({
@@ -352,7 +352,7 @@ export class MenuRepository {
     comboId: string,
     dto: UpdateComboDTO & { savingsAmount?: number }
   ): Promise<Combo> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const patch: Record<string, unknown> = {};
     if (dto.name !== undefined) patch.name = dto.name.trim();
     if (dto.comboPrice !== undefined) patch.combo_price = dto.comboPrice;
@@ -373,7 +373,7 @@ export class MenuRepository {
   }
 
   static async deleteCombo(restaurantId: string, comboId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("combos")
       .delete()

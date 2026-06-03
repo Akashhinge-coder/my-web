@@ -133,7 +133,7 @@ export class OrderService {
     });
   }
 
-  static async list(query: ListOrdersQuery) {
+  static async list(query: ListOrdersQuery & { restaurantId: string }) {
     const scope: ListOrdersScope = query.sessionId ? "session" : query.scope;
     return OrderRepository.listByRestaurant(query.restaurantId, {
       scope,
@@ -195,7 +195,7 @@ export class OrderService {
     }
 
     if (createdSession && sessionId) {
-      await TableRepository.markOccupied(dto.tableId, sessionId);
+      await TableRepository.markOccupied(dto.tableId, sessionId, restaurantId);
     }
 
     if (!sessionId) {

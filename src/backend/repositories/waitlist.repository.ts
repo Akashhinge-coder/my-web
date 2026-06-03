@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { mapWaitlistRow, mapWaitlistRows, type WaitlistRow } from "@/backend/mappers/waitlist.mapper";
 import type { CreateWaitlistDTO, UpdateWaitlistStatusDTO } from "@/backend/validations/waitlist.validation";
 import type { Waitlist } from "@/types/domain";
@@ -7,7 +7,7 @@ const ACTIVE_STATUSES = ["waiting", "notified"] as const;
 
 export class WaitlistRepository {
   static async listActive(restaurantId: string): Promise<Waitlist[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("waitlist")
       .select("*")
@@ -20,7 +20,7 @@ export class WaitlistRepository {
   }
 
   static async findById(restaurantId: string, entryId: string): Promise<Waitlist | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("waitlist")
       .select("*")
@@ -33,7 +33,7 @@ export class WaitlistRepository {
   }
 
   static async create(restaurantId: string, dto: CreateWaitlistDTO): Promise<Waitlist> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("waitlist")
       .insert({
@@ -60,7 +60,7 @@ export class WaitlistRepository {
       payload.notified_at = new Date().toISOString();
     }
 
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("waitlist")
       .update(payload)

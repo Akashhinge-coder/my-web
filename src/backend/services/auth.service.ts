@@ -1,4 +1,5 @@
-import { createAdminClient, createClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
+import { createAdminClient } from "@/config/supabase/server";
 
 export interface AdminSessionRestaurant {
   id: string;
@@ -14,7 +15,7 @@ export interface AdminSessionDTO {
     id: string;
     email: string;
   } | null;
-  restaurant: AdminSessionRestaurant;
+  restaurant: AdminSessionRestaurant | null;
   role: string;
 }
 
@@ -25,13 +26,6 @@ interface StaffSessionRow {
   restaurants?: AdminSessionRestaurant | AdminSessionRestaurant[] | null;
 }
 
-const FALLBACK_RESTAURANT: AdminSessionRestaurant = {
-  id: "",
-  name: "MENUARA",
-  slug: "",
-  logo_url: null,
-};
-
 function unwrapRestaurant(
   value: AdminSessionRestaurant | AdminSessionRestaurant[] | null | undefined
 ): AdminSessionRestaurant | null {
@@ -40,34 +34,41 @@ function unwrapRestaurant(
 }
 
 export class AuthService {
+  /**
+   * Resolves the current admin session from the authenticated user's cookie.
+   * Returns null restaurant if the user is not authenticated or has no restaurant.
+   * NEVER falls back to a demo restaurant or service-role access.
+   */
   static async resolveAdminSession(): Promise<AdminSessionDTO> {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const admin = createAdminClient();
-    const ownedRestaurant = user?.id
-      ? await this.getOwnedRestaurant(admin, user.id)
-      : null;
+    if (!user) {
+      return {
+        authenticated: false,
+        user: null,
+        restaurant: null,
+        role: "admin",
+      };
+    }
 
-    const staffRecord = !ownedRestaurant && user?.id
+    // Use admin client only for the ownership lookup — this is the bootstrap
+    // step before we know which restaurant the user belongs to.
+    const admin = createAdminClient();
+    const ownedRestaurant = await this.getOwnedRestaurant(admin, user.id);
+    const staffRecord = !ownedRestaurant
       ? await this.getStaffRestaurant(admin, user.id)
       : null;
 
-    const demoRestaurant = !ownedRestaurant && !staffRecord
-      ? await this.getDemoRestaurant(admin)
-      : null;
-
     return {
-      authenticated: Boolean(user),
-      user: user
-        ? {
-            id: user.id,
-            email: user.email ?? "",
-          }
-        : null,
-      restaurant: ownedRestaurant ?? staffRecord?.restaurant ?? demoRestaurant ?? FALLBACK_RESTAURANT,
+      authenticated: true,
+      user: {
+        id: user.id,
+        email: user.email ?? "",
+      },
+      restaurant: ownedRestaurant ?? staffRecord?.restaurant ?? null,
       role: staffRecord?.role ?? "admin",
     };
   }
@@ -105,19 +106,5 @@ export class AuthService {
       restaurant,
       role: row.role,
     };
-  }
-
-  private static async getDemoRestaurant(
-    supabase: ReturnType<typeof createAdminClient>
-  ): Promise<AdminSessionRestaurant | null> {
-    const { data, error } = await supabase
-      .from("restaurants")
-      .select("id, name, slug, logo_url, is_active")
-      .eq("is_active", true)
-      .limit(1)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as AdminSessionRestaurant | null;
   }
 }

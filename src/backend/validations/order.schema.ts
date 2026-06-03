@@ -35,8 +35,12 @@ export const orderPricingSchema = z.object({
 
 export type OrderPricingDTO = z.infer<typeof orderPricingSchema>;
 
+/**
+ * Admin list orders query — restaurantId is intentionally REMOVED.
+ * It must be derived from the authenticated session via resolveRestaurantAccess().
+ * Trusting client-supplied restaurantId is a critical cross-tenant vulnerability.
+ */
 export const listOrdersQuerySchema = z.object({
-  restaurantId: z.string().uuid(),
   sessionId: z.string().uuid().optional(),
   scope: z.enum(["today", "kitchen", "session", "all"]).default("all"),
 });

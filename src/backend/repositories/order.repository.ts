@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { generateOrderNumber } from "@/lib/utils";
 import type { OrderSource, OrderStatus } from "@/types/domain";
 
@@ -97,7 +97,7 @@ function mapOrder(raw: any) {
 
 export class OrderRepository {
   static async create(record: CreateOrderRecordInput) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .insert({
@@ -128,7 +128,7 @@ export class OrderRepository {
 
   static async createItems(items: CreateOrderItemInput[]) {
     if (items.length === 0) return [];
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("order_items")
       .insert(
@@ -149,7 +149,7 @@ export class OrderRepository {
   }
 
   static async findById(restaurantId: string, orderId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .select("id, restaurant_id, status")
@@ -162,7 +162,7 @@ export class OrderRepository {
   }
 
   static async updateStatus(restaurantId: string, orderId: string, status: OrderStatus) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .update({ status, updated_at: new Date().toISOString() })
@@ -183,7 +183,7 @@ export class OrderRepository {
       statuses?: OrderStatus[];
     } = {}
   ) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const scope = options.scope ?? "all";
     const select =
       scope === "kitchen" ? KITCHEN_ORDER_SELECT : scope === "session" ? CUSTOMER_ORDER_SELECT : ADMIN_ORDER_SELECT;
@@ -217,7 +217,7 @@ export class OrderRepository {
   }
 
   static async listBySession(sessionId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .select(CUSTOMER_ORDER_SELECT)
@@ -230,7 +230,7 @@ export class OrderRepository {
   }
 
   static async listForBill(sessionId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .select(BILL_ORDER_SELECT)

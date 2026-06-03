@@ -54,8 +54,12 @@ export const sessionsApi = {
 };
 
 export const ordersApi = {
-  list(params: { restaurantId: string; scope?: OrderListScope; sessionId?: string }) {
-    const search = new URLSearchParams({ restaurantId: params.restaurantId });
+  /**
+   * Admin list — restaurantId is intentionally NOT sent.
+   * The server derives it from the session cookie.
+   */
+  list(params: { scope?: OrderListScope; sessionId?: string } = {}) {
+    const search = new URLSearchParams();
     if (params.scope) search.set("scope", params.scope);
     if (params.sessionId) search.set("sessionId", params.sessionId);
     return apiFetch<unknown[]>(`/api/v1/orders?${search}`);
@@ -65,6 +69,7 @@ export const ordersApi = {
     return apiFetch<unknown[]>(`/api/v1/orders/session?sessionId=${sessionId}`);
   },
 
+  /** Customer QR ordering — restaurantId from QR URL is intentional */
   place(restaurantId: string, payload: PlaceOrderPayload) {
     return apiFetch<PlaceOrderResult>(
       `/api/v1/orders?restaurantId=${restaurantId}&mode=place`,
@@ -72,6 +77,7 @@ export const ordersApi = {
     );
   },
 
+  /** Customer QR pricing — restaurantId from QR URL is intentional */
   quotePricing(restaurantId: string, payload: OrderPricingPayload) {
     return apiFetch<OrderPricingDto>(
       `/api/v1/orders?restaurantId=${restaurantId}&mode=pricing`,

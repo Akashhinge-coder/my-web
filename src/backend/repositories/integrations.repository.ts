@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type {
   IntegrationsOrderItemRow,
   IntegrationsOrderRow,
@@ -11,7 +11,7 @@ export class IntegrationsRepository {
     restaurantId: string,
     fromISO: string
   ): Promise<IntegrationsOrderRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("orders")
       .select("id, grand_total")
@@ -27,7 +27,7 @@ export class IntegrationsRepository {
     restaurantId: string,
     fromISO: string
   ): Promise<IntegrationsPaymentRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("payments")
       .select("amount_paid, method")
@@ -42,7 +42,7 @@ export class IntegrationsRepository {
     restaurantId: string,
     fromISO: string
   ): Promise<IntegrationsSessionRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
       .select("guest_count")
@@ -56,7 +56,7 @@ export class IntegrationsRepository {
   static async listOrderItems(orderIds: string[]): Promise<IntegrationsOrderItemRow[]> {
     if (orderIds.length === 0) return [];
 
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("order_items")
       .select("quantity, dishes(name)")

@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 
 export interface AnalyticsOrderRow {
   id: string;
@@ -50,7 +50,7 @@ export class AnalyticsRepository {
     restaurantId: string,
     fromISO: string
   ): Promise<AnalyticsRawData> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
 
     const [
       { data: orders, error: ordersError },

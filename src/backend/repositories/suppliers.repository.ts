@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { mapSupplierRow, mapSupplierRows, type SupplierRow } from "@/backend/mappers/suppliers.mapper";
 import type { CreateSupplierDTO, UpdateSupplierDTO } from "@/backend/validations/suppliers.validation";
 import type { Supplier } from "@/types/domain";
 
 export class SuppliersRepository {
   static async listByRestaurant(restaurantId: string): Promise<Supplier[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("suppliers")
       .select("*")
@@ -17,7 +17,7 @@ export class SuppliersRepository {
   }
 
   static async findById(restaurantId: string, supplierId: string): Promise<Supplier | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("suppliers")
       .select("*")
@@ -30,7 +30,7 @@ export class SuppliersRepository {
   }
 
   static async create(restaurantId: string, dto: CreateSupplierDTO): Promise<Supplier> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("suppliers")
       .insert({
@@ -60,7 +60,7 @@ export class SuppliersRepository {
     if (dto.address !== undefined) payload.address = dto.address?.trim() || null;
     if (dto.notes !== undefined) payload.notes = dto.notes?.trim() || null;
 
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("suppliers")
       .update(payload)
@@ -74,7 +74,7 @@ export class SuppliersRepository {
   }
 
   static async delete(restaurantId: string, supplierId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("suppliers")
       .delete()

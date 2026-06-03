@@ -25,19 +25,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Demo mode: allow viewing protected routes without real login
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
-
-  let currentUser: any = null;
-  if (demoMode) {
-    currentUser = { id: "demo-user-id", email: "demo@menuara.local", role: "admin" };
-  } else {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
-    } catch {
-      currentUser = null;
-    }
+  // Always verify the real session — no demo bypasses allowed
+  let currentUser: { id: string; email?: string } | null = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user;
+  } catch {
+    currentUser = null;
   }
 
   const { pathname } = request.nextUrl;
@@ -53,8 +47,7 @@ export async function middleware(request: NextRequest) {
     !pathname.startsWith("/superadmin") &&
     !pathname.startsWith("/api/admin");
 
-  // ── Auth gating
-  // In demo mode we allow access to protected routes without redirecting to login.
+  // ── Auth gating — no exceptions, no demo mode
   if (!currentUser && !isPublicRoute && !isCustomerRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

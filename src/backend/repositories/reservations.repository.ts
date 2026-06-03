@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import {
   mapReservationRow,
   mapReservationRows,
@@ -10,7 +10,7 @@ import type { TableStatus } from "@/types/domain";
 
 export class ReservationsRepository {
   static async listUpcoming(restaurantId: string, fromISO: string): Promise<ReservationWithTable[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reservations")
       .select("*, restaurant_tables(table_number)")
@@ -23,7 +23,7 @@ export class ReservationsRepository {
   }
 
   static async listTablesForRestaurant(restaurantId: string): Promise<ReservationTableOption[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .select("id, table_number, seating_capacity, status")
@@ -40,7 +40,7 @@ export class ReservationsRepository {
   }
 
   static async findById(restaurantId: string, reservationId: string): Promise<ReservationWithTable | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reservations")
       .select("*, restaurant_tables(table_number)")
@@ -53,7 +53,7 @@ export class ReservationsRepository {
   }
 
   static async create(restaurantId: string, dto: CreateReservationDTO): Promise<ReservationWithTable> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const tableId = dto.table_id && dto.table_id !== "" ? dto.table_id : null;
     const { data, error } = await supabase
       .from("reservations")
@@ -79,7 +79,7 @@ export class ReservationsRepository {
     reservationId: string,
     dto: UpdateReservationStatusDTO
   ): Promise<ReservationWithTable> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reservations")
       .update({ status: dto.status })

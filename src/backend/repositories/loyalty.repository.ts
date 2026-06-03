@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 
 export interface LoyaltyAccountRow {
   id: string;
@@ -15,7 +15,7 @@ const LOYALTY_SELECT = "id, restaurant_id, phone, name, total_points, total_spen
 
 export class LoyaltyRepository {
   static async listAccounts(restaurantId: string): Promise<LoyaltyAccountRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("loyalty_accounts")
       .select(LOYALTY_SELECT)
@@ -27,7 +27,7 @@ export class LoyaltyRepository {
   }
 
   static async findAccountByPhone(restaurantId: string, phone: string): Promise<LoyaltyAccountRow | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("loyalty_accounts")
       .select(LOYALTY_SELECT)
@@ -44,7 +44,7 @@ export class LoyaltyRepository {
     accountId: string,
     nextPoints: number
   ): Promise<LoyaltyAccountRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("loyalty_accounts")
       .update({ total_points: nextPoints, last_visited: new Date().toISOString() })

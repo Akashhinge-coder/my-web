@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { mapInventoryRow, mapInventoryRows, type InventoryRow } from "@/backend/mappers/inventory.mapper";
 import type { InventoryItem } from "@/types/domain";
 import type { CreateInventoryDTO, UpdateInventoryDTO } from "@/backend/validations/inventory.validation";
 
 export class InventoryRepository {
   static async listByRestaurant(restaurantId: string): Promise<InventoryItem[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("inventory")
       .select("*")
@@ -17,7 +17,7 @@ export class InventoryRepository {
   }
 
   static async findById(restaurantId: string, itemId: string): Promise<InventoryItem | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("inventory")
       .select("*")
@@ -30,7 +30,7 @@ export class InventoryRepository {
   }
 
   static async create(restaurantId: string, dto: CreateInventoryDTO): Promise<InventoryItem> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from("inventory")
@@ -74,7 +74,7 @@ export class InventoryRepository {
       payload.current_qty = dto.current_qty;
     }
 
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("inventory")
       .update(payload)
@@ -88,7 +88,7 @@ export class InventoryRepository {
   }
 
   static async delete(restaurantId: string, itemId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("inventory")
       .delete()

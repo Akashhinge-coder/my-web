@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import { mapTableRow, mapTableRows, type TableRow } from "@/backend/mappers/table.mapper";
 import type { CreateTableDTO, UpdateTableStatusDTO } from "@/backend/validations/table.validation";
 import type { Table } from "@/types/domain";
 
 export class TableRepository {
   static async listByRestaurant(restaurantId: string): Promise<Table[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .select("*")
@@ -17,7 +17,7 @@ export class TableRepository {
   }
 
   static async findByIdForRestaurant(restaurantId: string, tableId: string): Promise<Table | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .select("*")
@@ -30,7 +30,7 @@ export class TableRepository {
   }
 
   static async findById(tableId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .select("id, restaurant_id, table_number, status, current_session_id")
@@ -47,7 +47,7 @@ export class TableRepository {
     qrUrl: string,
     id: string
   ): Promise<Table> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .insert({
@@ -72,7 +72,7 @@ export class TableRepository {
     tableId: string,
     dto: UpdateTableStatusDTO
   ): Promise<Table> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .update({ status: dto.status })
@@ -86,7 +86,7 @@ export class TableRepository {
   }
 
   static async delete(restaurantId: string, tableId: string): Promise<void> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("restaurant_tables")
       .delete()
@@ -96,12 +96,13 @@ export class TableRepository {
     if (error) throw error;
   }
 
-  static async markOccupied(tableId: string, sessionId: string) {
-    const supabase = createAdminClient();
+  static async markOccupied(tableId: string, sessionId: string, restaurantId: string) {
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .update({ status: "occupied", current_session_id: sessionId })
       .eq("id", tableId)
+      .eq("restaurant_id", restaurantId)
       .select("id, table_number, current_session_id")
       .single();
 

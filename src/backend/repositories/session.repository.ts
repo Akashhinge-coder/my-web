@@ -1,8 +1,8 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 
 export class SessionRepository {
   static async findById(sessionId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
       .select("id, restaurant_id, table_id, status, total_amount")
@@ -14,7 +14,7 @@ export class SessionRepository {
   }
 
   static async findActiveByTable(tableId: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
       .select("id, restaurant_id, table_id, status, total_amount")
@@ -33,7 +33,7 @@ export class SessionRepository {
     tableId: string;
     guestCount?: number;
   }) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
       .insert({
@@ -51,7 +51,7 @@ export class SessionRepository {
   }
 
   static async addToTotal(sessionId: string, amount: number) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data: session, error: readError } = await supabase
       .from("sessions")
       .select("total_amount")

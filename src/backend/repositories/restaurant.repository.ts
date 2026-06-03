@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type {
   SettingsProfileUpdateDTO,
   SettingsTaxUpdateDTO,
@@ -19,28 +19,28 @@ export interface RestaurantSettingsRow {
 
 export class RestaurantRepository {
   static async getById(id: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.from("restaurants").select("id, name, slug").eq("id", id).single();
     if (error) throw error;
     return data;
   }
 
   static async getBySlug(slug: string) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.from("restaurants").select("*").eq("slug", slug).single();
     if (error) throw error;
     return data;
   }
 
   static async getFirst() {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url, is_active").limit(1).single();
     if (error) throw error;
     return data;
   }
 
   static async getSettingsById(id: string): Promise<RestaurantSettingsRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurants")
       .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate")
@@ -55,7 +55,7 @@ export class RestaurantRepository {
     restaurantId: string,
     dto: SettingsProfileUpdateDTO
   ): Promise<RestaurantSettingsRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurants")
       .update({
@@ -77,7 +77,7 @@ export class RestaurantRepository {
     restaurantId: string,
     dto: SettingsTaxUpdateDTO
   ): Promise<RestaurantSettingsRow> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurants")
       .update({

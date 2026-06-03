@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/config/supabase/server";
+import { createClient } from "@/config/supabase/server";
 import type { FeedbackRatingRow } from "@/backend/mappers/feedback.mapper";
 
 const FEEDBACK_SELECT = "id, overall_score, food_score, service_score, comment, created_at, sessions(restaurant_tables(table_number))";
 
 export class FeedbackRepository {
   static async listRatings(restaurantId: string, limit: number): Promise<FeedbackRatingRow[]> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("ratings")
       .select(FEEDBACK_SELECT)
@@ -21,7 +21,7 @@ export class FeedbackRepository {
     restaurantId: string,
     ratingId: string
   ): Promise<FeedbackRatingRow | null> {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("ratings")
       .select(FEEDBACK_SELECT)
