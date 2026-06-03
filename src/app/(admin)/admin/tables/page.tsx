@@ -1,0 +1,289 @@
+"use client";
+import { useEffect, useState, useCallback } from "react";
+import { tablesApi } from "@/frontend/api/tables.api";
+import { useTablesRealtime } from "@/frontend/hooks/useTablesRealtime";
+import { cn, generateQRUrl } from "@/lib/utils";
+import { Plus, QrCode, Users, Edit2, Check, X, Download, Trash2 } from "lucide-react";
+import type { Table, TableStatus } from "@/types/domain";
+
+const STATUS_CONFIG = {
+  available: { label: "Available", color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/20", dot: "bg-emerald-400" },
+  occupied:  { label: "Occupied",  color: "text-red-400",     bg: "bg-red-400/10 border-red-400/20",         dot: "bg-red-400"     },
+  reserved:  { label: "Reserved",  color: "text-purple-400",  bg: "bg-purple-400/10 border-purple-400/20",   dot: "bg-purple-400"  },
+  cleaning:  { label: "Cleaning",  color: "text-amber-400",   bg: "bg-amber-400/10 border-amber-400/20",     dot: "bg-amber-400"   },
+} as const;
+
+type TableStatusKey = keyof typeof STATUS_CONFIG;
+
+export default function TablesPage() {
+  const [tables,         setTables]         = useState<Table[]>([]);
+  const [loading,        setLoading]        = useState(true);
+  const [restaurantId,   setRestaurantId]   = useState<string | null>(null);
+  const [restaurantSlug, setRestaurantSlug] = useState<string>("");
+  const [editingId,      setEditingId]      = useState<string | null>(null);
+  const [showAdd,        setShowAdd]        = useState(false);
+  const [newTable,       setNewTable]       = useState({ table_number: "", seating_capacity: "4", table_type: "regular", floor: "Ground Floor" });
+  const [saving,         setSaving]         = useState(false);
+
+  const fetchTables = useCallback(async () => {
+    try {
+      const data = await tablesApi.getPageData();
+      setTables(data.tables);
+      setRestaurantId(data.restaurantId);
+      setRestaurantSlug(data.restaurantSlug);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchTables(); }, [fetchTables]);
+
+  useTablesRealtime(restaurantId, fetchTables);
+
+  async function updateStatus(tableId: string, status: TableStatus) {
+    try {
+      await tablesApi.updateStatus(tableId, status);
+      await fetchTables();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function addTable() {
+    if (!newTable.table_number.trim()) return;
+    setSaving(true);
+    try {
+      await tablesApi.create({
+        table_number: newTable.table_number.trim(),
+        seating_capacity: parseInt(newTable.seating_capacity, 10),
+        table_type: newTable.table_type as Table["table_type"],
+        floor: newTable.floor,
+      });
+      setNewTable({ table_number: "", seating_capacity: "4", table_type: "regular", floor: "Ground Floor" });
+      setShowAdd(false);
+      await fetchTables();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteTable(tableId: string) {
+    if (!confirm("Are you sure you want to delete this table?")) return;
+    try {
+      await tablesApi.delete(tableId);
+      await fetchTables();
+    } catch (error: any) {
+      console.error(error);
+      const msg = error?.message || "Failed to delete table. Make sure it does not have any active sessions or orders.";
+      alert(msg);
+    }
+  }
+
+
+  const counts = Object.fromEntries(
+    Object.keys(STATUS_CONFIG).map((s) => [s, tables.filter((t) => t.status === s).length])
+  ) as Record<TableStatusKey, number>;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="page-header mb-0">
+          <h1 className="page-title text-white">Tables</h1>
+          <p className="page-subtitle">{tables.length} tables · Live status</p>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+          <Plus className="w-4 h-4" />
+          Add Table
+        </button>
+      </div>
+
+      {/* Status summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {(Object.entries(STATUS_CONFIG) as [TableStatusKey, typeof STATUS_CONFIG[TableStatusKey]][]).map(([status, cfg]) => (
+          <div key={status} className={`rounded-xl border p-4 ${cfg.bg}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+              <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
+            </div>
+            <p className={`text-2xl font-display font-semibold ${cfg.color}`}>{counts[status]}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Add table form */}
+      {showAdd && (
+        <div className="card-dark p-5 border-brand/30">
+          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-brand" />
+            New Table
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className="label text-ink-3">Table Number</label>
+              <input
+                className="input-dark"
+                placeholder="T13"
+                value={newTable.table_number}
+                onChange={e => setNewTable(p => ({ ...p, table_number: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="label text-ink-3">Seats</label>
+              <select
+                className="input-dark"
+                value={newTable.seating_capacity}
+                onChange={e => setNewTable(p => ({ ...p, seating_capacity: e.target.value }))}
+              >
+                {[2,3,4,5,6,7,8,10,12].map(n => <option key={n} value={n}>{n} seats</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label text-ink-3">Type</label>
+              <select
+                className="input-dark"
+                value={newTable.table_type}
+                onChange={e => setNewTable(p => ({ ...p, table_type: e.target.value }))}
+              >
+                <option value="regular">Regular</option>
+                <option value="booth">Booth</option>
+                <option value="outdoor">Outdoor</option>
+                <option value="private">Private Room</option>
+              </select>
+            </div>
+            <div>
+              <label className="label text-ink-3">Floor</label>
+              <input
+                className="input-dark"
+                placeholder="Ground Floor"
+                value={newTable.floor}
+                onChange={e => setNewTable(p => ({ ...p, floor: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={addTable} disabled={saving} className="btn-md btn-primary">
+              {saving ? "Adding…" : <><Check className="w-4 h-4" />Add Table</>}
+            </button>
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark">
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tables grid */}
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {[1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="card-dark p-5 space-y-3">
+              <div className="shimmer h-4 rounded w-16" />
+              <div className="shimmer h-3 rounded w-24" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {tables.map((table) => {
+            const cfg = STATUS_CONFIG[table.status as TableStatusKey];
+            return (
+              <div key={table.id} className={cn("card-dark p-4 flex flex-col gap-3 transition-all hover:border-opacity-60", `hover:${cfg.bg}`)}>
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-display font-semibold text-white leading-none">
+                      {table.table_number}
+                    </p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Users className="w-3 h-3 text-ink-4" />
+                      <span className="text-xs text-ink-4">{table.seating_capacity} seats</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setEditingId(editingId === table.id ? null : table.id)}
+                      className="p-1.5 rounded-lg text-ink-4 hover:text-white hover:bg-dark-tertiary transition-all"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => deleteTable(table.id)}
+                      className="p-1.5 rounded-lg text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border self-start", cfg.bg, cfg.color)}>
+                  <div className={cn("w-1.5 h-1.5 rounded-full", cfg.dot)} />
+                  {cfg.label}
+                </div>
+
+                {/* Floor tag */}
+                {table.floor && (
+                  <p className="text-[10px] text-ink-4 bg-dark-tertiary rounded-md px-2 py-1 self-start">
+                    {table.floor}
+                  </p>
+                )}
+
+                {/* Status changer (when editing) */}
+                {editingId === table.id && (
+                  <div className="space-y-1 pt-1 border-t border-dark-border">
+                    <p className="text-[10px] text-ink-4 uppercase tracking-wide mb-1.5">Change status</p>
+                    {(Object.keys(STATUS_CONFIG) as TableStatusKey[]).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { updateStatus(table.id, s); setEditingId(null); }}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all",
+                          table.status === s
+                            ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} font-medium`
+                            : "text-ink-3 hover:bg-dark-tertiary"
+                        )}
+                      >
+                        <div className={cn("w-1.5 h-1.5 rounded-full", STATUS_CONFIG[s].dot)} />
+                        {STATUS_CONFIG[s].label}
+                        {table.status === s && <Check className="w-3 h-3 ml-auto" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* QR */}
+                <div className="flex items-center gap-2 pt-1 border-t border-dark-border">
+                  <a
+                    href={table.qr_url || generateQRUrl(restaurantSlug, table.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"
+                  >
+                    <QrCode className="w-3 h-3" />
+                    View QR
+                  </a>
+                  <span className="text-dark-border">·</span>
+                  <button
+                    onClick={() => {
+                      const url = table.qr_url || generateQRUrl(restaurantSlug, table.id);
+                      window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`, "_blank");
+                    }}
+                    className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"
+                  >
+                    <Download className="w-3 h-3" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,30 @@
+{
+  "name": "MENUARA",
+  "short_name": "MENUARA",
+  "description": "QR-based ordering and AR food visualization for Indian restaurants",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0E0D",
+  "theme_color": "#C17D3C",
+  "orientation": "portrait",
+  "categories": ["food", "business"],
+  "icons": [
+    { "src": "/icons/icon-72.png",  "sizes": "72x72",   "type": "image/png" },
+    { "src": "/icons/icon-96.png",  "sizes": "96x96",   "type": "image/png" },
+    { "src": "/icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Admin Dashboard",
+      "url": "/admin",
+      "description": "Open restaurant dashboard"
+    },
+    {
+      "name": "Live Orders",
+      "url": "/admin/orders",
+      "description": "View live orders"
+    }
+  ]
+}

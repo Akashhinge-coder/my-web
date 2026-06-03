@@ -1,0 +1,1 @@
+-- Development seed data belongs here. Keep production migrations deterministic and append-only.

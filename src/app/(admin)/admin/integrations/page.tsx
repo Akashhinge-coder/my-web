@@ -1,0 +1,165 @@
+"use client";
+import { useEffect, useState } from "react";
+import {
+  integrationsApi,
+  type IntegrationsRestaurant,
+  type IntegrationsStats,
+} from "@/frontend/api/integrations.api";
+import { formatINR, generateWhatsAppEODReport } from "@/lib/utils";
+import { Link2, MessageCircle, TrendingUp, Check } from "lucide-react";
+
+export default function IntegrationsPage() {
+  const [restaurant, setRestaurant] = useState<IntegrationsRestaurant | null>(null);
+  const [todayStats, setTodayStats] = useState<IntegrationsStats>({ revenue: 0, orders: 0, covers: 0, topDish: "—", upi: 0, cash: 0, card: 0 });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    async function init() {
+      const dashboard = await integrationsApi.getDashboard();
+      setRestaurant(dashboard.restaurant);
+      setTodayStats(dashboard.stats);
+    }
+    init();
+  }, []);
+
+  async function sendWhatsAppReport() {
+    if (!restaurant) return;
+    setSending(true);
+    const link = generateWhatsAppEODReport(restaurant.phone, restaurant.name, {
+      date:    new Date().toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" }),
+      revenue: todayStats.revenue,
+      orders:  todayStats.orders,
+      covers:  todayStats.covers,
+      topDish: todayStats.topDish,
+      upi:     todayStats.upi,
+      cash:    todayStats.cash,
+      card:    todayStats.card,
+    });
+    window.open(link, "_blank");
+    setSent(true);
+    setTimeout(() => setSent(false), 3000);
+    setSending(false);
+  }
+
+  const INTEGRATIONS = [
+    {
+      id: "zomato",
+      name: "Zomato",
+      desc: "Receive Zomato delivery orders directly in your kitchen display alongside table orders.",
+      status: "coming_soon",
+      color: "text-red-400",
+      bg: "bg-red-400/10 border-red-400/20",
+      steps: ["Apply for Zomato Partner API access", "Enter your API credentials here", "Orders flow into unified inbox automatically"],
+    },
+    {
+      id: "swiggy",
+      name: "Swiggy",
+      desc: "Receive Swiggy delivery orders in the same kitchen screen as your dine-in orders.",
+      status: "coming_soon",
+      color: "text-orange-400",
+      bg: "bg-orange-400/10 border-orange-400/20",
+      steps: ["Apply for Swiggy Merchant API", "Enter your API credentials here", "Orders appear in unified kitchen display"],
+    },
+    {
+      id: "razorpay",
+      name: "Razorpay",
+      desc: "UPI payments, GPay, PhonePe, Paytm QR — all processed through Razorpay.",
+      status: "configured",
+      color: "text-blue-400",
+      bg: "bg-blue-400/10 border-blue-400/20",
+      steps: [],
+    },
+  ];
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title text-white flex items-center gap-2">
+          <Link2 className="w-6 h-6 text-brand" />Integrations
+        </h1>
+        <p className="page-subtitle">Connect MENUARA with external platforms</p>
+      </div>
+
+      {/* WhatsApp EOD Report */}
+      <div className="card-dark p-6 border-green-500/20">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white mb-1">WhatsApp End-of-Day Report</h3>
+              <p className="text-xs text-ink-3 leading-relaxed">
+                Send today's revenue summary, top dishes, and payment breakdown directly to your WhatsApp.
+                Opens WhatsApp with a pre-filled message — tap Send.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Today preview */}
+        <div className="bg-dark-tertiary rounded-xl p-4 mb-4 font-mono text-xs text-ink-3 space-y-1 leading-relaxed">
+          <p className="text-white font-semibold">📊 MENUARA Daily Report</p>
+          <p>🏪 {restaurant?.name}</p>
+          <p>📅 {new Date().toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" })}</p>
+          <p className="mt-1">💰 Revenue: <span className="text-brand">{formatINR(todayStats.revenue)}</span></p>
+          <p>📦 Orders: {todayStats.orders}</p>
+          <p>👥 Covers: {todayStats.covers}</p>
+          <p>🏆 Top dish: {todayStats.topDish}</p>
+          <p className="mt-1">💳 UPI: {formatINR(todayStats.upi)} · Cash: {formatINR(todayStats.cash)} · Card: {formatINR(todayStats.card)}</p>
+        </div>
+
+        <button onClick={sendWhatsAppReport} disabled={sending}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-semibold transition-colors">
+          {sent ? (
+            <><Check className="w-4 h-4" />Opening WhatsApp…</>
+          ) : (
+            <><MessageCircle className="w-4 h-4" />Send to WhatsApp</>
+          )}
+        </button>
+      </div>
+
+      {/* Other integrations */}
+      <div className="space-y-4">
+        {INTEGRATIONS.map(int => (
+          <div key={int.id} className="card-dark p-6">
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${int.bg}`}>
+                  <TrendingUp className={`w-5 h-5 ${int.color}`} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-white">{int.name}</h3>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${
+                      int.status === "configured"
+                        ? "bg-green-500/10 border-green-500/20 text-green-400"
+                        : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                    }`}>
+                      {int.status === "configured" ? "✓ Connected" : "Coming soon"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-3 leading-relaxed">{int.desc}</p>
+                </div>
+              </div>
+            </div>
+
+            {int.steps.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                {int.steps.map((step, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-ink-4">
+                    <span className="w-4 h-4 rounded-full bg-dark-tertiary border border-dark-border flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      {i + 1}
+                    </span>
+                    {step}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
