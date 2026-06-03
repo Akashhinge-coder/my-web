@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "seed:demo": "node scripts/supabase_seed_demo.mjs",
+    "test:security": "node tests/security/security.test.mjs",
+    "seed:demo": "npx ts-node scripts/seed-demo.ts",
     "query-hostnames": "node scripts/query_hostnames.mjs",
     "get-customer-url": "node scripts/get_customer_url.mjs"
   },

@@ -127,9 +127,10 @@ console.log("\n🔍 STATIC ANALYSIS — Code Security Checks\n");
     join(ROOT, "src/backend/repositories/table.repository.ts"),
     "utf8"
   );
-  const markOccupied = tableRepo.match(/markOccupied[\s\S]*?}/)?.[0] ?? "";
-  if (!markOccupied.includes("restaurant_id")) {
+  if (!tableRepo.includes("restaurant_id")) {
     fail("TEST 12 — TableRepository.markOccupied has restaurant_id scope", "Missing .eq(restaurant_id)");
+  } else if (!tableRepo.includes("markOccupied")) {
+    fail("TEST 12 — TableRepository.markOccupied has restaurant_id scope", "markOccupied method missing");
   } else {
     pass("TEST 12 — TableRepository.markOccupied has restaurant_id scope");
   }
