@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { handleError } from "@/backend/errors/handler";
 import { validate } from "@/backend/middleware/validation.middleware";
 import { SettingsService } from "@/backend/services/settings.service";
+import { resolveRestaurantAccess } from "@/backend/utils/resolveRestaurantAccess";
 import {
   settingsProfileUpdateSchema,
   settingsTaxUpdateSchema,
@@ -19,6 +20,7 @@ export async function getSettings() {
 
 export async function updateSettings(req: NextRequest) {
   try {
+    await resolveRestaurantAccess();
     const dto = validate(settingsUpdateSchema, await req.json());
     return ok(await SettingsService.updateSettings(dto));
   } catch (error) {
@@ -28,6 +30,7 @@ export async function updateSettings(req: NextRequest) {
 
 export async function updateSettingsProfile(req: NextRequest) {
   try {
+    await resolveRestaurantAccess();
     const dto = validate(settingsProfileUpdateSchema, await req.json());
     return ok(await SettingsService.updateProfile(dto));
   } catch (error) {
@@ -37,6 +40,7 @@ export async function updateSettingsProfile(req: NextRequest) {
 
 export async function updateSettingsTax(req: NextRequest) {
   try {
+    await resolveRestaurantAccess();
     const dto = validate(settingsTaxUpdateSchema, await req.json());
     return ok(await SettingsService.updateTax(dto));
   } catch (error) {

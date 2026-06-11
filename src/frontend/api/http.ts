@@ -18,21 +18,32 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   headers.set("Content-Type", "application/json");
 
   if (typeof window === "undefined") {
-    if (path.startsWith("/")) {
-      const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      url = `${base}${path}`;
-    }
+    let base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     try {
-      const moduleName = "next/headers";
-      const { cookies } = await import(moduleName);
-      const cookieStore = await cookies();
-      const cookieHeader = cookieStore.toString();
-      if (cookieHeader) {
-        headers.set("Cookie", cookieHeader);
+      const req = typeof eval === "function" ? eval("require") : null;
+      if (req) {
+        const { cookies, headers: nextHeaders } = req("next/headers");
+        const host = nextHeaders().get("host");
+        if (host) {
+          const proto = nextHeaders().get("x-forwarded-proto") || "http";
+          base = `${proto}://${host}`;
+        }
+
+        const cookieStore = cookies();
+        const cookieHeader = cookieStore.toString();
+        console.log("DEBUG apiFetch server-side:", { url: path, base, cookieHeaderLength: cookieHeader.length });
+        if (cookieHeader) {
+          headers.set("Cookie", cookieHeader);
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error("DEBUG apiFetch server-side error:", err);
       // Ignore if called outside of request context (e.g. during build)
+    }
+
+    if (path.startsWith("/")) {
+      url = `${base}${path}`;
     }
   }
 

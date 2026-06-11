@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
 import type { Dish, CartItem } from "@/types/domain";
+import { sessionsApi } from "@/frontend/api/orders";
 
 // ── State ────────────────────────────────────────────────────
 interface CartState {
@@ -9,6 +10,7 @@ interface CartState {
   restaurantSlug: string;
   tableId: string;
   sessionId: string | null;
+  sessionError: string | null;
 }
 
 // ── Actions ──────────────────────────────────────────────────
@@ -19,7 +21,8 @@ type Action =
   | { type: "DEC";    dishId: string }
   | { type: "CLEAR" }
   | { type: "SET_SESSION"; sessionId: string }
-  | { type: "LOAD";   state: CartState };
+  | { type: "SET_SESSION_ERROR"; error: string | null }
+  | { type: "LOAD";   state: Omit<CartState, "sessionError"> };
 
 function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
@@ -53,9 +56,11 @@ function reducer(state: CartState, action: Action): CartState {
     case "CLEAR":
       return { ...state, items: [] };
     case "SET_SESSION":
-      return { ...state, sessionId: action.sessionId };
+      return { ...state, sessionId: action.sessionId, sessionError: null };
+    case "SET_SESSION_ERROR":
+      return { ...state, sessionError: action.error };
     case "LOAD":
-      return action.state;
+      return { ...state, ...action.state, sessionError: null };
     default:
       return state;
   }
@@ -95,6 +100,7 @@ export function CartProvider({
     restaurantSlug,
     tableId,
     sessionId: null,
+    sessionError: null,
   });
 
   // Load from localStorage on mount
@@ -111,9 +117,35 @@ export function CartProvider({
   // Save to localStorage on change
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const { sessionError, ...toSave } = state;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch { /* ignore */ }
   }, [state, STORAGE_KEY]);
+
+  // Bootstrap dining session on mount
+  useEffect(() => {
+    if (tableId === "preview") {
+      dispatch({ type: "SET_SESSION", sessionId: "preview" });
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const qrToken = params.get("qr_token");
+
+    sessionsApi.bootstrap(tableId, qrToken)
+      .then((res) => {
+        if (res.sessionId) {
+          dispatch({ type: "SET_SESSION", sessionId: res.sessionId });
+        }
+      })
+      .catch((err) => {
+        console.error("Session bootstrap failed:", err);
+        dispatch({
+          type: "SET_SESSION_ERROR",
+          error: err instanceof Error ? err.message : "QR scan required to order",
+        });
+      });
+  }, [tableId]);
 
   const totalItems  = state.items.reduce((s, i) => s + i.quantity, 0);
 

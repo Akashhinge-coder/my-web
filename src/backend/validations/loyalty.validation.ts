@@ -7,7 +7,7 @@ const phoneSchema = z
 
 export const loyaltyRedeemSchema = z.object({
   phone: phoneSchema,
-  orderAmount: z.coerce.number().nonnegative(),
+  sessionId: z.string().uuid(),
   pointsToRedeem: z.coerce.number().int().positive(),
   commit: z.boolean().optional().default(false),
 });

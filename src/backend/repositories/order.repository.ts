@@ -23,7 +23,7 @@ const CUSTOMER_ORDER_SELECT = `
 `;
 
 const BILL_ORDER_SELECT = `
-  order_number, total, subtotal, coupon_discount, loyalty_discount,
+  order_number, status, total, subtotal, coupon_discount, loyalty_discount,
   happy_hour_discount, taxable_amount, cgst, sgst, gst, total_discount,
   grand_total,
   order_items(quantity, unit_price, dishes(name))

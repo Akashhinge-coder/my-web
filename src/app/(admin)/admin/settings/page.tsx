@@ -15,6 +15,7 @@ import {
   Check,
   AlertCircle,
   Percent,
+  Upload,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -24,6 +25,9 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -34,6 +38,7 @@ export default function SettingsPage() {
         if (!active) return;
         setRestaurant(data);
         setForm(data);
+        setPreviewUrl(data.logoUrl || null);
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Unable to load settings");
@@ -53,6 +58,144 @@ export default function SettingsPage() {
     setError("");
     setSaved(false);
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+
+    // 1. Client-side Validation
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Invalid file type. Only PNG, JPEG, and WebP are allowed.");
+      setUploading(false);
+      return;
+    }
+
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setUploadError("File size exceeds 5 MB limit.");
+      setUploading(false);
+      return;
+    }
+
+    // 2. Load and scale the image using Canvas
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let width = img.width;
+      let height = img.height;
+      const maxDim = 512;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setUploadError("Unable to initialize image scaling context.");
+        setUploading(false);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // 3. Compress to WebP Blob (quality 0.8)
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob) {
+            setUploadError("Image compression failed.");
+            setUploading(false);
+            return;
+          }
+
+          // Generate instant local preview
+          const localPreviewUrl = URL.createObjectURL(blob);
+          setPreviewUrl(localPreviewUrl);
+
+          // 4. Upload to backend
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", blob, "logo.webp");
+
+          try {
+            const res = await fetch("/api/v1/settings/logo", {
+              method: "POST",
+              body: uploadFormData,
+            });
+
+            if (!res.ok) {
+              const errData = await res.json();
+              throw new Error(errData.error || "Failed to upload logo.");
+            }
+
+            const data = await res.json();
+            setForm((prev) => ({ ...prev, logoUrl: data.logoUrl }));
+            setRestaurant((prev) => prev ? { ...prev, logoUrl: data.logoUrl } : null);
+            setPreviewUrl(data.logoUrl);
+
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new Event("settings-updated"));
+            }
+          } catch (err) {
+            setUploadError(err instanceof Error ? err.message : "Error uploading logo.");
+            setPreviewUrl(form.logoUrl || null);
+          } finally {
+            setUploading(false);
+          }
+        },
+        "image/webp",
+        0.8
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setUploadError("Failed to load image file.");
+      setUploading(false);
+    };
+  };
+
+  const handleRemoveLogo = async () => {
+    setUploading(true);
+    setUploadError("");
+
+    try {
+      const res = await fetch("/api/v1/settings/logo", {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to remove logo.");
+      }
+
+      setForm((prev) => ({ ...prev, logoUrl: null }));
+      setRestaurant((prev) => (prev ? { ...prev, logoUrl: null } : null));
+      setPreviewUrl(null);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("settings-updated"));
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Error removing logo.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   function getApiErrorMessage(err: unknown): string {
     if (err instanceof ApiClientError) {
@@ -86,6 +229,9 @@ export default function SettingsPage() {
 
       setRestaurant(updated);
       setForm(updated);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("settings-updated"));
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -157,19 +303,63 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="label text-ink-3">Logo URL</label>
-          <input
-            className="input-dark"
-            value={form.logoUrl || ""}
-            onChange={(e) => set("logoUrl", e.target.value)}
-            placeholder="https://..."
-          />
-          {form.logoUrl && (
-            <img
-              src={form.logoUrl}
-              alt="logo"
-              className="mt-2 w-16 h-16 rounded-xl object-cover border border-dark-border"
-            />
+          <label className="label text-ink-3">Restaurant Logo</label>
+          <div className="flex items-center gap-4 mt-2">
+            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-dark-tertiary border border-dark-border flex items-center justify-center flex-shrink-0">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="logo preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-white font-bold text-2xl"
+                  style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+                >
+                  {form.name?.charAt(0).toUpperCase() || "M"}
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 text-brand animate-spin" />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <label className="btn-sm btn-primary cursor-pointer inline-flex items-center gap-1.5">
+                  <Upload className="w-3.5 h-3.5" />
+                  Choose Logo
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/png, image/jpeg, image/webp"
+                    onChange={handleFileChange}
+                    disabled={uploading}
+                  />
+                </label>
+                {form.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    disabled={uploading}
+                    className="btn-sm bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/15"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-ink-4">
+                PNG, JPG or WebP (max 5 MB). Logo will be optimized.
+              </p>
+            </div>
+          </div>
+          {uploadError && (
+            <p className="text-xs text-red-400 mt-2 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {uploadError}
+            </p>
           )}
         </div>
       </div>

@@ -75,6 +75,26 @@ export class StaffRepository {
     return mapStaffRow(data as StaffRow);
   }
 
+  /**
+   * Phase 8 — Soft delete: sets is_active = false.
+   * Preserves staff history, audit trail, and foreign-key references.
+   * The staff member can be reactivated by an owner if needed.
+   */
+  static async deactivate(restaurantId: string, staffId: string): Promise<void> {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("staff")
+      .update({ is_active: false })
+      .eq("restaurant_id", restaurantId)
+      .eq("id", staffId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * @deprecated Use deactivate() instead. Kept for internal tooling only.
+   * Hard-deletes a staff record — only callable server-side with explicit intent.
+   */
   static async delete(restaurantId: string, staffId: string): Promise<void> {
     const supabase = await createClient();
     const { error } = await supabase
@@ -86,3 +106,4 @@ export class StaffRepository {
     if (error) throw error;
   }
 }
+

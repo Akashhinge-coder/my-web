@@ -6,6 +6,7 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "**.bing.net" },
+      { protocol: "https", hostname: "tse3.mm.bing.net" },
     ],
   },
   experimental: {

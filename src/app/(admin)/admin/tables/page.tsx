@@ -259,7 +259,7 @@ export default function TablesPage() {
                 {/* QR */}
                 <div className="flex items-center gap-2 pt-1 border-t border-dark-border">
                   <a
-                    href={table.qr_url || generateQRUrl(restaurantSlug, table.id)}
+                    href={generateQRUrl(restaurantSlug, table.id, table.qr_token)}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"
@@ -270,7 +270,7 @@ export default function TablesPage() {
                   <span className="text-dark-border">·</span>
                   <button
                     onClick={() => {
-                      const url = table.qr_url || generateQRUrl(restaurantSlug, table.id);
+                      const url = generateQRUrl(restaurantSlug, table.id, table.qr_token);
                       window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`, "_blank");
                     }}
                     className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"

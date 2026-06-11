@@ -181,7 +181,11 @@ export class BillingRepository {
     const supabase = createAdminClient();
     const { error } = await supabase
       .from("sessions")
-      .update({ status: "closed", closed_at: new Date().toISOString() })
+      .update({ 
+        status: "closed", 
+        closed_at: new Date().toISOString(),
+        expires_at: new Date().toISOString()
+      })
       .eq("id", sessionId)
       .eq("restaurant_id", restaurantId)
       .eq("status", "active");

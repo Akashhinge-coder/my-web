@@ -6,6 +6,8 @@ import {
   type LoyaltyAccountDTO,
 } from "@/backend/mappers/loyalty.mapper";
 import { LoyaltyRepository } from "@/backend/repositories/loyalty.repository";
+import { OrderRepository } from "@/backend/repositories/order.repository";
+import { BillingService } from "@/backend/services/billing.service";
 import { applyLoyaltyRedemption } from "@/backend/services/pricing.service";
 import { resolveRestaurantAccess } from "@/backend/utils/resolveRestaurantAccess";
 import type { LoyaltyRedeemDTO } from "@/backend/validations/loyalty.validation";
@@ -97,8 +99,31 @@ export class LoyaltyService {
       });
     }
 
+    if (dto.pointsToRedeem > account.totalPoints) {
+      throw new ValidationError("Insufficient points balance", {
+        pointsToRedeem: [`Insufficient points balance (available: ${account.totalPoints})`],
+      });
+    }
+
+    // Resolve bill amount from database active session orders
+    const orders = await OrderRepository.listForBill(dto.sessionId);
+    const bill = BillingService.calculateSessionBill({ orders });
+    
+    // The base amount for loyalty discount calculation is subtotal minus happy hour and coupon discounts
+    const baseAmount = Math.max(0, bill.subtotal - bill.happyHourDiscount - bill.couponDiscount);
+
+    // Enforce 20% cap (or default setting's maxRedemptionPercent)
+    const maxDiscount = (baseAmount * DEFAULT_SETTINGS.maxRedemptionPercent) / 100;
+    const requestedDiscount = dto.pointsToRedeem * DEFAULT_SETTINGS.redemptionRate;
+
+    if (requestedDiscount > maxDiscount) {
+      throw new ValidationError("Redemption discount exceeds the 20% limit of the bill", {
+        pointsToRedeem: [`Cannot redeem points yielding more than a 20% discount (max discount: Rs. ${maxDiscount})`],
+      });
+    }
+
     const discount = applyLoyaltyRedemption(
-      dto.orderAmount,
+      baseAmount,
       mapLoyaltyPricingInput({
         account,
         pointsToRedeem: dto.pointsToRedeem,

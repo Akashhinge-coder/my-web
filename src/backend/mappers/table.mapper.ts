@@ -10,6 +10,7 @@ export interface TableRow {
   assigned_waiter_id: string | null;
   current_session_id: string | null;
   qr_url: string | null;
+  qr_token?: string | null;
   floor: string | null;
   created_at: string;
 }
@@ -35,6 +36,7 @@ export function mapTableRow(row: TableRow): Table {
     assigned_waiter_id: row.assigned_waiter_id,
     current_session_id: row.current_session_id,
     qr_url: row.qr_url,
+    qr_token: row.qr_token || null,
     floor: row.floor,
     created_at: row.created_at,
   };

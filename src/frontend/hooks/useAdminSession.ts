@@ -11,20 +11,31 @@ export function useAdminSession() {
   useEffect(() => {
     let active = true;
 
-    authApi
-      .getSession()
-      .then((data) => {
-        if (active) setSession(data);
-      })
-      .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : "Unable to load admin session");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const fetchSession = () => {
+      authApi
+        .getSession()
+        .then((data) => {
+          if (active) setSession(data);
+        })
+        .catch((err) => {
+          if (active) setError(err instanceof Error ? err.message : "Unable to load admin session");
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+    };
+
+    fetchSession();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("settings-updated", fetchSession);
+    }
 
     return () => {
       active = false;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("settings-updated", fetchSession);
+      }
     };
   }, []);
 

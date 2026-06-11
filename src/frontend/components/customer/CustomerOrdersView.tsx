@@ -51,15 +51,8 @@ export default function CustomerOrdersView({
   }, [slug]);
 
   useEffect(() => {
-    if (cart.state.sessionId) {
-      setSessionId(cart.state.sessionId);
-      return;
-    }
-
-    sessionsApi.getActive(tableId).then((session) => {
-      if (session?.id) setSessionId(session.id);
-    });
-  }, [cart.state.sessionId, tableId]);
+    setSessionId(cart.state.sessionId);
+  }, [cart.state.sessionId]);
 
   async function placeOrder() {
     if (!restaurantId || cart.totalItems === 0) return;

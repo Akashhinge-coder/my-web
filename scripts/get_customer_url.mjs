@@ -42,7 +42,7 @@ async function run() {
 
   const { data: table, error: tableError } = await supabase
     .from('restaurant_tables')
-    .select('id, table_number')
+    .select('id, table_number, qr_token')
     .eq('restaurant_id', restaurant.id)
     .limit(1)
     .single();
@@ -54,7 +54,7 @@ async function run() {
 
   console.log(`Restaurant: ${restaurant.name} (${restaurant.slug})`);
   console.log(`Table: ${table.table_number} (${table.id})`);
-  console.log(`Customer URL path: /${restaurant.slug}/${table.id}`);
+  console.log(`Customer URL path: /${restaurant.slug}/${table.id}?qr_token=${table.qr_token}`);
 }
 
 run();

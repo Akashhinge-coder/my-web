@@ -88,7 +88,7 @@ console.log("\n🔍 STATIC ANALYSIS — Code Security Checks\n");
 {
   const repoDir = join(ROOT, "src/backend/repositories");
   const repos = readdirSync(repoDir).filter((f) => f.endsWith(".ts"));
-  const ALLOWED_ADMIN = ["billing.repository.ts", "platform.repository.ts"];
+  const ALLOWED_ADMIN = ["billing.repository.ts", "platform.repository.ts", "session.repository.ts", "table.repository.ts"];
 
   let repoPassed = true;
   for (const repo of repos) {

@@ -6,7 +6,7 @@ import {
   ChevronRight, Flame, Star, Truck, Menu, X,
   Calendar, Clock, Gift, Zap, Package2, Link2
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isValidImageSrc } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 const NAV = [
@@ -78,10 +78,18 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
     <>
       <div className="px-4 py-5 border-b border-dark-border">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-display font-bold text-sm flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}>
-            {initials}
-          </div>
+          {restaurant.logo_url ? (
+            <img
+              src={restaurant.logo_url}
+              alt={restaurantName}
+              className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-dark-border"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-display font-bold text-sm flex-shrink-0"
+              style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}>
+              {initials}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate leading-tight">{restaurantName}</p>
             <p className="text-xs text-ink-4 capitalize">{userRole}</p>

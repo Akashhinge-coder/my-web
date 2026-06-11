@@ -54,23 +54,26 @@ export function generateInvoiceNumber(restaurantSlug: string): string {
   return `${restaurantSlug.toUpperCase().slice(0, 4)}-${yy}${mm}${dd}-${rand}`;
 }
 
-// ── Slug generator ───────────────────────────────────────────
 export function generateSlug(name: string): string {
   return name
+    .trim()
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
-    .trim();
+    .replace(/^-+|-+$/g, "");
 }
 
 // ── QR URL generator ─────────────────────────────────────────
 export function generateQRUrl(
   restaurantSlug: string,
-  tableId: string
+  tableId: string,
+  qrToken?: string | null
 ): string {
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://menuara.app";
-  return `${base}/${restaurantSlug}/${tableId}`;
+  return qrToken
+    ? `${base}/${restaurantSlug}/${tableId}?qr_token=${qrToken}`
+    : `${base}/${restaurantSlug}/${tableId}`;
 }
 
 // ── Date formatters ──────────────────────────────────────────

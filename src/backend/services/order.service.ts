@@ -1,5 +1,8 @@
 import { ValidationError } from "@/backend/errors/ValidationError";
 import { NotFoundError } from "@/backend/errors/NotFoundError";
+import { AuthError } from "@/backend/errors/AuthError";
+import { ConflictError } from "@/backend/errors/ConflictError";
+import { createAdminClient } from "@/config/supabase/server";
 import { MenuRepository } from "@/backend/repositories/menu.repository";
 import { OrderRepository, type ListOrdersScope } from "@/backend/repositories/order.repository";
 import { SessionRepository } from "@/backend/repositories/session.repository";
@@ -165,42 +168,142 @@ export class OrderService {
     );
   }
 
-  static async place(dto: PlaceOrderDTO, restaurantId: string, options?: { sessionId?: string }) {
+  static async place(
+    dto: PlaceOrderDTO,
+    restaurantId: string,
+    options?: { sessionId?: string; isCustomer?: boolean; sessionToken?: string }
+  ) {
     const table = await TableRepository.findById(dto.tableId);
     if (!table || table.restaurant_id !== restaurantId) {
       throw new NotFoundError("Table not found for this restaurant");
     }
 
+    const isCustomer = options?.isCustomer ?? false;
+
+    let session = null;
+    let createdSession = false;
+
+    if (isCustomer) {
+      // ── CUSTOMER FLOW ─────────────────────────────────────────────────────────
+      // Session ownership validation runs FIRST — before any menu lookups.
+      // This ensures cross-restaurant and cross-table attacks receive the correct
+      // rejection code without leaking dish membership information.
+
+      const cookieToken = options?.sessionToken ?? null;
+
+      if (!cookieToken) {
+        console.warn("AUDIT FAILURE: missing session_token cookie", {
+          tableId: dto.tableId,
+          restaurantId,
+        });
+        throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
+      }
+
+      // Resolve session from the token — returns ANY status (active or closed)
+      const tokenSession = await SessionRepository.findByToken(cookieToken);
+
+      if (!tokenSession) {
+        console.warn("AUDIT FAILURE: session_token cookie does not match any session", {
+          tableId: dto.tableId,
+          restaurantId,
+        });
+        throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
+      }
+
+      // If dto.sessionId is supplied, it must exactly match the resolved session.
+      const inputSessionId = dto.sessionId ?? null;
+      if (inputSessionId && tokenSession.id !== inputSessionId) {
+        console.warn("AUDIT FAILURE: sessionId payload does not match cookie session", {
+          provided: inputSessionId,
+          cookieSessionId: tokenSession.id,
+          tableId: dto.tableId,
+          restaurantId,
+        });
+        throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
+      }
+
+      // Validate ownership — order matters: expiry → status → table → restaurant
+
+      // Expired sessions: even if status is "active", reject if past expires_at
+      if (tokenSession.expires_at && new Date(tokenSession.expires_at) < new Date()) {
+        console.warn("AUDIT FAILURE: expired session", {
+          sessionId: tokenSession.id,
+          expiresAt: tokenSession.expires_at,
+          tableId: dto.tableId,
+          restaurantId,
+        });
+        throw new AuthError("Dining session has expired", 401, "UNAUTHORIZED_SESSION");
+      }
+
+      if (tokenSession.status !== "active") {
+        console.warn("AUDIT FAILURE: inactive session", {
+          sessionId: tokenSession.id,
+          status: tokenSession.status,
+          tableId: dto.tableId,
+          restaurantId,
+        });
+        throw new ValidationError("Dining session is not active");
+      }
+
+      // Cross-restaurant: return opaque 404 — do not reveal session ownership details.
+      // This check must come BEFORE table mismatch so a cross-restaurant attacker
+      // gets 404, not a 422 that could leak which table a session belongs to.
+      if (tokenSession.restaurant_id !== restaurantId) {
+        console.warn("AUDIT FAILURE: restaurant mismatch", {
+          sessionId: tokenSession.id,
+          sessionRestaurantId: tokenSession.restaurant_id,
+          requestRestaurantId: restaurantId,
+          tableId: dto.tableId,
+        });
+        throw new NotFoundError("Session not found for this restaurant");
+      }
+
+      if (tokenSession.table_id !== dto.tableId) {
+        console.warn("AUDIT FAILURE: table mismatch", {
+          sessionId: tokenSession.id,
+          sessionTableId: tokenSession.table_id,
+          requestTableId: dto.tableId,
+          restaurantId,
+        });
+        throw new ValidationError("Session does not belong to the specified table");
+      }
+
+      session = tokenSession;
+    } else {
+      // ── ADMIN / SYSTEM FLOW ───────────────────────────────────────────────────
+      const resolvedSessionId = options?.sessionId ?? dto.sessionId ?? null;
+      if (resolvedSessionId) {
+        try {
+          session = await SessionRepository.findById(resolvedSessionId);
+        } catch {
+          session = null;
+        }
+      } else {
+        session = await SessionRepository.findActiveByTable(dto.tableId);
+      }
+
+      if (!session) {
+        const newSession = await SessionRepository.create({
+          restaurantId,
+          tableId: dto.tableId,
+        });
+        session = newSession;
+        createdSession = true;
+      }
+    }
+
+    // ── MENU + PRICING (runs after session validation) ─────────────────────────
     const dishIds = dto.items.map((i) => i.dishId);
     const dishes = await MenuRepository.findDishesByIds(restaurantId, dishIds);
     const { dishMap } = this.validateOrderItems(dto.items, dishes);
     const pricing = await this.quotePricing({ items: dto.items }, restaurantId);
 
-    let sessionId = options?.sessionId ?? dto.sessionId ?? null;
-
-    let createdSession = false;
-
-    if (!sessionId) {
-      const existing = await SessionRepository.findActiveByTable(dto.tableId);
-      sessionId = existing?.id ?? null;
+    if (createdSession && session) {
+      await TableRepository.markOccupied(dto.tableId, session.id, restaurantId);
     }
 
-    if (!sessionId) {
-      const session = await SessionRepository.create({
-        restaurantId,
-        tableId: dto.tableId,
-      });
-      sessionId = session.id;
-      createdSession = true;
-    }
+    const sessionId = session.id;
 
-    if (createdSession && sessionId) {
-      await TableRepository.markOccupied(dto.tableId, sessionId, restaurantId);
-    }
-
-    if (!sessionId) {
-      throw new NotFoundError("Unable to resolve dining session");
-    }
 
     const order = await OrderRepository.create({
       sessionId,
@@ -236,6 +339,152 @@ export class OrderService {
       order,
       sessionId,
     };
+  }
+
+  static async placeIdempotent(
+    dto: PlaceOrderDTO,
+    restaurantId: string,
+    idempotencyKey: string,
+    options?: { sessionId?: string; isCustomer?: boolean; sessionToken?: string }
+  ) {
+    const table = await TableRepository.findById(dto.tableId);
+    if (!table || table.restaurant_id !== restaurantId) {
+      throw new NotFoundError("Table not found for this restaurant");
+    }
+
+    const isCustomer = options?.isCustomer ?? false;
+    let session = null;
+
+    if (isCustomer) {
+      const cookieToken = options?.sessionToken ?? null;
+      if (!cookieToken) {
+        throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
+      }
+      const tokenSession = await SessionRepository.findByToken(cookieToken);
+      if (!tokenSession) {
+        throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
+      }
+      const inputSessionId = dto.sessionId ?? null;
+      if (inputSessionId && tokenSession.id !== inputSessionId) {
+        throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
+      }
+      if (tokenSession.expires_at && new Date(tokenSession.expires_at) < new Date()) {
+        throw new AuthError("Dining session has expired", 401, "UNAUTHORIZED_SESSION");
+      }
+      if (tokenSession.status !== "active") {
+        throw new ValidationError("Dining session is not active");
+      }
+      if (tokenSession.restaurant_id !== restaurantId) {
+        throw new NotFoundError("Session not found for this restaurant");
+      }
+      if (tokenSession.table_id !== dto.tableId) {
+        throw new ValidationError("Session does not belong to the specified table");
+      }
+      session = tokenSession;
+    } else {
+      const resolvedSessionId = options?.sessionId ?? dto.sessionId ?? null;
+      if (resolvedSessionId) {
+        try {
+          session = await SessionRepository.findById(resolvedSessionId);
+        } catch {
+          session = null;
+        }
+      } else {
+        session = await SessionRepository.findActiveByTable(dto.tableId);
+      }
+      if (!session) {
+        session = await SessionRepository.create({
+          restaurantId,
+          tableId: dto.tableId,
+        });
+        await TableRepository.markOccupied(dto.tableId, session.id, restaurantId);
+      }
+    }
+
+    const sessionId = session.id;
+
+    // Generate request hash
+    const crypto = await import("crypto");
+    const requestHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(dto))
+      .digest("hex");
+
+    const supabase = createAdminClient();
+    const expiresAt = new Date(Date.now() + 86400 * 1000).toISOString();
+
+    let keyRecord = null;
+    try {
+      const { data, error } = await supabase
+        .from("idempotency_keys")
+        .insert({
+          key: idempotencyKey,
+          restaurant_id: restaurantId,
+          session_id: sessionId,
+          request_hash: requestHash,
+          status: "started",
+          expires_at: expiresAt,
+        })
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      keyRecord = data;
+    } catch (err: any) {
+      if (err.code === "23505") {
+        // Retrieve and poll/wait
+        let retries = 0;
+        const maxRetries = 60; // 3 seconds total
+        while (retries < maxRetries) {
+          const { data, error } = await supabase
+            .from("idempotency_keys")
+            .select("*")
+            .eq("restaurant_id", restaurantId)
+            .eq("session_id", sessionId)
+            .eq("key", idempotencyKey)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (!data) {
+            throw new ConflictError("Idempotency key expired or cleared.");
+          }
+
+          if (data.status === "completed") {
+            if (data.request_hash !== requestHash) {
+              throw new ConflictError("Idempotency key conflict: same key with different payload.");
+            }
+            return { status: 200, payload: data.response_payload };
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          retries++;
+        }
+        throw new ConflictError("Concurrent request for this idempotency key is taking too long.");
+      }
+      throw err;
+    }
+
+    try {
+      const result = await this.place(dto, restaurantId, options);
+
+      const { error: updateErr } = await supabase
+        .from("idempotency_keys")
+        .update({
+          status: "completed",
+          response_payload: result,
+        })
+        .eq("id", keyRecord.id);
+
+      if (updateErr) throw updateErr;
+
+      return { status: 201, payload: result };
+    } catch (placeErr) {
+      await supabase
+        .from("idempotency_keys")
+        .delete()
+        .eq("id", keyRecord.id);
+      throw placeErr;
+    }
   }
 
   static async updateStatus(restaurantId: string, orderId: string, dto: UpdateOrderStatusDTO) {

@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   // Customer QR ordering flow — restaurantId from URL, validated in service layer
   if (clientRestaurantId && (mode === "pricing" || mode === "place")) {
     if (mode === "pricing") return quoteOrderPricing(req, clientRestaurantId);
-    if (mode === "place") return placeOrder(req, clientRestaurantId);
+    if (mode === "place") return placeOrder(req, clientRestaurantId, { isCustomer: true });
   }
 
   // Admin order creation — restaurantId must come from session

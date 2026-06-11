@@ -20,7 +20,7 @@ export interface RestaurantSettingsRow {
 export class RestaurantRepository {
   static async getById(id: string) {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("restaurants").select("id, name, slug").eq("id", id).single();
+    const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url").eq("id", id).single();
     if (error) throw error;
     return data;
   }

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { ZodError } from "zod";
 import { handleError } from "@/backend/errors/handler";
 import { ValidationError } from "@/backend/errors/ValidationError";
+import { AuthError } from "@/backend/errors/AuthError";
 import { validate } from "@/backend/middleware/validation.middleware";
 import { OrderService } from "@/backend/services/order.service";
 import { resolveRestaurantAccess } from "@/backend/utils/resolveRestaurantAccess";
@@ -55,6 +56,10 @@ export async function listSessionOrders(req: NextRequest) {
 
 export async function createOrder(req: NextRequest, restaurantId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const validated = validate(createOrderSchema, body);
     const result = await OrderService.create(validated, restaurantId);
@@ -64,16 +69,50 @@ export async function createOrder(req: NextRequest, restaurantId: string) {
   }
 }
 
-export async function placeOrder(req: NextRequest, restaurantId: string) {
+export async function placeOrder(req: NextRequest, restaurantId: string, options?: { isCustomer?: boolean }) {
   try {
+    const isCustomer = options?.isCustomer ?? false;
+    const sessionToken = req.cookies.get("session_token")?.value;
+    const idempotencyKey = req.headers.get("idempotency-key");
+ 
+    if (isCustomer) {
+      if (!sessionToken) {
+        throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
+      }
+    } else {
+      const access = await resolveRestaurantAccess();
+      if (restaurantId !== access.restaurantId) {
+        throw new AuthError("Forbidden", 403, "FORBIDDEN");
+      }
+    }
+ 
     const body = await req.json();
+    if (body.sessionId === "preview" || body.tableId === "preview") {
+      throw new ValidationError("Orders cannot be placed in preview mode");
+    }
     const validated = validate(placeOrderSchema, body);
-    const result = await OrderService.place(validated, restaurantId);
+
+    if (idempotencyKey) {
+      const { status, payload } = await OrderService.placeIdempotent(validated, restaurantId, idempotencyKey, {
+        ...options,
+        sessionToken,
+      });
+      if (status === 200) {
+        return ok(payload);
+      }
+      return created(payload);
+    }
+
+    const result = await OrderService.place(validated, restaurantId, {
+      ...options,
+      sessionToken,
+    });
     return created(result);
   } catch (error) {
     return handleError(error);
   }
 }
+
 
 export async function quoteOrderPricing(req: NextRequest, restaurantId: string) {
   try {
@@ -92,6 +131,10 @@ export async function updateOrderStatus(
   orderId: string
 ) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const validated = validate(updateOrderStatusSchema, body);
     const order = await OrderService.updateStatus(restaurantId, orderId, validated);

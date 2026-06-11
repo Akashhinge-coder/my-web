@@ -48,7 +48,7 @@ export class MenuService {
       if (!query.slug) {
         throw new ValidationError("slug is required for customer menu", { slug: ["Required"] });
       }
-      return this.getCustomerMenu(query.slug, query.tableId, restaurantId);
+      return this.getCustomerMenu(query.slug, query.tableId, restaurantId, query.mode === "preview");
     }
 
     const [categories, dishes] = await Promise.all([
@@ -62,16 +62,21 @@ export class MenuService {
   static async getCustomerMenu(
     slug: string,
     tableId: string | undefined,
-    restaurantId: string
+    restaurantId: string,
+    isPreview = false
   ): Promise<CustomerMenuBundle> {
     const restaurantRow = await RestaurantRepository.getBySlug(slug);
+    console.log("getCustomerMenu lookup restaurant:", restaurantRow, "restaurantId param:", restaurantId);
     if (!restaurantRow || String(restaurantRow.id) !== restaurantId) {
       throw new NotFoundError("Restaurant not found");
     }
 
     let table = { table_number: "—" };
-    if (tableId) {
+    if (isPreview) {
+      table = { table_number: "Preview" };
+    } else if (tableId) {
       const row = await TableRepository.findById(tableId);
+      console.log("getCustomerMenu lookup table row:", row, "restaurantId:", restaurantId);
       if (!row || row.restaurant_id !== restaurantId) {
         throw new NotFoundError("Table not found");
       }

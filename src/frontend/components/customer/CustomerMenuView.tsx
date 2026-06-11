@@ -183,36 +183,38 @@ function DishCard({
             )}
           </button>
 
-          {quantity === 0 ? (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="w-20 flex items-center justify-center gap-1 py-1.5 rounded-xl font-semibold text-sm text-white transition-all active:scale-95 min-h-[44px]"
-              style={{ background: BRAND_GRADIENT }}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add
-            </button>
-          ) : (
-            <div className="w-20 flex items-center justify-between px-2 py-1 rounded-xl border-2 border-brand min-h-[44px]">
+          {tableId !== "preview" && (
+            quantity === 0 ? (
               <button
                 type="button"
-                onClick={onDecrement}
-                className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
-                aria-label="Decrease quantity"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="font-bold text-brand text-sm">{quantity}</span>
-              <button
-                type="button"
-                onClick={onIncrement}
-                className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
-                aria-label="Increase quantity"
+                onClick={onAdd}
+                className="w-20 flex items-center justify-center gap-1 py-1.5 rounded-xl font-semibold text-sm text-white transition-all active:scale-95 min-h-[44px]"
+                style={{ background: BRAND_GRADIENT }}
               >
                 <Plus className="w-3.5 h-3.5" />
+                Add
               </button>
-            </div>
+            ) : (
+              <div className="w-20 flex items-center justify-between px-2 py-1 rounded-xl border-2 border-brand min-h-[44px]">
+                <button
+                  type="button"
+                  onClick={onDecrement}
+                  className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="font-bold text-brand text-sm">{quantity}</span>
+                <button
+                  type="button"
+                  onClick={onIncrement}
+                  className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -328,37 +330,43 @@ function DishModal({
             <span className="font-display text-2xl font-semibold text-ink">
               {formatINR(dish.price)}
             </span>
-            {quantity === 0 ? (
-              <button
-                type="button"
-                onClick={onAdd}
-                className="px-6 py-3 rounded-xl text-white font-semibold text-sm min-h-[44px]"
-                style={{ background: BRAND_GRADIENT }}
-              >
-                Add to cart
-              </button>
+            {tableId !== "preview" ? (
+              quantity === 0 ? (
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  className="px-6 py-3 rounded-xl text-white font-semibold text-sm min-h-[44px]"
+                  style={{ background: BRAND_GRADIENT }}
+                >
+                  Add to cart
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 border-2 border-brand rounded-xl px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={onDecrement}
+                    className="text-brand p-1"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="font-bold text-brand w-6 text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onIncrement}
+                    className="text-brand p-1"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )
             ) : (
-              <div className="flex items-center gap-3 border-2 border-brand rounded-xl px-3 py-2">
-                <button
-                  type="button"
-                  onClick={onDecrement}
-                  className="text-brand p-1"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="font-bold text-brand w-6 text-center">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={onIncrement}
-                  className="text-brand p-1"
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              <span className="text-xs text-brand font-medium uppercase tracking-wide">
+                Preview Mode
+              </span>
             )}
           </div>
         </div>
@@ -378,6 +386,23 @@ export default function CustomerMenuView({
   const { data, loading } = useCustomerMenu(slug, tableId);
   const cart = useCart();
   const { pricing } = useCartPricing(cart.state.restaurantId, cart.state.items);
+
+  if (cart.state.sessionError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-brand animate-bounce"
+          style={{ background: BRAND_GRADIENT }}
+        >
+          <UtensilsCrossed className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-ink">QR Scan Required</h2>
+        <p className="text-ink-3 text-sm max-w-sm">
+          Please scan the physical QR code located on your table to browse the menu and place orders.
+        </p>
+      </div>
+    );
+  }
 
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState("");
@@ -474,12 +499,10 @@ export default function CustomerMenuView({
       >
         <div className="px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            {isValidImageSrc(restaurant.logo_url) ? (
-              <Image
+            {restaurant.logo_url ? (
+              <img
                 src={restaurant.logo_url!}
                 alt={`${restaurant.name} logo`}
-                width={36}
-                height={36}
                 className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-white/10"
               />
             ) : (
@@ -509,22 +532,24 @@ export default function CustomerMenuView({
             >
               <Search className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/${slug}/${tableId}/cart`)}
-              className="relative p-2.5 rounded-xl text-white/70 hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="View cart"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {cart.totalItems > 0 && (
-                <span
-                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
-                  style={{ background: BRAND_GRADIENT }}
-                >
-                  {cart.totalItems > 99 ? "99+" : cart.totalItems}
-                </span>
-              )}
-            </button>
+            {tableId !== "preview" && (
+              <button
+                type="button"
+                onClick={() => router.push(`/${slug}/${tableId}/cart`)}
+                className="relative p-2.5 rounded-xl text-white/70 hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="View cart"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {cart.totalItems > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                    style={{ background: BRAND_GRADIENT }}
+                  >
+                    {cart.totalItems > 99 ? "99+" : cart.totalItems}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
 

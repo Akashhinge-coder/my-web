@@ -51,6 +51,7 @@ export interface Table {
   assigned_waiter_id: string | null;
   current_session_id: string | null;
   qr_url: string | null;
+  qr_token: string | null;
   floor: string | null;
   created_at: string;
   // Relations

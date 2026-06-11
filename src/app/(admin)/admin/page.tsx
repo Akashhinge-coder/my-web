@@ -6,6 +6,8 @@ import {
   ArrowUpRight, Clock
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const { stats, recentOrders, tables, payments } = await dashboardApi.getDashboard();
   const {

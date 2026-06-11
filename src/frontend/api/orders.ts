@@ -48,8 +48,14 @@ export interface SessionBill {
 }
 
 export const sessionsApi = {
-  getActive(tableId: string) {
-    return apiFetch<{ id: string } | null>(`/api/v1/sessions/active?tableId=${tableId}`);
+  bootstrap(tableId: string, qrToken?: string | null) {
+    return apiFetch<{ sessionId: string; sessionToken: string; status: string }>(
+      "/api/v1/sessions/bootstrap",
+      {
+        method: "POST",
+        body: JSON.stringify({ tableId, qrToken }),
+      }
+    );
   },
 };
 

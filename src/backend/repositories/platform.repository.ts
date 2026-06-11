@@ -65,5 +65,31 @@ export class PlatformRepository {
     if (error) throw error;
     return data as PlatformRestaurant;
   }
-}
+
+  /**
+   * Phase 6 — Deactivation Cascade.
+   *
+   * When a restaurant is deactivated, we immediately expire all active
+   * customer dining sessions by setting expires_at to NOW(). This ensures:
+   *   - No new orders can be placed (session_token RLS policies check expires_at > NOW())
+   *   - No new payments can be processed (payment flow requires an active session)
+   *   - Existing completed orders and payments are preserved (data immutability)
+   *   - Staff dashboard API calls will still work until the staff auth session
+   *     expires naturally (Supabase auth JWT), because the restaurant is_active
+   *     check happens at the customer-facing public RLS level, not the staff level.
+   *
+   * Admin-level sessions (staff) are NOT expired here — those are Supabase Auth
+   * sessions and must be managed via Supabase Auth Admin API if needed.
+   */
+  static async expireActiveSessionsForRestaurant(restaurantId: string): Promise<void> {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("sessions")
+      .update({ expires_at: new Date().toISOString() })
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "active");
+
+    if (error) throw error;
+  }
+
 

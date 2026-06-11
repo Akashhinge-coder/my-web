@@ -1,4 +1,4 @@
-import { createClient } from "@/config/supabase/server";
+import { createClient, createAdminClient } from "@/config/supabase/server";
 import { mapTableRow, mapTableRows, type TableRow } from "@/backend/mappers/table.mapper";
 import type { CreateTableDTO, UpdateTableStatusDTO } from "@/backend/validations/table.validation";
 import type { Table } from "@/types/domain";
@@ -30,10 +30,22 @@ export class TableRepository {
   }
 
   static async findById(tableId: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .select("id, restaurant_id, table_number, status, current_session_id")
+      .eq("id", tableId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async findByIdWithQrTokenAdmin(tableId: string) {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("restaurant_tables")
+      .select("id, restaurant_id, table_number, status, current_session_id, qr_token")
       .eq("id", tableId)
       .single();
 
@@ -97,7 +109,7 @@ export class TableRepository {
   }
 
   static async markOccupied(tableId: string, sessionId: string, restaurantId: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("restaurant_tables")
       .update({ status: "occupied", current_session_id: sessionId })

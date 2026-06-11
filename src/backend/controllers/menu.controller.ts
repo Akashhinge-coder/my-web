@@ -2,8 +2,10 @@ import { NextRequest } from "next/server";
 import { ZodError } from "zod";
 import { handleError } from "@/backend/errors/handler";
 import { ValidationError } from "@/backend/errors/ValidationError";
+import { AuthError } from "@/backend/errors/AuthError";
 import { validate } from "@/backend/middleware/validation.middleware";
 import { MenuService } from "@/backend/services/menu.service";
+import { resolveRestaurantAccess } from "@/backend/utils/resolveRestaurantAccess";
 import {
   createCategorySchema,
   createComboSchema,
@@ -35,6 +37,7 @@ export async function getMenu(req: NextRequest) {
     const query = parseQuery(listMenuQuerySchema, req.nextUrl.searchParams);
     return ok(await MenuService.getMenu(query));
   } catch (error) {
+    console.error("getMenu controller error:", error);
     return handleError(error);
   }
 }
@@ -51,6 +54,10 @@ export async function listCategories(req: NextRequest) {
 
 export async function createCategory(req: NextRequest, restaurantId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(createCategorySchema, body);
     return created(await MenuService.createCategory(restaurantId, dto));
@@ -65,6 +72,10 @@ export async function updateCategory(
   categoryId: string
 ) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(updateCategorySchema, body);
     return ok(await MenuService.updateCategory(restaurantId, categoryId, dto));
@@ -75,6 +86,10 @@ export async function updateCategory(
 
 export async function deleteCategory(restaurantId: string, categoryId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     await MenuService.deleteCategory(restaurantId, categoryId);
     return noContent();
   } catch (error) {
@@ -104,6 +119,10 @@ export async function getDish(req: NextRequest, restaurantId: string, dishId: st
 
 export async function createDish(req: NextRequest, restaurantId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(createDishSchema, body);
     return created(await MenuService.createDish(restaurantId, dto));
@@ -114,6 +133,10 @@ export async function createDish(req: NextRequest, restaurantId: string) {
 
 export async function updateDish(req: NextRequest, restaurantId: string, dishId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(updateDishSchema, body);
     return ok(await MenuService.updateDish(restaurantId, dishId, dto));
@@ -124,6 +147,10 @@ export async function updateDish(req: NextRequest, restaurantId: string, dishId:
 
 export async function deleteDish(restaurantId: string, dishId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     await MenuService.deleteDish(restaurantId, dishId);
     return noContent();
   } catch (error) {
@@ -137,6 +164,10 @@ export async function toggleDishAvailability(
   dishId: string
 ) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const { isAvailable } = validate(toggleDishAvailabilitySchema, body);
     return ok(await MenuService.toggleDishAvailability(restaurantId, dishId, isAvailable));
@@ -156,6 +187,10 @@ export async function getDishAr(restaurantId: string, dishId: string) {
 
 export async function upsertDishAr(req: NextRequest, restaurantId: string, dishId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(upsertArAssetSchema, body);
     return ok(await MenuService.upsertArAsset(restaurantId, dishId, dto));
@@ -175,6 +210,10 @@ export async function listCombos(req: NextRequest) {
 
 export async function createCombo(req: NextRequest, restaurantId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(createComboSchema, body);
     return created(await MenuService.createCombo(restaurantId, dto));
@@ -185,6 +224,10 @@ export async function createCombo(req: NextRequest, restaurantId: string) {
 
 export async function updateCombo(req: NextRequest, restaurantId: string, comboId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     const body = await req.json();
     const dto = validate(updateComboSchema, body);
     return ok(await MenuService.updateCombo(restaurantId, comboId, dto));
@@ -195,6 +238,10 @@ export async function updateCombo(req: NextRequest, restaurantId: string, comboI
 
 export async function deleteCombo(restaurantId: string, comboId: string) {
   try {
+    const access = await resolveRestaurantAccess();
+    if (restaurantId !== access.restaurantId) {
+      throw new AuthError("Forbidden", 403, "FORBIDDEN");
+    }
     await MenuService.deleteCombo(restaurantId, comboId);
     return noContent();
   } catch (error) {

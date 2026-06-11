@@ -139,10 +139,10 @@ export default function RegisterPage() {
       }
 
       setStep(4);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Registration failed. Please try again."
-      );
+    } catch (err: any) {
+      console.error("Registration error details:", err);
+      const msg = err?.message || err?.error_description || (typeof err === "string" ? err : "Registration failed. Please try again.");
+      setError(msg);
     } finally {
       setLoading(false);
     }

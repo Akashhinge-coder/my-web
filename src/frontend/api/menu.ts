@@ -20,7 +20,13 @@ function scoped(restaurantId: string, path: string): string {
 
 export const menuApi = {
   getCustomerMenu(slug: string, tableId: string): Promise<CustomerMenuBundle> {
-    const q = new URLSearchParams({ slug, tableId, view: "customer" });
+    const params: Record<string, string> = { slug, view: "customer" };
+    if (tableId === "preview") {
+      params.mode = "preview";
+    } else {
+      params.tableId = tableId;
+    }
+    const q = new URLSearchParams(params);
     return apiFetch<CustomerMenuBundle>(`/api/v1/menu?${q}`);
   },
 

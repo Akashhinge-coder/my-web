@@ -9,6 +9,7 @@ export const listMenuQuerySchema = z
     slug: z.string().min(1).optional(),
     tableId: z.string().uuid().optional(),
     view: z.enum(["customer", "admin"]).default("admin"),
+    mode: z.enum(["preview"]).optional(),
   })
   .refine((data) => Boolean(data.restaurantId || data.slug), {
     message: "restaurantId or slug is required",

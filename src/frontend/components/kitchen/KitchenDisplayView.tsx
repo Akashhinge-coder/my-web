@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatINR, timeAgo, cn } from "@/lib/utils";
 import { ChefHat, Check, Clock, Wifi, WifiOff } from "lucide-react";
 import { ordersApi } from "@/frontend/api/orders";
@@ -13,13 +13,29 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
   const { data: orders = [], loading, refresh } = useKitchenOrders(Boolean(restaurantId));
   const [online, setOnline] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [restaurant, setRestaurant] = useState<{ name: string } | null>(null);
+  const [restaurant, setRestaurant] = useState<{ name: string; logo_url?: string | null } | null>(null);
 
   const orderList = (orders ?? []) as Order[];
 
-  useEffect(() => {
-    restaurantsApi.getById(restaurantId).then((r) => setRestaurant({ name: r.name }));
+  const fetchRestaurant = useCallback(async () => {
+    try {
+      const r = await restaurantsApi.getById(restaurantId);
+      setRestaurant({ name: r.name, logo_url: r.logo_url });
+    } catch (error) {
+      console.error("Failed to load restaurant details in kitchen view:", error);
+    }
   }, [restaurantId]);
+
+  useEffect(() => {
+    void fetchRestaurant();
+  }, [fetchRestaurant]);
+
+  useEffect(() => {
+    window.addEventListener("settings-updated", fetchRestaurant);
+    return () => {
+      window.removeEventListener("settings-updated", fetchRestaurant);
+    };
+  }, [fetchRestaurant]);
 
   useEffect(() => {
     const on = () => setOnline(true);
@@ -48,16 +64,26 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
   const pending = orderList.filter((o) => o.status === "pending");
   const cooking = orderList.filter((o) => o.status === "cooking");
 
+  const initials = restaurant?.name ? restaurant.name.charAt(0).toUpperCase() : "M";
+
   return (
     <div className="min-h-screen bg-dark text-white overflow-hidden">
       <div className="flex items-center justify-between px-6 py-4 border-b border-dark-border bg-dark-secondary">
         <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold"
-            style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
-          >
-            M
-          </div>
+          {restaurant?.logo_url ? (
+            <img
+              src={restaurant.logo_url}
+              alt={restaurant.name}
+              className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-dark-border"
+            />
+          ) : (
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-white text-sm flex-shrink-0"
+              style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+            >
+              {initials}
+            </div>
+          )}
           <div>
             <p className="font-display font-semibold text-lg leading-none">Kitchen Display</p>
             {restaurant && <p className="text-xs text-ink-4 mt-0.5">{restaurant.name}</p>}
