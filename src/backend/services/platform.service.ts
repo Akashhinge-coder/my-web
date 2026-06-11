@@ -108,15 +108,13 @@ export class PlatformService {
     // Audit log — immutable record of who changed what and when
     void AuditService.log({
       actorUserId: actor,
-      actorRole: "superadmin",
       action: dto.isActive ? "ACTIVATE_RESTAURANT" : "DEACTIVATE_RESTAURANT",
       targetType: "restaurant",
       targetId: dto.restaurantId,
-      metadata: { isActive: dto.isActive },
+      metadata: { isActive: dto.isActive, actorRole: "superadmin" },
       ipAddress: auditCtx?.ipAddress,
-      userAgent: auditCtx?.userAgent,
-      requestId: auditCtx?.requestId,
     });
+
 
     return updated;
   }

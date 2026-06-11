@@ -22,9 +22,9 @@ const store = new Map<string, RateLimitWindow>();
 // This is a no-op in serverless environments (short-lived).
 setInterval(() => {
   const now = Date.now();
-  for (const [key, window] of store.entries()) {
+  store.forEach((window, key) => {
     if (now > window.resetAt) store.delete(key);
-  }
+  });
 }, 60_000).unref?.();
 
 export interface RateLimitConfig {
