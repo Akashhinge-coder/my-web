@@ -18,8 +18,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   headers.set("Content-Type", "application/json");
 
   if (typeof window === "undefined") {
-    let base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
+    let base = "https://menuara.app";
     try {
       const req = typeof eval === "function" ? eval("require") : null;
       if (req) {
@@ -28,6 +27,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
         if (host) {
           const proto = nextHeaders().get("x-forwarded-proto") || "http";
           base = `${proto}://${host}`;
+        } else if (process.env.NEXT_PUBLIC_APP_URL) {
+          base = process.env.NEXT_PUBLIC_APP_URL;
         }
 
         const cookieStore = cookies();
@@ -36,10 +37,14 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
         if (cookieHeader) {
           headers.set("Cookie", cookieHeader);
         }
+      } else if (process.env.NEXT_PUBLIC_APP_URL) {
+        base = process.env.NEXT_PUBLIC_APP_URL;
       }
     } catch (err) {
       console.error("DEBUG apiFetch server-side error:", err);
-      // Ignore if called outside of request context (e.g. during build)
+      if (process.env.NEXT_PUBLIC_APP_URL) {
+        base = process.env.NEXT_PUBLIC_APP_URL;
+      }
     }
 
     if (path.startsWith("/")) {

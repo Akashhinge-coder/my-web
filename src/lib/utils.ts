@@ -65,12 +65,14 @@ export function generateSlug(name: string): string {
 }
 
 // ── QR URL generator ─────────────────────────────────────────
+import { getRequestOrigin } from "@/lib/runtime/url";
+
 export function generateQRUrl(
   restaurantSlug: string,
   tableId: string,
   qrToken?: string | null
 ): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://menuara.app";
+  const base = getRequestOrigin();
   return qrToken
     ? `${base}/${restaurantSlug}/${tableId}?qr_token=${qrToken}`
     : `${base}/${restaurantSlug}/${tableId}`;
