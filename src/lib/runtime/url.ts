@@ -31,6 +31,8 @@ export function getRequestOrigin(request?: Request): string {
     return process.env.NEXT_PUBLIC_APP_URL;
   }
 
-  // Safe fallback (no localhost references in production environments)
-  return "https://menuara.app";
+  throw new Error(
+    "Runtime Error: Could not determine request origin. " +
+    "Please configure NEXT_PUBLIC_APP_URL or provide request context headers."
+  );
 }

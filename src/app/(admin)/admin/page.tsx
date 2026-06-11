@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { dashboardApi } from "@/frontend/api/dashboard.api";
+import { DashboardService } from "@/backend/services/dashboard.service";
 import { formatINR, formatINRCompact, timeAgo } from "@/lib/utils";
 import {
   TrendingUp, ShoppingBag, Table2, Users,
@@ -9,7 +9,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const { stats, recentOrders, tables, payments } = await dashboardApi.getDashboard();
+  const { stats, recentOrders, tables, payments } = await DashboardService.getDashboard();
   const {
     todayRevenue,
     totalOrders,
