@@ -91,5 +91,6 @@ export class PlatformRepository {
 
     if (error) throw error;
   }
+}
 
 

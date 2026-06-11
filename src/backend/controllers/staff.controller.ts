@@ -44,4 +44,4 @@ export async function deleteStaffMember(staffId: string) {
     return handleError(error);
   }
 }
-}
+
