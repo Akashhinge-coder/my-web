@@ -161,6 +161,19 @@
 
   .sidebar-item.active {
     @apply text-white bg-dark-tertiary;
+    box-shadow: inset 0 0 0 1px rgba(193, 125, 60, 0.15), 0 0 16px rgba(193, 125, 60, 0.12);
+    position: relative;
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 3px;
+    background: var(--brand);
+    border-radius: 0 99px 99px 0;
+    box-shadow: 0 0 8px var(--brand);
   }
 
   .sidebar-item .icon {

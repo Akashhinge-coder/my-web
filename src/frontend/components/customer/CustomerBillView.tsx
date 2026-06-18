@@ -115,7 +115,7 @@ export default function CustomerBillView({
                   <span className="w-5 h-5 rounded bg-surface-secondary flex items-center justify-center text-xs font-bold text-ink-3">
                     {item.quantity}
                   </span>
-                  <span className="text-ink">{item.dish?.name}</span>
+                  <span className="text-ink">{item.item_name}</span>
                 </div>
                 <span className="text-ink-3">{formatINR(item.unit_price)} each</span>
               </div>

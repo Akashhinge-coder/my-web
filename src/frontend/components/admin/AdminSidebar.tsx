@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, ShoppingBag, Table2, UtensilsCrossed,
   Users, Package, BarChart3, Receipt, Tag, Settings,
@@ -7,7 +8,7 @@ import {
   Calendar, Clock, Gift, Zap, Package2, Link2
 } from "lucide-react";
 import { cn, isValidImageSrc } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const NAV = [
   {
@@ -57,20 +58,18 @@ interface Props {
 }
 
 export default function AdminSidebar({ restaurant, userRole }: Props) {
-  const [pathname, setPathname] = useState("");
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const restaurantName = restaurant?.name || "MENUARA";
   const restaurantSlug = restaurant?.slug || "";
   const restaurantId = restaurant?.id || "";
 
-  useEffect(() => {
-    setPathname(window.location.pathname);
-  }, []);
   const initials = restaurantName.charAt(0).toUpperCase() || "M";
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/menu" && pathname.startsWith("/admin/menu/ar")) return false;
     return pathname.startsWith(href);
   }
 

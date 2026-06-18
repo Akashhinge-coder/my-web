@@ -15,12 +15,13 @@ export interface RestaurantSettingsRow {
   language: string;
   cgst_rate: number;
   sgst_rate: number;
+  session_mode: "open" | "host_approval";
 }
 
 export class RestaurantRepository {
   static async getById(id: string) {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url").eq("id", id).single();
+    const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url, session_mode").eq("id", id).single();
     if (error) throw error;
     return data;
   }
@@ -34,7 +35,7 @@ export class RestaurantRepository {
 
   static async getFirst() {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url, is_active").limit(1).single();
+    const { data, error } = await supabase.from("restaurants").select("id, name, slug, logo_url, is_active, session_mode").limit(1).single();
     if (error) throw error;
     return data;
   }
@@ -43,7 +44,7 @@ export class RestaurantRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurants")
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate")
+      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
       .eq("id", id)
       .single();
 
@@ -64,9 +65,10 @@ export class RestaurantRepository {
         address: dto.address ?? null,
         logo_url: dto.logoUrl ?? null,
         language: dto.language,
+        ...(dto.sessionMode ? { session_mode: dto.sessionMode } : {}),
       })
       .eq("id", restaurantId)
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate")
+      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
       .single();
 
     if (error) throw error;
@@ -86,7 +88,7 @@ export class RestaurantRepository {
         sgst_rate: dto.sgstRate,
       })
       .eq("id", restaurantId)
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate")
+      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
       .single();
 
     if (error) throw error;

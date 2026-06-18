@@ -163,7 +163,7 @@ export default function AdminOrdersView() {
                         <span className="w-5 h-5 rounded-md bg-brand/10 border border-brand/20 flex items-center justify-center text-[10px] font-bold text-brand">
                           {item.quantity}
                         </span>
-                        <span className="text-ink-2">{item.dish?.name}</span>
+                        <span className="text-ink-2">{item.item_name}</span>
                       </div>
                       <span className="text-ink-4 text-xs">
                         {formatINR(item.unit_price * item.quantity)}

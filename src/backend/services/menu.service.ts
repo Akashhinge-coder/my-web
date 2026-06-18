@@ -83,9 +83,10 @@ export class MenuService {
       table = mapTableMenuRow(row as TableMenuRow);
     }
 
-    const [categories, dishes] = await Promise.all([
+    const [categories, dishes, combos] = await Promise.all([
       MenuRepository.listCategories(restaurantId, true),
       MenuRepository.listDishes(restaurantId, { availableOnly: true }),
+      MenuRepository.listCombos(restaurantId),
     ]);
 
     return buildCustomerMenuBundle({
@@ -93,7 +94,9 @@ export class MenuService {
       table,
       categories,
       dishes: dishes as CustomerDish[],
+      combos: combos.filter((c) => c.is_active),
     });
+
   }
 
   static async listCategories(restaurantId: string, activeOnly = false): Promise<Category[]> {

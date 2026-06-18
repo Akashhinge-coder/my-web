@@ -222,8 +222,8 @@ export class BillingService {
           grand_total: 756,
           status: "served",
           order_items: [
-            { quantity: 2, unit_price: 180, dishes: { name: "Paneer Tikka" } },
-            { quantity: 1, unit_price: 360, dishes: { name: "Veg Biryani" } },
+            { quantity: 2, unit_price: 180, item_name: "Paneer Tikka", dishes: { name: "Paneer Tikka" } },
+            { quantity: 1, unit_price: 360, item_name: "Veg Biryani", dishes: { name: "Veg Biryani" } },
           ],
         },
         {
@@ -242,8 +242,8 @@ export class BillingService {
           grand_total: 504,
           status: "served",
           order_items: [
-            { quantity: 3, unit_price: 120, dishes: { name: "Fresh Lime Soda" } },
-            { quantity: 1, unit_price: 120, dishes: { name: "Gulab Jamun" } },
+            { quantity: 3, unit_price: 120, item_name: "Fresh Lime Soda", dishes: { name: "Fresh Lime Soda" } },
+            { quantity: 1, unit_price: 120, item_name: "Gulab Jamun", dishes: { name: "Gulab Jamun" } },
           ],
         },
       ],

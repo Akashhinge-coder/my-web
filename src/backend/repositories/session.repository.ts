@@ -5,7 +5,7 @@ export class SessionRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount")
+      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot")
       .eq("id", sessionId)
       .single();
 
@@ -17,7 +17,7 @@ export class SessionRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount")
+      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot")
       .eq("table_id", tableId)
       .eq("status", "active")
       .order("started_at", { ascending: false })
@@ -38,7 +38,7 @@ export class SessionRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, session_token, expires_at")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, expires_at, host_participant_id, session_mode_snapshot")
       .eq("session_token", token)
       .maybeSingle();
 
@@ -50,7 +50,7 @@ export class SessionRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, session_token")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot")
       .eq("table_id", tableId)
       .eq("status", "active")
       .order("started_at", { ascending: false })
@@ -64,6 +64,7 @@ export class SessionRepository {
   static async create(params: {
     restaurantId: string;
     tableId: string;
+    sessionModeSnapshot: "open" | "host_approval";
     guestCount?: number;
   }) {
     const supabase = createAdminClient();
@@ -75,12 +76,23 @@ export class SessionRepository {
         guest_count: params.guestCount ?? 1,
         status: "active",
         total_amount: 0,
+        session_mode_snapshot: params.sessionModeSnapshot,
       })
-      .select("id, restaurant_id, table_id, status, total_amount, session_token")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot")
       .single();
 
     if (error) throw error;
     return data;
+  }
+
+  static async updateHostParticipant(sessionId: string, hostParticipantId: string) {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("sessions")
+      .update({ host_participant_id: hostParticipantId })
+      .eq("id", sessionId);
+
+    if (error) throw error;
   }
 
   static async addToTotal(sessionId: string, amount: number) {

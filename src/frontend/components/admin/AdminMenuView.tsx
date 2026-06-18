@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -14,6 +14,8 @@ import {
   Check,
   Loader2,
   UtensilsCrossed,
+  ImageUp,
+  Trash,
 } from "lucide-react";
 import { menuApi, toCreateDishDto } from "@/frontend/api/menu";
 import { useAdminMenu } from "@/frontend/hooks/useMenu";
@@ -117,6 +119,9 @@ export default function AdminMenuView() {
   const [form, setForm] = useState<DishForm>({ ...EMPTY_DISH });
   const [saving, setSaving] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categoryNameInput, setCategoryNameInput] = useState("");
@@ -135,12 +140,14 @@ export default function AdminMenuView() {
     const defaultCategory = categories[0]?.id ?? "";
     setForm({ ...EMPTY_DISH, category_id: defaultCategory });
     setEditingDishId(null);
+    setImagePreview(null);
     setModalMode("add");
   }
 
   function openEditDish(dish: AdminDish) {
     setForm(dishToForm(dish));
     setEditingDishId(dish.id);
+    setImagePreview(dish.image_url ?? null);
     setModalMode("edit");
   }
 
@@ -148,6 +155,48 @@ export default function AdminMenuView() {
     setModalMode(null);
     setEditingDishId(null);
     setForm({ ...EMPTY_DISH });
+    setImagePreview(null);
+  }
+
+  async function uploadDishImage(file: File) {
+    if (!restaurantId) return;
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(
+        `/api/v1/menu/dishes/image?restaurantId=${restaurantId}`,
+        { method: "POST", body: fd }
+      );
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Upload failed");
+      }
+      const data = (await res.json()) as { imageUrl: string };
+      setForm((p) => ({ ...p, image_url: data.imageUrl }));
+      setImagePreview(data.imageUrl);
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Failed to upload image.");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Local preview while uploading
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+    void uploadDishImage(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  }
+
+  function removeImage() {
+    setForm((p) => ({ ...p, image_url: "" }));
+    setImagePreview(null);
   }
 
   function toggleAllergy(tag: string) {
@@ -608,14 +657,73 @@ export default function AdminMenuView() {
               />
             </div>
 
+            {/* ── Dish Image Upload ── */}
             <div className="mb-4">
-              <label className="label text-ink-3">Image URL</label>
+              <label className="label text-ink-3">Dish Image</label>
+
+              {/* Hidden real file input */}
               <input
-                className="input-dark"
-                placeholder="https://..."
-                value={form.image_url}
-                onChange={(e) => setForm((p) => ({ ...p, image_url: e.target.value }))}
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={handleImageFileChange}
               />
+
+              {imagePreview ? (
+                /* Preview state */
+                <div className="relative rounded-xl overflow-hidden border border-dark-border group">
+                  <img
+                    src={imagePreview}
+                    alt="Dish preview"
+                    className="w-full h-44 object-cover"
+                  />
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <Loader2 className="w-7 h-7 text-white animate-spin" />
+                      <span className="ml-2 text-white text-sm font-medium">Uploading…</span>
+                    </div>
+                  )}
+                  {!uploadingImage && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-all"
+                      >
+                        <ImageUp className="w-3.5 h-3.5" />
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/20 backdrop-blur-sm border border-red-500/30 text-red-400 text-xs font-medium hover:bg-red-500/30 transition-all"
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Upload drop zone */
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage}
+                  className="w-full h-36 rounded-xl border-2 border-dashed border-dark-border hover:border-brand/50 bg-dark-tertiary/40 hover:bg-brand/5 transition-all flex flex-col items-center justify-center gap-2 group"
+                >
+                  {uploadingImage ? (
+                    <Loader2 className="w-7 h-7 text-brand animate-spin" />
+                  ) : (
+                    <ImageUp className="w-7 h-7 text-ink-4 group-hover:text-brand transition-colors" />
+                  )}
+                  <span className="text-xs text-ink-4 group-hover:text-ink-3 transition-colors">
+                    {uploadingImage ? "Uploading…" : "Click to select image from your device"}
+                  </span>
+                  <span className="text-[10px] text-ink-4/60">PNG, JPEG, WebP or GIF · Max 5 MB</span>
+                </button>
+              )}
             </div>
 
             <div className="mb-4">

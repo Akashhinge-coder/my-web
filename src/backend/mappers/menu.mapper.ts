@@ -157,12 +157,14 @@ export function mapAdminDishRows(rows: unknown[]): AdminDish[] {
 
 export function mapDishPriceRow(row: DishPriceRow): {
   id: string;
+  name: string;
   categoryId: string;
   price: number;
   is_available: boolean;
 } {
   return {
     id: row.id,
+    name: row.name,
     categoryId: row.category_id,
     price: toNumber(row.price),
     is_available: row.is_available,
@@ -171,13 +173,14 @@ export function mapDishPriceRow(row: DishPriceRow): {
 
 export function mapDishPriceRows(
   rows: unknown[]
-): Array<{ id: string; categoryId: string; price: number; is_available: boolean }> {
+): Array<{ id: string; name: string; categoryId: string; price: number; is_available: boolean }> {
   return rows
     .filter(
       (row): row is DishPriceRow =>
         typeof row === "object" &&
         row !== null &&
         "id" in row &&
+        "name" in row &&
         "category_id" in row &&
         "price" in row &&
         "is_available" in row
@@ -227,10 +230,10 @@ export function mapRestaurantMenuRow(row: RestaurantMenuRow): CustomerMenuBundle
     logo_url: row.logo_url ?? null,
   };
 }
-
 export function mapTableMenuRow(row: TableMenuRow): CustomerMenuBundle["table"] {
   return { table_number: row.table_number };
 }
+
 
 export function buildAdminMenuBundle(
   categories: Category[],
@@ -244,6 +247,7 @@ export function buildCustomerMenuBundle(params: {
   table: CustomerMenuBundle["table"];
   categories: Category[];
   dishes: CustomerDish[];
+  combos?: Combo[];
 }): CustomerMenuBundle {
   return params;
 }
@@ -251,6 +255,6 @@ export function buildCustomerMenuBundle(params: {
 export function buildDishArViewPayload(
   dish: CustomerDish,
   arAsset: DishARAsset | null
-): DishArViewPayload {
+): { dish: CustomerDish; arAsset: DishARAsset | null } {
   return { dish, arAsset };
 }

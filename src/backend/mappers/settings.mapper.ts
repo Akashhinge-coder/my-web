@@ -16,6 +16,7 @@ export interface RestaurantSettingsDTO {
   language: string;
   cgstRate: number;
   sgstRate: number;
+  sessionMode: "open" | "host_approval";
 }
 
 export function mapRestaurantSettings(row: RestaurantSettingsRow): RestaurantSettingsDTO {
@@ -30,6 +31,7 @@ export function mapRestaurantSettings(row: RestaurantSettingsRow): RestaurantSet
     language: row.language,
     cgstRate: Number(row.cgst_rate),
     sgstRate: Number(row.sgst_rate),
+    sessionMode: row.session_mode,
   };
 }
 
@@ -40,6 +42,7 @@ export function mapSettingsProfile(dto: SettingsUpdateDTO): SettingsProfileUpdat
     address: dto.address,
     logoUrl: dto.logoUrl,
     language: dto.language,
+    sessionMode: dto.sessionMode,
   };
 }
 

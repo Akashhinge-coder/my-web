@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/config/supabase/client";
 import { formatINR, cn } from "@/lib/utils";
-import { Plus, Package2, Trash2, Check, X, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Package2, Trash2, Check, X, Loader2, ToggleLeft, ToggleRight, Pencil } from "lucide-react";
 
 interface Dish { id: string; name: string; price: number; food_type: string; }
 interface Combo {
@@ -19,6 +19,7 @@ export default function CombosPage() {
   const [dishes,   setDishes]   = useState<Dish[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [showAdd,  setShowAdd]  = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form,     setForm]     = useState({ ...EMPTY });
   const [saving,   setSaving]   = useState(false);
 
@@ -62,16 +63,26 @@ export default function CombosPage() {
   async function saveCombo() {
     if (!restaurantId || !form.name || !form.combo_price || form.dish_ids.length < 2) return;
     setSaving(true);
-    await supabase.from("combos").insert({
-      restaurant_id:  restaurantId,
-      name:           form.name.trim(),
-      combo_price:    comboPrice,
-      dish_ids:       form.dish_ids,
-      savings_amount: Math.max(0, savings),
-      is_active:      true,
-    });
+    if (editingId) {
+      await supabase.from("combos").update({
+        name:           form.name.trim(),
+        combo_price:    comboPrice,
+        dish_ids:       form.dish_ids,
+        savings_amount: Math.max(0, savings),
+      }).eq("id", editingId);
+    } else {
+      await supabase.from("combos").insert({
+        restaurant_id:  restaurantId,
+        name:           form.name.trim(),
+        combo_price:    comboPrice,
+        dish_ids:       form.dish_ids,
+        savings_amount: Math.max(0, savings),
+        is_active:      true,
+      });
+    }
     setShowAdd(false);
     setForm({ ...EMPTY });
+    setEditingId(null);
     setSaving(false);
     fetchData();
   }
@@ -100,15 +111,15 @@ export default function CombosPage() {
           </h1>
           <p className="page-subtitle">Bundle dishes at a special price</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+        <button onClick={() => { setEditingId(null); setForm({ ...EMPTY }); setShowAdd(true); }} className="btn-md btn-primary mt-1">
           <Plus className="w-4 h-4" />New Combo
         </button>
       </div>
 
-      {/* Add form */}
+      {/* Add/Edit form */}
       {showAdd && (
         <div className="card-dark p-6 border-brand/30">
-          <h3 className="font-semibold text-white mb-5">Create Combo Meal</h3>
+          <h3 className="font-semibold text-white mb-5">{editingId ? "Edit Combo Meal" : "Create Combo Meal"}</h3>
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
               <label className="label text-ink-3">Combo name</label>
@@ -160,14 +171,14 @@ export default function CombosPage() {
           )}
 
           <div className="flex gap-3">
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark flex-1">
+            <button onClick={() => { setShowAdd(false); setEditingId(null); setForm({ ...EMPTY }); }} className="btn-md btn-dark flex-1">
               <X className="w-4 h-4" />Cancel
             </button>
             <button onClick={saveCombo}
               disabled={saving || !form.name || !form.combo_price || form.dish_ids.length < 2}
               className="btn-md btn-primary flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              Create Combo
+              {editingId ? "Save Changes" : "Create Combo"}
             </button>
           </div>
         </div>
@@ -200,6 +211,20 @@ export default function CombosPage() {
                   <button onClick={() => toggleCombo(combo.id, combo.is_active)}
                     className={cn("transition-colors", combo.is_active ? "text-green-400" : "text-ink-4")}>
                     {combo.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+                  </button>
+                  <button onClick={() => {
+                    setEditingId(combo.id);
+                    setForm({
+                      name: combo.name,
+                      combo_price: String(combo.combo_price),
+                      dish_ids: combo.dish_ids,
+                    });
+                    setShowAdd(true);
+                  }}
+                    className="p-2 rounded-xl text-ink-4 hover:text-brand hover:bg-brand/10 transition-all"
+                    title="Edit combo"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => deleteCombo(combo.id)}
                     className="p-2 rounded-xl text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all">

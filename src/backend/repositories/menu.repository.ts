@@ -114,7 +114,7 @@ export class MenuRepository {
   static async findDishesByIds(
     restaurantId: string,
     dishIds: string[]
-  ): Promise<Array<{ id: string; categoryId: string; price: number; is_available: boolean }>> {
+  ): Promise<Array<{ id: string; name: string; categoryId: string; price: number; is_available: boolean }>> {
     if (dishIds.length === 0) return [];
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -318,6 +318,28 @@ export class MenuRepository {
 
     if (error) throw error;
     return mapComboRows(data ?? []);
+  }
+
+  static async findCombosByIds(
+    restaurantId: string,
+    comboIds: string[]
+  ): Promise<Array<{ id: string; name: string; combo_price: number; dish_ids: string[]; is_active: boolean }>> {
+    if (comboIds.length === 0) return [];
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("combos")
+      .select("id, name, combo_price, dish_ids, is_active")
+      .eq("restaurant_id", restaurantId)
+      .in("id", comboIds);
+
+    if (error) throw error;
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      combo_price: Number(row.combo_price),
+      dish_ids: row.dish_ids,
+      is_active: row.is_active,
+    }));
   }
 
   static async findComboById(restaurantId: string, comboId: string): Promise<Combo | null> {

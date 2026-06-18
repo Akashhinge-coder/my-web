@@ -1,10 +1,13 @@
 import { z } from "zod";
 
 const orderItemInputSchema = z.object({
-  dishId: z.string().uuid(),
+  dishId: z.string().uuid().optional(),
+  comboId: z.string().uuid().optional(),
+  itemType: z.enum(["dish", "combo"]).default("dish"),
   quantity: z.number().int().min(1).max(50),
   notes: z.string().max(200).optional(),
 });
+
 
 export const createOrderSchema = z.object({
   sessionId: z.string().uuid(),

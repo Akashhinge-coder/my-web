@@ -1,13 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { createClient } from "@/config/supabase/client";
 import { cn } from "@/lib/utils";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [email, setEmail]       = useState("");
@@ -15,6 +16,14 @@ export default function LoginPage() {
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+  const [success, setSuccess]   = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("reset") === "success") {
+      setSuccess(true);
+      router.replace("/login");
+    }
+  }, [searchParams, router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -107,6 +116,14 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Success */}
+          {success && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+              <span className="mt-0.5 text-emerald-400">✓</span>
+              Your password has been successfully reset. Please sign in with your new password.
+            </div>
+          )}
+
           {/* Error */}
           {error && (
             <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
@@ -151,5 +168,20 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 animate-pulse">
+          <Loader2 className="w-10 h-10 animate-spin text-brand" />
+          <p className="text-sm text-ink-3 font-medium">Loading secure login form…</p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

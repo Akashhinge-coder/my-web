@@ -63,7 +63,9 @@ export default function CustomerOrdersView({
         tableId,
         sessionId: sessionId ?? undefined,
         items: cart.state.items.map((item) => ({
-          dishId: item.dish.id,
+          dishId: item.itemType === "dish" ? item.id : undefined,
+          comboId: item.itemType === "combo" ? item.id : undefined,
+          itemType: item.itemType,
           quantity: item.quantity,
           notes: item.notes,
         })),
@@ -104,11 +106,11 @@ export default function CustomerOrdersView({
             </h2>
             <div className="space-y-2 mb-4">
               {cart.state.items.map((item) => (
-                <div key={item.dish.id} className="flex justify-between text-sm text-ink-3">
+                <div key={item.id} className="flex justify-between text-sm text-ink-3">
                   <span>
-                    {item.quantity}× {item.dish.name}
+                    {item.quantity}× {item.name}
                   </span>
-                  <span>{formatINR(item.dish.price)} each</span>
+                  <span>{formatINR(item.price)} each</span>
                 </div>
               ))}
             </div>
@@ -163,9 +165,14 @@ export default function CustomerOrdersView({
               return (
                 <div key={order.id} className="bg-white rounded-2xl border border-border p-4 shadow-card">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-ink">{order.order_number}</span>
-                      <span className="text-xs text-ink-4">{timeAgo(order.created_at)}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-ink">{order.order_number}</span>
+                        <span className="text-xs text-ink-4">{timeAgo(order.created_at)}</span>
+                      </div>
+                      {order.placed_by_name && (
+                        <span className="text-xs font-medium text-brand/80">Ordered by {order.placed_by_name}</span>
+                      )}
                     </div>
                     <span
                       className={cn(
@@ -184,7 +191,7 @@ export default function CustomerOrdersView({
                         <span className="w-5 h-5 rounded-md bg-surface-secondary flex items-center justify-center text-xs font-bold text-ink-3">
                           {item.quantity}
                         </span>
-                        {item.dish?.name}
+                        {item.item_name}
                       </div>
                     ))}
                   </div>

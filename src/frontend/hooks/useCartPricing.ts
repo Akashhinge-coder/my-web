@@ -22,12 +22,15 @@ export function useCartPricing(restaurantId: string | null, items: CartItem[]) {
   const [error, setError] = useState("");
   const pricingItems = useMemo(
     () => items.map((item) => ({
-      dishId: item.dish.id,
+      dishId: item.itemType === "dish" ? item.id : undefined,
+      comboId: item.itemType === "combo" ? item.id : undefined,
+      itemType: item.itemType,
       quantity: item.quantity,
       notes: item.notes,
     })),
     [items]
   );
+
 
   useEffect(() => {
     let active = true;

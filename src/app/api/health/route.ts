@@ -30,7 +30,7 @@ export async function GET() {
       timestamp,
       services: {
         database: databaseStatus,
-        storage: "healthy" // Storage responds dynamically via client
+        storage: "healthy"
       }
     },
     { status: overallStatus === "healthy" ? 200 : 503 }

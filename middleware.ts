@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Public routes (no auth needed) ──────────────────────────
-  const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
+  const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
   const isPublicRoute = publicRoutes.some((r) => pathname === r || pathname.startsWith(r));
 
   // Customer menu routes are public — /:slug/:tableId

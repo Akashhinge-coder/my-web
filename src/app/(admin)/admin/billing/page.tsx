@@ -192,7 +192,7 @@ export default function BillingPage() {
                                 <span className="w-5 h-5 rounded bg-dark-tertiary flex items-center justify-center text-xs font-bold">
                                   {item.quantity}
                                 </span>
-                                {item.dishes?.name}
+                                {item.item_name}
                               </div>
                               <span className="text-ink-2 font-medium">
                                 {formatINR(item.unit_price)} each

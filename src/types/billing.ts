@@ -13,8 +13,12 @@ export interface BillingRestaurant {
 export interface BillingOrderItem {
   quantity: number;
   unit_price: number;
-  dishes: { name: string } | null;
+  item_name: string;
+  item_type?: "dish" | "combo";
+  combo_id?: string | null;
+  dishes?: { name: string } | null;
 }
+
 
 export interface BillingOrder {
   id: string;

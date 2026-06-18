@@ -9,6 +9,7 @@ import { SessionRepository } from "@/backend/repositories/session.repository";
 import { TableRepository } from "@/backend/repositories/table.repository";
 import { RestaurantRepository } from "@/backend/repositories/restaurant.repository";
 import { CouponRepository } from "@/backend/repositories/coupon.repository";
+import { SessionParticipantRepository } from "@/backend/repositories/session_participant.repository";
 import { HappyHoursRepository } from "@/backend/repositories/happy-hours.repository";
 import { LoyaltyRepository } from "@/backend/repositories/loyalty.repository";
 import { mapCoupon, mapCouponToPricingDiscount } from "@/backend/mappers/coupon.mapper";
@@ -40,40 +41,76 @@ const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 export class OrderService {
   static validateOrderItems(
-    items: Array<{ dishId: string; quantity: number }>,
-    dishes: Array<{ id: string; categoryId: string; price: number; is_available: boolean }>
+    items: Array<{ dishId?: string; comboId?: string; itemType?: "dish" | "combo"; quantity: number }>,
+    dishes: Array<{ id: string; name: string; categoryId: string; price: number; is_available: boolean }>,
+    combos: Array<{ id: string; name: string; combo_price: number; is_active: boolean }> = []
   ) {
     const dishMap = new Map(dishes.map((d) => [d.id, d]));
+    const comboMap = new Map(combos.map((c) => [c.id, c]));
 
     for (const item of items) {
-      const dish = dishMap.get(item.dishId);
-      if (!dish) {
-        throw new ValidationError("One or more dishes were not found", {
-          items: [`Unknown dish: ${item.dishId}`],
-        });
-      }
-      if (!dish.is_available) {
-        throw new ValidationError("One or more dishes are unavailable", {
-          items: [`Unavailable: ${item.dishId}`],
-        });
+      if (item.itemType === "combo") {
+        if (!item.comboId) {
+          throw new ValidationError("Missing comboId for item of type combo", {
+            items: ["Missing comboId"],
+          });
+        }
+        const combo = comboMap.get(item.comboId);
+        if (!combo) {
+          throw new ValidationError("One or more combos were not found", {
+            items: [`Unknown combo: ${item.comboId}`],
+          });
+        }
+        if (!combo.is_active) {
+          throw new ValidationError("One or more combos are inactive", {
+            items: [`Inactive combo: ${item.comboId}`],
+          });
+        }
+      } else {
+        if (!item.dishId) {
+          throw new ValidationError("Missing dishId for item of type dish", {
+            items: ["Missing dishId"],
+          });
+        }
+        const dish = dishMap.get(item.dishId);
+        if (!dish) {
+          throw new ValidationError("One or more dishes were not found", {
+            items: [`Unknown dish: ${item.dishId}`],
+          });
+        }
+        if (!dish.is_available) {
+          throw new ValidationError("One or more dishes are unavailable", {
+            items: [`Unavailable: ${item.dishId}`],
+          });
+        }
       }
     }
 
-    return { dishMap };
+    return { dishMap, comboMap };
   }
 
   private static toPricingItems(
-    items: Array<{ dishId: string; quantity: number }>,
-    dishMap: Map<string, { id: string; categoryId: string; price: number }>
+    items: Array<{ dishId?: string; comboId?: string; itemType?: "dish" | "combo"; quantity: number }>,
+    dishMap: Map<string, { id: string; categoryId: string; price: number }>,
+    comboMap: Map<string, { id: string; combo_price: number }>
   ): PricingItem[] {
     return items.map((item) => {
-      const dish = dishMap.get(item.dishId)!;
-      return {
-        id: dish.id,
-        categoryId: dish.categoryId,
-        unitPrice: Number(dish.price),
-        quantity: item.quantity,
-      };
+      if (item.itemType === "combo") {
+        const combo = comboMap.get(item.comboId!)!;
+        return {
+          id: combo.id,
+          unitPrice: Number(combo.combo_price),
+          quantity: item.quantity,
+        };
+      } else {
+        const dish = dishMap.get(item.dishId!)!;
+        return {
+          id: dish.id,
+          categoryId: dish.categoryId,
+          unitPrice: Number(dish.price),
+          quantity: item.quantity,
+        };
+      }
     });
   }
 
@@ -116,15 +153,21 @@ export class OrderService {
     dto: OrderPricingDTO,
     restaurantId: string
   ): Promise<OrderPricingDto> {
-    const dishIds = dto.items.map((i) => i.dishId);
-    const dishes = await MenuRepository.findDishesByIds(restaurantId, dishIds);
-    const { dishMap } = this.validateOrderItems(dto.items, dishes);
+    const dishIds = dto.items.filter((i) => i.itemType !== "combo").map((i) => i.dishId!).filter(Boolean);
+    const comboIds = dto.items.filter((i) => i.itemType === "combo").map((i) => i.comboId!).filter(Boolean);
+
+    const [dishes, combos] = await Promise.all([
+      MenuRepository.findDishesByIds(restaurantId, dishIds),
+      MenuRepository.findCombosByIds(restaurantId, comboIds),
+    ]);
+
+    const { dishMap, comboMap } = this.validateOrderItems(dto.items, dishes, combos);
     const restaurant = await RestaurantRepository.getSettingsById(restaurantId);
     const timestamp = dto.timestamp ?? new Date().toISOString();
     const happyHours = (await HappyHoursRepository.listByRestaurant(restaurantId)).map(mapHappyHour);
 
     return calculateOrderPricing({
-      items: this.toPricingItems(dto.items, dishMap),
+      items: this.toPricingItems(dto.items, dishMap, comboMap),
       timestamp,
       coupon: await this.getCouponInput(restaurantId, dto.couponCode),
       loyaltyPoints: await this.getLoyaltyInput(restaurantId, dto),
@@ -135,6 +178,7 @@ export class OrderService {
       },
     });
   }
+
 
   static async list(query: ListOrdersQuery & { restaurantId: string }) {
     const scope: ListOrdersScope = query.sessionId ? "session" : query.scope;
@@ -182,6 +226,8 @@ export class OrderService {
 
     let session = null;
     let createdSession = false;
+    let placedByName = "Staff";
+    let placedByParticipantId: string | null = null;
 
     if (isCustomer) {
       // ── CUSTOMER FLOW ─────────────────────────────────────────────────────────
@@ -268,6 +314,16 @@ export class OrderService {
         throw new ValidationError("Session does not belong to the specified table");
       }
 
+      const participant = await SessionParticipantRepository.findByToken(tokenSession.id, cookieToken);
+      if (!participant) {
+        throw new AuthError("Participant identity not found", 401, "UNAUTHORIZED_SESSION");
+      }
+      if (participant.status !== "approved") {
+        throw new AuthError("You must be approved by the host to place orders", 403, "UNAUTHORIZED_SESSION");
+      }
+
+      placedByName = participant.name;
+      placedByParticipantId = participant.id;
       session = tokenSession;
     } else {
       // ── ADMIN / SYSTEM FLOW ───────────────────────────────────────────────────
@@ -293,9 +349,15 @@ export class OrderService {
     }
 
     // ── MENU + PRICING (runs after session validation) ─────────────────────────
-    const dishIds = dto.items.map((i) => i.dishId);
-    const dishes = await MenuRepository.findDishesByIds(restaurantId, dishIds);
-    const { dishMap } = this.validateOrderItems(dto.items, dishes);
+    const dishIds = dto.items.filter((i) => i.itemType !== "combo").map((i) => i.dishId!).filter(Boolean);
+    const comboIds = dto.items.filter((i) => i.itemType === "combo").map((i) => i.comboId!).filter(Boolean);
+
+    const [dishes, combos] = await Promise.all([
+      MenuRepository.findDishesByIds(restaurantId, dishIds),
+      MenuRepository.findCombosByIds(restaurantId, comboIds),
+    ]);
+
+    const { dishMap, comboMap } = this.validateOrderItems(dto.items, dishes, combos);
     const pricing = await this.quotePricing({ items: dto.items }, restaurantId);
 
     if (createdSession && session) {
@@ -311,25 +373,50 @@ export class OrderService {
       pricing,
       notes: dto.notes,
       source: dto.source,
+      placedByName,
+      placedByParticipantId,
     });
 
     await OrderRepository.createItems(
       dto.items.map((item) => {
-        const dish = dishMap.get(item.dishId)!;
-        const unitPrice = Number(dish.price);
-        return {
-          orderId: order.id,
-          dishId: item.dishId,
-          quantity: item.quantity,
-          unitPrice,
-          totalPrice: calculatePricingItemTotal({
-            id: dish.id,
-            categoryId: dish.categoryId,
-            unitPrice,
+        if (item.itemType === "combo") {
+          const combo = comboMap.get(item.comboId!)!;
+          const unitPrice = Number(combo.combo_price);
+          return {
+            orderId: order.id,
+            dishId: null,
+            comboId: item.comboId!,
+            itemType: "combo" as const,
+            itemName: combo.name,
             quantity: item.quantity,
-          }),
-          notes: item.notes,
-        };
+            unitPrice,
+            totalPrice: calculatePricingItemTotal({
+              id: combo.id,
+              unitPrice,
+              quantity: item.quantity,
+            }),
+            notes: item.notes,
+          };
+        } else {
+          const dish = dishMap.get(item.dishId!)!;
+          const unitPrice = Number(dish.price);
+          return {
+            orderId: order.id,
+            dishId: item.dishId!,
+            comboId: null,
+            itemType: "dish" as const,
+            itemName: dish.name,
+            quantity: item.quantity,
+            unitPrice,
+            totalPrice: calculatePricingItemTotal({
+              id: dish.id,
+              categoryId: dish.categoryId,
+              unitPrice,
+              quantity: item.quantity,
+            }),
+            notes: item.notes,
+          };
+        }
       })
     );
 
@@ -339,6 +426,7 @@ export class OrderService {
       order,
       sessionId,
     };
+
   }
 
   static async placeIdempotent(

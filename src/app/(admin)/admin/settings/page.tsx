@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Percent,
   Upload,
+  Users,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -222,6 +223,7 @@ export default function SettingsPage() {
         address: form.address ?? null,
         logoUrl: form.logoUrl ?? null,
         language: form.language ?? restaurant.language,
+        sessionMode: form.sessionMode ?? restaurant.sessionMode,
         gstNumber: form.gstNumber ?? null,
         cgstRate: form.cgstRate ?? restaurant.cgstRate,
         sgstRate: form.sgstRate ?? restaurant.sgstRate,
@@ -449,6 +451,59 @@ export default function SettingsPage() {
               {lang.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="card-dark p-6 space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Users className="w-4 h-4 text-brand" />
+          <h2 className="font-semibold text-white">Ordering Experience</h2>
+        </div>
+        <div>
+          <label className="label text-ink-3 mb-3 block">Session Mode</label>
+          <div className="flex gap-4 flex-col sm:flex-row">
+            <button
+              onClick={() => set("sessionMode", "open")}
+              className={cn(
+                "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
+                form.sessionMode === "open"
+                  ? "bg-brand/10 border-brand text-white shadow-sm shadow-brand/20"
+                  : "bg-dark-tertiary border-dark-border text-ink-3 hover:border-brand/50"
+              )}
+            >
+              {form.sessionMode === "open" && (
+                <div className="absolute top-0 right-0 w-16 h-16 bg-brand/10 rotate-45 translate-x-8 -translate-y-8" />
+              )}
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
+                Open Ordering
+                {form.sessionMode === "open" && <Check className="w-4 h-4 text-brand" />}
+              </h3>
+              <p className="text-xs opacity-80 leading-relaxed">
+                Anyone at the table can scan and order immediately. Best for casual dining.
+              </p>
+            </button>
+
+            <button
+              onClick={() => set("sessionMode", "host_approval")}
+              className={cn(
+                "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
+                form.sessionMode === "host_approval"
+                  ? "bg-brand/10 border-brand text-white shadow-sm shadow-brand/20"
+                  : "bg-dark-tertiary border-dark-border text-ink-3 hover:border-brand/50"
+              )}
+            >
+              {form.sessionMode === "host_approval" && (
+                <div className="absolute top-0 right-0 w-16 h-16 bg-brand/10 rotate-45 translate-x-8 -translate-y-8" />
+              )}
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
+                Host Approval
+                {form.sessionMode === "host_approval" && <Check className="w-4 h-4 text-brand" />}
+              </h3>
+              <p className="text-xs opacity-80 leading-relaxed">
+                The first person to scan becomes the Host. Other guests must be approved by the Host to view the menu.
+              </p>
+            </button>
+          </div>
         </div>
       </div>
 

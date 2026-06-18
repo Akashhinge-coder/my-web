@@ -7,12 +7,24 @@ export type OrderListScope = "today" | "kitchen" | "session" | "all";
 export interface PlaceOrderPayload {
   tableId: string;
   sessionId?: string;
-  items: Array<{ dishId: string; quantity: number; notes?: string }>;
+  items: Array<{
+    dishId?: string;
+    comboId?: string;
+    itemType?: "dish" | "combo";
+    quantity: number;
+    notes?: string;
+  }>;
   notes?: string;
 }
 
 export interface OrderPricingPayload {
-  items: Array<{ dishId: string; quantity: number; notes?: string }>;
+  items: Array<{
+    dishId?: string;
+    comboId?: string;
+    itemType?: "dish" | "combo";
+    quantity: number;
+    notes?: string;
+  }>;
   couponCode?: string;
   loyaltyPhone?: string;
   loyaltyPointsToRedeem?: number;
@@ -40,7 +52,9 @@ export interface SessionBill {
     items: Array<{
       quantity: number;
       unit_price: number;
-      dish: { name: string } | null;
+      item_name: string;
+      item_type?: "dish" | "combo";
+      combo_id?: string | null;
     }>;
   }>;
   pricing: OrderPricingDto;

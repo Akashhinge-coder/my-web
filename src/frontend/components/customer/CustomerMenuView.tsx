@@ -17,9 +17,10 @@ import { useCustomerMenu } from "@/frontend/hooks/useMenu";
 import { useCart } from "@/frontend/hooks/useCart";
 import { useCartPricing } from "@/frontend/hooks/useCartPricing";
 import { useCategoryScrollSpy } from "@/frontend/hooks/useCategoryScrollSpy";
+import { useSessionIdentity } from "@/frontend/hooks/useSessionIdentity";
 import { dishDataType } from "@/lib/foodType";
 import { formatINR, cn, isValidImageSrc } from "@/lib/utils";
-import type { Category, Dish } from "@/types/domain";
+import type { Category, Dish, Combo } from "@/types/domain";
 import { dishHasPublishedAr, type CustomerDish } from "@/types/menu";
 
 const FOOD_FILTERS = [
@@ -375,6 +376,269 @@ function DishModal({
   );
 }
 
+interface ComboCardProps {
+  combo: Combo;
+  dishes: CustomerDish[];
+  quantity: number;
+  onAdd: () => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  onInfo: () => void;
+}
+
+function ComboCard({
+  combo,
+  dishes,
+  quantity,
+  onAdd,
+  onIncrement,
+  onDecrement,
+  onInfo,
+}: ComboCardProps) {
+  const comboDishes = useMemo(() => {
+    return (combo.dish_ids ?? [])
+      .map((id) => dishes.find((d) => d.id === id))
+      .filter(Boolean) as CustomerDish[];
+  }, [combo.dish_ids, dishes]);
+
+  const firstDishImage = comboDishes[0]?.image_url;
+
+  return (
+    <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden flex w-full">
+      <div className="w-1 flex-shrink-0 bg-purple-600" />
+      <div className="flex-1 p-4 flex gap-3 min-w-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[10px] bg-purple-50 text-purple-700 font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md border border-purple-200">
+              Combo Meal
+            </span>
+            {combo.savings_amount > 0 && (
+              <span className="text-[10px] bg-green-50 text-green-700 font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md border border-green-200">
+                Save {formatINR(combo.savings_amount)}
+              </span>
+            )}
+          </div>
+
+          <button type="button" onClick={onInfo} className="text-left w-full">
+            <h3 className="font-semibold text-ink text-sm leading-tight mb-1">
+              {combo.name}
+            </h3>
+            <p className="text-xs text-ink-3 mb-2 leading-relaxed line-clamp-2">
+              Includes: {comboDishes.map((d) => d.name).join(" + ")}
+            </p>
+          </button>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-display font-semibold text-ink text-base">
+              {formatINR(combo.combo_price)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            className="w-20 h-20 rounded-xl overflow-hidden bg-surface-secondary border border-border relative flex items-center justify-center"
+            onClick={onInfo}
+          >
+            {isValidImageSrc(firstDishImage) ? (
+              <img
+                src={firstDishImage!}
+                alt={combo.name}
+                loading="lazy"
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <span className="text-2xl">🍱</span>
+            )}
+          </button>
+
+          {quantity === 0 ? (
+            <button
+              type="button"
+              onClick={onAdd}
+              className="w-20 flex items-center justify-center gap-1 py-1.5 rounded-xl font-semibold text-sm text-white transition-all active:scale-95 min-h-[44px]"
+              style={{ background: BRAND_GRADIENT }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add
+            </button>
+          ) : (
+            <div className="w-20 flex items-center justify-between px-2 py-1 rounded-xl border-2 border-brand min-h-[44px]">
+              <button
+                type="button"
+                onClick={onDecrement}
+                className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="font-bold text-brand text-sm">{quantity}</span>
+              <button
+                type="button"
+                onClick={onIncrement}
+                className="text-brand p-0.5 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ComboModalProps {
+  combo: Combo;
+  dishes: CustomerDish[];
+  quantity: number;
+  onClose: () => void;
+  onAdd: () => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
+}
+
+function ComboModal({
+  combo,
+  dishes,
+  quantity,
+  onClose,
+  onAdd,
+  onIncrement,
+  onDecrement,
+}: ComboModalProps) {
+  const comboDishes = useMemo(() => {
+    return (combo.dish_ids ?? [])
+      .map((id) => dishes.find((d) => d.id === id))
+      .filter(Boolean) as CustomerDish[];
+  }, [combo.dish_ids, dishes]);
+
+  const firstDishImage = comboDishes[0]?.image_url;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4">
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        role="presentation"
+      />
+      <div className="relative bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl overflow-hidden animate-slide-up max-h-[85vh] overflow-y-auto">
+        {isValidImageSrc(firstDishImage) ? (
+          <div className="relative h-56 w-full">
+            <img
+              src={firstDishImage!}
+              alt={combo.name}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        ) : (
+          <div
+            className="h-32 flex items-center justify-center text-5xl animate-pulse"
+            style={{ background: BRAND_GRADIENT }}
+          >
+            🍱
+          </div>
+        )}
+
+        <div className="p-5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-xl bg-white/90 backdrop-blur-sm text-ink-3 hover:text-ink shadow-card"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] bg-purple-50 text-purple-700 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md border border-purple-200">
+              Combo Meal
+            </span>
+            {combo.savings_amount > 0 && (
+              <span className="text-[10px] bg-green-50 text-green-700 font-semibold uppercase tracking-wide px-2.5 py-1 rounded-md border border-green-200">
+                Save {formatINR(combo.savings_amount)}
+              </span>
+            )}
+          </div>
+
+          <h2 className="font-display text-2xl font-semibold text-ink mb-3 pr-10">
+            {combo.name}
+          </h2>
+
+          <div className="space-y-4 mb-6">
+            <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider">
+              What's Included:
+            </p>
+            <div className="space-y-2">
+              {comboDishes.map((dish) => (
+                <div key={dish.id} className="flex items-center gap-3 bg-surface-secondary p-3 rounded-2xl border border-border">
+                  {isValidImageSrc(dish.image_url) ? (
+                    <img
+                      src={dish.image_url!}
+                      alt={dish.name}
+                      className="w-10 h-10 rounded-lg object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center text-lg border border-border">
+                      🍽
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-ink text-sm leading-tight">{dish.name}</p>
+                    {dish.description && (
+                      <p className="text-xs text-ink-3 truncate">{dish.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-border gap-3">
+            <span className="font-display text-2xl font-semibold text-ink">
+              {formatINR(combo.combo_price)}
+            </span>
+            {quantity === 0 ? (
+              <button
+                type="button"
+                onClick={onAdd}
+                className="px-6 py-3 rounded-xl text-white font-semibold text-sm min-h-[44px]"
+                style={{ background: BRAND_GRADIENT }}
+              >
+                Add to cart
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 border-2 border-brand rounded-xl px-3 py-2">
+                <button
+                  type="button"
+                  onClick={onDecrement}
+                  className="text-brand p-1"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="font-bold text-brand w-6 text-center">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={onIncrement}
+                  className="text-brand p-1"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerMenuView({
   slug,
   tableId,
@@ -386,34 +650,38 @@ export default function CustomerMenuView({
   const { data, loading } = useCustomerMenu(slug, tableId);
   const cart = useCart();
   const { pricing } = useCartPricing(cart.state.restaurantId, cart.state.items);
-
-  if (cart.state.sessionError) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-brand animate-bounce"
-          style={{ background: BRAND_GRADIENT }}
-        >
-          <UtensilsCrossed className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl font-bold text-ink">QR Scan Required</h2>
-        <p className="text-ink-3 text-sm max-w-sm">
-          Please scan the physical QR code located on your table to browse the menu and place orders.
-        </p>
-      </div>
-    );
-  }
+  const { identity, approveGuest } = useSessionIdentity();
 
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState("");
   const [foodFilter, setFoodFilter] = useState<FoodFilterValue>("all");
   const [selectedDish, setSelectedDish] = useState<CustomerDish | null>(null);
+  const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
 
-  const categories = data?.categories ?? [];
   const dishes = useMemo(
     () => (data?.dishes ?? []).filter((d) => d.is_available),
     [data?.dishes]
   );
+
+  const combosCategory = useMemo(() => {
+    const hasCombos = data?.combos && data.combos.length > 0;
+    if (!hasCombos) return null;
+    return {
+      id: "combos-category-id",
+      restaurant_id: cart.state.restaurantId,
+      name: "Combo Meals",
+      sort_order: -10,
+      is_active: true,
+    } as Category;
+  }, [data?.combos, cart.state.restaurantId]);
+
+  const categories = useMemo(() => {
+    const base = data?.categories ?? [];
+    if (combosCategory) {
+      return [combosCategory, ...base];
+    }
+    return base;
+  }, [data?.categories, combosCategory]);
 
   const categoryIds = useMemo(
     () => categories.map((c) => c.id),
@@ -434,12 +702,26 @@ export default function CustomerMenuView({
   const groupedSections = useMemo(() => {
     const sorted = [...categories].sort((a, b) => a.sort_order - b.sort_order);
     return sorted
-      .map((category) => ({
-        category,
-        dishes: filteredDishes.filter((d) => d.category_id === category.id),
-      }))
-      .filter((section) => section.dishes.length > 0);
-  }, [categories, filteredDishes]);
+      .map((category) => {
+        if (category.id === "combos-category-id") {
+          const matchedCombos = (data?.combos ?? []).filter((c) => {
+            const q = search.trim().toLowerCase();
+            return !q || c.name.toLowerCase().includes(q);
+          });
+          return {
+            category,
+            dishes: [],
+            combos: matchedCombos,
+          };
+        }
+        return {
+          category,
+          dishes: filteredDishes.filter((d) => d.category_id === category.id),
+          combos: [],
+        };
+      })
+      .filter((section) => section.dishes.length > 0 || (section.combos && section.combos.length > 0));
+  }, [categories, filteredDishes, data?.combos, search]);
 
   function cartHandlers(dish: Dish) {
     const qty = cart.getQuantity(dish.id);
@@ -449,6 +731,44 @@ export default function CustomerMenuView({
       onIncrement: () => cart.increment(dish.id),
       onDecrement: () => cart.decrement(dish.id),
     };
+  }
+
+  function comboCartHandlers(combo: Combo) {
+    const qty = cart.getQuantity(combo.id);
+    const firstDishImage = (combo.dish_ids ?? [])
+      .map(id => dishes.find(d => d.id === id))
+      .filter(Boolean)[0]?.image_url;
+    return {
+      quantity: qty,
+      onAdd: () => cart.addItem({
+        id: combo.id,
+        itemType: "combo",
+        name: combo.name,
+        price: Number(combo.combo_price),
+        imageUrl: firstDishImage ?? null,
+      }),
+      onIncrement: () => cart.increment(combo.id),
+      onDecrement: () => cart.decrement(combo.id),
+    };
+  }
+
+  if (cart.state.sessionError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-brand animate-bounce"
+          style={{ background: BRAND_GRADIENT }}
+        >
+          <UtensilsCrossed className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-ink">QR Scan Required</h2>
+        <p className="text-ink-3 text-sm max-w-sm">
+          {cart.state.sessionError === "QR scan required to order" 
+            ? "Please scan the physical QR code located on your table to browse the menu and place orders."
+            : cart.state.sessionError}
+        </p>
+      </div>
+    );
   }
 
   if (loading) {
@@ -644,7 +964,7 @@ export default function CustomerMenuView({
             </button>
           </div>
         ) : (
-          groupedSections.map(({ category, dishes: sectionDishes }) => (
+          groupedSections.map(({ category, dishes: sectionDishes, combos: sectionCombos }) => (
             <section
               key={category.id}
               ref={setSectionRef(category.id)}
@@ -659,20 +979,35 @@ export default function CustomerMenuView({
               )}
               {!category.name_hindi && <div className="mb-4" />}
 
-              <div className="space-y-3">
-                {sectionDishes.map((dish) => {
-                  const handlers = cartHandlers(dish);
-                  return (
-                    <DishCard
-                      key={dish.id}
-                      dish={dish}
-                      slug={slug}
-                      tableId={tableId}
-                      onInfo={() => setSelectedDish(dish)}
-                      {...handlers}
-                    />
-                  );
-                })}
+              <div className="space-y-3 animate-fade-in">
+                {category.id === "combos-category-id" ? (
+                  sectionCombos?.map((combo) => {
+                    const handlers = comboCartHandlers(combo);
+                    return (
+                      <ComboCard
+                        key={combo.id}
+                        combo={combo}
+                        dishes={dishes}
+                        onInfo={() => setSelectedCombo(combo)}
+                        {...handlers}
+                      />
+                    );
+                  })
+                ) : (
+                  sectionDishes.map((dish) => {
+                    const handlers = cartHandlers(dish);
+                    return (
+                      <DishCard
+                        key={dish.id}
+                        dish={dish}
+                        slug={slug}
+                        tableId={tableId}
+                        onInfo={() => setSelectedDish(dish)}
+                        {...handlers}
+                      />
+                    );
+                  })
+                )}
               </div>
             </section>
           ))
@@ -685,7 +1020,7 @@ export default function CustomerMenuView({
           <button
             type="button"
             onClick={() => router.push(`/${slug}/${tableId}/cart`)}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-white font-semibold shadow-brand"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-white font-semibold shadow-brand active:scale-[0.98] transition-transform"
             style={{ background: BRAND_GRADIENT }}
           >
             <div className="flex items-center gap-2">
@@ -708,6 +1043,15 @@ export default function CustomerMenuView({
           tableId={tableId}
           onClose={() => setSelectedDish(null)}
           {...cartHandlers(selectedDish)}
+        />
+      )}
+
+      {selectedCombo && (
+        <ComboModal
+          combo={selectedCombo}
+          dishes={dishes}
+          onClose={() => setSelectedCombo(null)}
+          {...comboCartHandlers(selectedCombo)}
         />
       )}
     </div>

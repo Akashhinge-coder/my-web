@@ -5,8 +5,10 @@ import { formatINR, timeAgo, cn } from "@/lib/utils";
 import { ChefHat, Check, Clock, Wifi, WifiOff } from "lucide-react";
 import { ordersApi } from "@/frontend/api/orders";
 import { restaurantsApi } from "@/frontend/api/restaurants";
+import { menuApi } from "@/frontend/api/menu";
 import { useKitchenOrders } from "@/frontend/hooks/useOrderFeed";
 import type { Order } from "@/types/domain";
+import type { AdminDish } from "@/types/menu";
 
 
 export default function KitchenDisplayView({ restaurantId }: { restaurantId: string }) {
@@ -14,6 +16,7 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
   const [online, setOnline] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<{ name: string; logo_url?: string | null } | null>(null);
+  const [allDishes, setAllDishes] = useState<AdminDish[]>([]);
 
   const orderList = (orders ?? []) as Order[];
 
@@ -26,9 +29,19 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
     }
   }, [restaurantId]);
 
+  const fetchDishes = useCallback(async () => {
+    try {
+      const d = await menuApi.listDishes(restaurantId);
+      setAllDishes(d);
+    } catch (error) {
+      console.error("Failed to load dishes in kitchen view:", error);
+    }
+  }, [restaurantId]);
+
   useEffect(() => {
     void fetchRestaurant();
-  }, [fetchRestaurant]);
+    void fetchDishes();
+  }, [fetchRestaurant, fetchDishes]);
 
   useEffect(() => {
     window.addEventListener("settings-updated", fetchRestaurant);
@@ -134,7 +147,7 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
                 Pending ({pending.length})
               </h2>
             </div>
-            {pending.map((order) => (
+             {pending.map((order) => (
               <KitchenCard
                 key={order.id}
                 order={order}
@@ -143,6 +156,7 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
                 actionClass="bg-orange-500/20 text-orange-400 border-orange-500/30 hover:bg-orange-500/30"
                 borderClass="border-amber-500/30"
                 isUpdating={updating === order.id}
+                dishes={allDishes}
               />
             ))}
           </div>
@@ -154,7 +168,7 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
                 Cooking ({cooking.length})
               </h2>
             </div>
-            {cooking.map((order) => (
+             {cooking.map((order) => (
               <KitchenCard
                 key={order.id}
                 order={order}
@@ -163,6 +177,7 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
                 actionClass="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30"
                 borderClass="border-orange-500/30"
                 isUpdating={updating === order.id}
+                dishes={allDishes}
               />
             ))}
           </div>
@@ -179,6 +194,7 @@ function KitchenCard({
   actionClass,
   borderClass,
   isUpdating,
+  dishes,
 }: {
   order: Order;
   onAction: () => void;
@@ -186,6 +202,7 @@ function KitchenCard({
   actionClass: string;
   borderClass: string;
   isUpdating: boolean;
+  dishes: any[];
 }) {
   const tableNum = order.session?.table?.table_number ?? "—";
 
@@ -197,6 +214,11 @@ function KitchenCard({
           <span className="px-2 py-0.5 rounded-lg bg-dark-tertiary border border-dark-border text-xs text-ink-3">
             Table {tableNum}
           </span>
+          {order.session?.host?.name && (
+            <span className="px-2 py-0.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400 uppercase tracking-wide">
+              {order.session.host.name}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 text-xs text-ink-4">
           <Clock className="w-3 h-3" />
@@ -211,7 +233,17 @@ function KitchenCard({
               {item.quantity}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-white text-base leading-tight">{item.dish?.name}</p>
+              <p className="font-medium text-white text-base leading-tight">
+                {item.item_type === "combo" ? `${item.item_name} (Combo)` : item.item_name}
+              </p>
+              {item.item_type === "combo" && item.combo?.dish_ids && (
+                <div className="mt-1 pl-3 border-l border-dark-border space-y-0.5 text-xs text-ink-3">
+                  {item.combo.dish_ids.map((dId: string) => {
+                    const dish = dishes.find((d) => d.id === dId);
+                    return <p key={dId}>• {dish ? dish.name : "Constituent Dish"}</p>;
+                  })}
+                </div>
+              )}
               {item.notes && <p className="text-xs text-amber-400/80 mt-0.5">📝 {item.notes}</p>}
             </div>
           </div>

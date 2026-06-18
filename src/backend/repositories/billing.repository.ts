@@ -23,7 +23,7 @@ const BILLING_ORDER_FIELDS = `
   id, order_number, total, subtotal, coupon_discount, loyalty_discount,
   happy_hour_discount, taxable_amount, cgst, sgst, gst, total_discount,
   grand_total, status,
-  order_items(quantity, unit_price, dishes(name))
+  order_items(quantity, unit_price, item_name, item_type, combo_id)
 `;
 
 export class BillingRepository {

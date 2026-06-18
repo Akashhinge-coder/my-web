@@ -15,10 +15,10 @@ interface CartState {
 
 // ── Actions ──────────────────────────────────────────────────
 type Action =
-  | { type: "ADD";    dish: Dish; notes?: string }
-  | { type: "REMOVE"; dishId: string }
-  | { type: "INC";    dishId: string }
-  | { type: "DEC";    dishId: string }
+  | { type: "ADD";    item: Omit<CartItem, "quantity"> }
+  | { type: "REMOVE"; itemId: string }
+  | { type: "INC";    itemId: string }
+  | { type: "DEC";    itemId: string }
   | { type: "CLEAR" }
   | { type: "SET_SESSION"; sessionId: string }
   | { type: "SET_SESSION_ERROR"; error: string | null }
@@ -27,30 +27,30 @@ type Action =
 function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
     case "ADD": {
-      const existing = state.items.find(i => i.dish.id === action.dish.id);
+      const existing = state.items.find(i => i.id === action.item.id);
       const items = existing
         ? state.items.map(i =>
-            i.dish.id === action.dish.id
+            i.id === action.item.id
               ? { ...i, quantity: i.quantity + 1 }
               : i
           )
-        : [...state.items, { dish: action.dish, quantity: 1, notes: action.notes }];
+        : [...state.items, { ...action.item, quantity: 1 }];
       return { ...state, items };
     }
     case "REMOVE":
-      return { ...state, items: state.items.filter(i => i.dish.id !== action.dishId) };
+      return { ...state, items: state.items.filter(i => i.id !== action.itemId) };
     case "INC":
       return {
         ...state,
         items: state.items.map(i =>
-          i.dish.id === action.dishId ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === action.itemId ? { ...i, quantity: i.quantity + 1 } : i
         ),
       };
     case "DEC":
       return {
         ...state,
         items: state.items
-          .map(i => i.dish.id === action.dishId ? { ...i, quantity: i.quantity - 1 } : i)
+          .map(i => i.id === action.itemId ? { ...i, quantity: i.quantity - 1 } : i)
           .filter(i => i.quantity > 0),
       };
     case "CLEAR":
@@ -66,18 +66,19 @@ function reducer(state: CartState, action: Action): CartState {
   }
 }
 
-// ── Context ──────────────────────────────────────────────────
+
 interface CartContextType {
   state: CartState;
-  addItem:      (dish: Dish, notes?: string) => void;
-  removeItem:   (dishId: string) => void;
-  increment:    (dishId: string) => void;
-  decrement:    (dishId: string) => void;
+  addItem:      (item: Omit<CartItem, "quantity"> | Dish, notes?: string) => void;
+  removeItem:   (itemId: string) => void;
+  increment:    (itemId: string) => void;
+  decrement:    (itemId: string) => void;
   clearCart:    () => void;
   setSession:   (sessionId: string) => void;
   totalItems:   number;
-  getQuantity:  (dishId: string) => number;
+  getQuantity:  (itemId: string) => number;
 }
+
 
 const CartContext = createContext<CartContextType | null>(null);
 
@@ -138,28 +139,54 @@ export function CartProvider({
           dispatch({ type: "SET_SESSION", sessionId: res.sessionId });
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error("Session bootstrap failed:", err);
+        const errMsg = err?.message || String(err);
+        
+        // If the backend says Name is required, they haven't gone through the welcome flow
+        if (errMsg.includes("Name is required")) {
+          if (!window.location.pathname.endsWith("/welcome")) {
+            window.location.href = `/${restaurantSlug}/${tableId}/welcome${window.location.search}`;
+          }
+          return;
+        }
+
         dispatch({
           type: "SET_SESSION_ERROR",
-          error: err instanceof Error ? err.message : "QR scan required to order",
+          error: errMsg,
         });
       });
-  }, [tableId]);
+  }, [tableId, restaurantSlug]);
 
   const totalItems  = state.items.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <CartContext.Provider value={{
       state,
-      addItem:     (dish, notes) => dispatch({ type: "ADD", dish, notes }),
-      removeItem:  (dishId)      => dispatch({ type: "REMOVE", dishId }),
-      increment:   (dishId)      => dispatch({ type: "INC",    dishId }),
-      decrement:   (dishId)      => dispatch({ type: "DEC",    dishId }),
+      addItem:     (item, notes) => {
+        if ("itemType" in item) {
+          dispatch({ type: "ADD", item: { ...item, notes: notes ?? item.notes } });
+        } else {
+          dispatch({
+            type: "ADD",
+            item: {
+              id: item.id,
+              itemType: "dish",
+              name: item.name,
+              price: Number(item.price),
+              imageUrl: item.image_url,
+              notes,
+            },
+          });
+        }
+      },
+      removeItem:  (itemId)      => dispatch({ type: "REMOVE", itemId }),
+      increment:   (itemId)      => dispatch({ type: "INC",    itemId }),
+      decrement:   (itemId)      => dispatch({ type: "DEC",    itemId }),
       clearCart:   ()            => dispatch({ type: "CLEAR" }),
       setSession:  (sessionId)   => dispatch({ type: "SET_SESSION", sessionId }),
       totalItems,
-      getQuantity: (dishId) => state.items.find(i => i.dish.id === dishId)?.quantity ?? 0,
+      getQuantity: (itemId)      => state.items.find(i => i.id === itemId)?.quantity ?? 0,
     }}>
       {children}
     </CartContext.Provider>

@@ -41,25 +41,25 @@ export default function CartPage() {
 
       <div className="px-4 py-5 space-y-3">
         {cart.state.items.map(item => (
-          <div key={item.dish.id} className="bg-white rounded-2xl border border-border p-4 flex gap-3 shadow-card">
-            {item.dish.image_url && (
-              <img src={item.dish.image_url} alt={item.dish.name}
+          <div key={item.id} className="bg-white rounded-2xl border border-border p-4 flex gap-3 shadow-card">
+            {item.imageUrl && (
+              <img src={item.imageUrl} alt={item.name}
                 className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-border" />
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-ink text-sm">{item.dish.name}</p>
-              <p className="text-brand font-display font-semibold mt-0.5">{formatINR(item.dish.price)}</p>
+              <p className="font-semibold text-ink text-sm">{item.name}</p>
+              <p className="text-brand font-display font-semibold mt-0.5">{formatINR(item.price)}</p>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-2 border-2 border-brand rounded-xl px-2 py-1">
-                  <button onClick={() => cart.decrement(item.dish.id)} className="text-brand">
+                  <button onClick={() => cart.decrement(item.id)} className="text-brand">
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <span className="font-bold text-brand text-sm w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => cart.increment(item.dish.id)} className="text-brand">
+                  <button onClick={() => cart.increment(item.id)} className="text-brand">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <button onClick={() => cart.removeItem(item.dish.id)} className="text-ink-4 hover:text-red-500 transition-colors">
+                <button onClick={() => cart.removeItem(item.id)} className="text-ink-4 hover:text-red-500 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -67,6 +67,7 @@ export default function CartPage() {
           </div>
         ))}
       </div>
+
 
       {/* Bill summary */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-4 space-y-3 safe-bottom">

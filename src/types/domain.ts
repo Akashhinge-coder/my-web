@@ -20,6 +20,7 @@ export interface Restaurant {
   sgst_rate: number;   // default 2.5
   currency: string;    // INR
   is_active: boolean;
+  session_mode: "open" | "host_approval";
   created_at: string;
 }
 
@@ -59,6 +60,23 @@ export interface Table {
   current_session?: Session;
 }
 
+
+export type SessionParticipantRole = "host" | "guest" | "staff";
+export type SessionParticipantStatus = "pending" | "approved" | "denied" | "removed";
+
+export interface SessionParticipant {
+  id: string;
+  session_id: string;
+  participant_token: string;
+  name: string;
+  phone: string | null;
+  role: SessionParticipantRole;
+  status: SessionParticipantStatus;
+  created_at: string;
+  approved_at: string | null;
+  left_at: string | null;
+}
+
 export type SessionStatus = "active" | "billing" | "closed";
 
 export interface Session {
@@ -70,9 +88,12 @@ export interface Session {
   started_at: string;
   closed_at: string | null;
   total_amount: number;
+  host_participant_id: string | null;
+  session_mode_snapshot: "open" | "host_approval";
   // Relations
   table?: Table;
   orders?: Order[];
+  host_participant?: SessionParticipant;
 }
 
 // ── Menu ────────────────────────────────────────────────────
@@ -160,17 +181,23 @@ export interface Order {
   total_discount?: number;
   grand_total?: number;
   notes: string | null;
+  placed_by_name: string;
+  placed_by_participant_id: string | null;
   created_at: string;
   // Relations
   items?: OrderItem[];
   session?: Session;
   confirmed_by_staff?: Staff;
+  placed_by_participant?: SessionParticipant;
 }
 
 export interface OrderItem {
   id: string;
   order_id: string;
-  dish_id: string;
+  dish_id: string | null;
+  combo_id?: string | null;
+  item_type: "dish" | "combo";
+  item_name: string;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -178,7 +205,9 @@ export interface OrderItem {
   status: OrderStatus;
   // Relations
   dish?: Dish;
+  combo?: Combo;
 }
+
 
 // ── Payments & Billing ──────────────────────────────────────
 
@@ -344,10 +373,15 @@ export interface DailyStats {
 // ── Cart (client-side only) ─────────────────────────────────
 
 export interface CartItem {
-  dish: Dish;
+  id: string; // dish ID or combo ID
+  itemType: "dish" | "combo";
+  name: string;
+  price: number;
   quantity: number;
+  imageUrl?: string | null;
   notes?: string;
 }
+
 
 export interface CartState {
   items: CartItem[];

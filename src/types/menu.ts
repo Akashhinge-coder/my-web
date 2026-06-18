@@ -23,7 +23,9 @@ export interface CustomerMenuBundle {
   };
   categories: Category[];
   dishes: CustomerDish[];
+  combos?: Combo[];
 }
+
 
 export interface AdminMenuBundle {
   categories: Category[];

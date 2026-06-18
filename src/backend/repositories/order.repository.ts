@@ -5,28 +5,31 @@ import type { OrderSource, OrderStatus } from "@/types/domain";
 const ADMIN_ORDER_SELECT = `
   id, order_number, status, total, subtotal, coupon_discount, loyalty_discount,
   happy_hour_discount, taxable_amount, cgst, sgst, gst, total_discount,
-  grand_total, created_at, source, notes,
+  grand_total, created_at, source, notes, placed_by_name, placed_by_participant_id,
   sessions(table_id, restaurant_tables(table_number)),
-  order_items(id, quantity, unit_price, notes,
-    dishes(id, name, food_type, image_url))
+  order_items(id, quantity, unit_price, notes, item_type, combo_id, item_name,
+    dishes(id, name, food_type, image_url),
+    combos(id, name, dish_ids))
 `;
 
 const KITCHEN_ORDER_SELECT = `
-  id, order_number, status, total, grand_total, created_at, notes,
-  sessions(restaurant_tables(table_number)),
-  order_items(id, quantity, notes, dishes(name, food_type))
+  id, order_number, status, total, grand_total, created_at, notes, placed_by_name,
+  sessions(restaurant_tables(table_number), session_participants!sessions_host_participant_id_fkey(name)),
+  order_items(id, quantity, notes, item_type, combo_id, item_name,
+    dishes(name, food_type),
+    combos(id, name, dish_ids))
 `;
 
 const CUSTOMER_ORDER_SELECT = `
-  id, order_number, status, total, grand_total, created_at,
-  order_items(quantity, dishes(name))
+  id, order_number, status, total, grand_total, created_at, placed_by_name, placed_by_participant_id,
+  order_items(quantity, item_name, item_type, combo_id)
 `;
 
 const BILL_ORDER_SELECT = `
   order_number, status, total, subtotal, coupon_discount, loyalty_discount,
   happy_hour_discount, taxable_amount, cgst, sgst, gst, total_discount,
   grand_total,
-  order_items(quantity, unit_price, dishes(name))
+  order_items(quantity, unit_price, item_name, item_type, combo_id)
 `;
 
 export type ListOrdersScope = "today" | "kitchen" | "session" | "all";
@@ -48,11 +51,16 @@ export interface CreateOrderRecordInput {
   };
   notes?: string | null;
   source?: OrderSource;
+  placedByName: string;
+  placedByParticipantId?: string | null;
 }
 
 export interface CreateOrderItemInput {
   orderId: string;
-  dishId: string;
+  dishId: string | null;
+  comboId?: string | null;
+  itemType?: "dish" | "combo";
+  itemName: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -72,6 +80,10 @@ function mapOrder(raw: any) {
             mappedItem.dish = Array.isArray(mappedItem.dishes) ? mappedItem.dishes[0] : mappedItem.dishes;
             delete mappedItem.dishes;
           }
+          if (mappedItem.combos) {
+            mappedItem.combo = Array.isArray(mappedItem.combos) ? mappedItem.combos[0] : mappedItem.combos;
+            delete mappedItem.combos;
+          }
           return mappedItem;
         })
       : mapped.order_items;
@@ -87,6 +99,12 @@ function mapOrder(raw: any) {
           ? mapped.session.restaurant_tables[0]
           : mapped.session.restaurant_tables;
         delete mapped.session.restaurant_tables;
+      }
+      if (mapped.session.session_participants) {
+        mapped.session.host = Array.isArray(mapped.session.session_participants)
+          ? mapped.session.session_participants[0]
+          : mapped.session.session_participants;
+        delete mapped.session.session_participants;
       }
     }
     delete mapped.sessions;
@@ -118,6 +136,8 @@ export class OrderRepository {
         total_discount: record.pricing.totalDiscount,
         grand_total: record.pricing.grandTotal,
         notes: record.notes ?? null,
+        placed_by_name: record.placedByName,
+        placed_by_participant_id: record.placedByParticipantId ?? null,
       })
       .select("*")
       .single();
@@ -135,6 +155,9 @@ export class OrderRepository {
         items.map((item) => ({
           order_id: item.orderId,
           dish_id: item.dishId,
+          combo_id: item.comboId ?? null,
+          item_type: item.itemType ?? "dish",
+          item_name: item.itemName,
           quantity: item.quantity,
           unit_price: item.unitPrice,
           total_price: item.totalPrice,

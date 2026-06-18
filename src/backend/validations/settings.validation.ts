@@ -23,6 +23,7 @@ export const settingsProfileUpdateSchema = z.object({
   address: z.string().trim().max(500).optional().nullable().transform((value) => value || undefined),
   logoUrl: z.string().trim().url().optional().nullable().or(z.literal("")).transform((value) => value || undefined),
   language: z.enum(["en", "hi", "mr", "ta", "te"]),
+  sessionMode: z.enum(["open", "host_approval"]).optional(),
 });
 
 export const settingsTaxUpdateSchema = z.object({

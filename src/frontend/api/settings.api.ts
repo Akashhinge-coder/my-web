@@ -11,6 +11,7 @@ export interface RestaurantSettings {
   language: string;
   cgstRate: number;
   sgstRate: number;
+  sessionMode: "open" | "host_approval";
 }
 
 export interface SettingsProfilePayload {
@@ -19,6 +20,7 @@ export interface SettingsProfilePayload {
   address?: string | null;
   logoUrl?: string | null;
   language: string;
+  sessionMode?: "open" | "host_approval";
 }
 
 export interface SettingsTaxPayload {

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/config/supabase/client";
 import { cn, generateSlug, validatePhone, validateGST } from "@/lib/utils";
+import { PASSWORD_REGEX, PASSWORD_REQUIREMENTS } from "@/lib/auth/password-policy";
 
 // ── Steps ─────────────────────────────────────────────────
 const STEPS = [
@@ -55,7 +56,7 @@ export default function RegisterPage() {
   function validateStep(s: number): string {
     if (s === 1) {
       if (!form.email) return "Email is required";
-      if (form.password.length < 8) return "Password must be at least 8 characters";
+      if (!PASSWORD_REGEX.test(form.password)) return PASSWORD_REQUIREMENTS;
       if (form.password !== form.confirmPassword) return "Passwords don't match";
     }
     if (s === 2) {
