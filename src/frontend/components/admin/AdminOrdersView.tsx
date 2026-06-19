@@ -58,7 +58,7 @@ export default function AdminOrdersView() {
           <h1 className="page-title text-white">Live Orders</h1>
           <p className="page-subtitle">Updates every few seconds • Today</p>
         </div>
-        <button onClick={() => void refresh()} className="btn-md btn-dark mt-1" type="button">
+        <button onClick={() => void refresh()} className="btn-md btn-admin mt-1" type="button">
           <RefreshCw className="w-4 h-4" />
           <span className="hidden sm:block">Refresh</span>
         </button>
@@ -73,17 +73,22 @@ export default function AdminOrdersView() {
             className={cn(
               "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
               filter === f
-                ? "bg-brand text-white"
-                : "bg-dark-card border border-dark-border text-ink-3 hover:text-white"
+                ? "text-[#0c0e12] font-semibold"
+                : "text-white/60 hover:text-white"
             )}
+            style={filter === f
+              ? { background: 'var(--accent-cyan)' }
+              : { background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)' }
+            }
           >
             <Filter className="w-3.5 h-3.5" />
             {f.charAt(0).toUpperCase() + f.slice(1)}
             <span
               className={cn(
                 "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                filter === f ? "bg-white/20" : "bg-dark-tertiary"
+                filter === f ? "bg-black/20" : "text-white/40"
               )}
+              style={filter !== f ? { background: 'var(--admin-border-2)' } : {}}
             >
               {counts[f]}
             </span>
@@ -94,7 +99,7 @@ export default function AdminOrdersView() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="card-dark p-5 space-y-3">
+            <div key={i} className="card-admin p-5 space-y-3">
               <div className="shimmer h-4 rounded w-24" />
               <div className="shimmer h-3 rounded w-full" />
               <div className="shimmer h-3 rounded w-3/4" />
@@ -103,9 +108,9 @@ export default function AdminOrdersView() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-ink-4 opacity-40" />
-          <p className="text-ink-3 font-medium">No {filter === "all" ? "" : filter} orders</p>
-          <p className="text-xs text-ink-4 mt-1">New orders will appear here automatically</p>
+          <ShoppingBag className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: 'var(--admin-subtle)' }} />
+          <p className="font-medium" style={{ color: 'var(--admin-subtle)' }}>No {filter === "all" ? "" : filter} orders</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--admin-faint)' }}>New orders will appear here automatically</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -119,7 +124,7 @@ export default function AdminOrdersView() {
               <div
                 key={order.id}
                 className={cn(
-                  "card-dark p-5 flex flex-col gap-4 transition-all",
+                  "card-admin p-5 flex flex-col gap-4 transition-all",
                   order.status === "pending" && "border-amber-500/30",
                   order.status === "cooking" && "border-orange-500/30"
                 )}
@@ -143,12 +148,12 @@ export default function AdminOrdersView() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-ink-4">
-                      <span className="w-5 h-5 rounded-md bg-dark-tertiary border border-dark-border flex items-center justify-center text-[10px] font-bold text-ink-3">
+                    <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--admin-faint)' }}>
+                      <span className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold" style={{ background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)', color: 'var(--admin-subtle)' }}>
                         {tableNum.replace("T", "")}
                       </span>
                       Table {tableNum}
-                      <span className="text-dark-border">·</span>
+                      <span style={{ color: 'var(--admin-border-2)' }}>·</span>
                       <Clock className="w-3 h-3" />
                       {timeAgo(order.created_at)}
                     </div>
@@ -160,12 +165,12 @@ export default function AdminOrdersView() {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-md bg-brand/10 border border-brand/20 flex items-center justify-center text-[10px] font-bold text-brand">
+                        <span className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold" style={{ background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.20)', color: 'var(--accent-cyan)' }}>
                           {item.quantity}
                         </span>
-                        <span className="text-ink-2">{item.item_name}</span>
+                        <span className="text-white/80">{item.item_name}</span>
                       </div>
-                      <span className="text-ink-4 text-xs">
+                      <span className="text-xs" style={{ color: 'var(--admin-faint)' }}>
                         {formatINR(item.unit_price * item.quantity)}
                       </span>
                     </div>
@@ -177,7 +182,7 @@ export default function AdminOrdersView() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-dark-border">
+                <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--admin-border-2)' }}>
                   <span className="font-semibold text-white">{formatINR(order.total)}</span>
                   {cfg.next && (
                     <button

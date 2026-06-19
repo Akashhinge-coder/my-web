@@ -23,18 +23,35 @@
   --border:        #E2DAD0;
   --border-light:  #EDE7DB;
 
-  /* Admin dark surfaces */
+  /* Admin dark surfaces (legacy — customer-side night mode) */
   --dark:          #0F0E0D;
   --dark-2:        #1A1815;
   --dark-3:        #252220;
   --dark-card:     #1E1C19;
   --dark-border:   #2E2B27;
 
+  /* ── Admin Panel Theme ── */
+  --admin-bg:        #0c0e12;
+  --admin-card:      #111420;
+  --admin-card-2:    #131622;
+  --admin-border:    #141722;
+  --admin-border-2:  #1e293b;
+  --accent-cyan:     #22d3ee;
+  --accent-blue:     #2563eb;
+  --admin-error:     #e13a3e;
+  --admin-error-2:   #ef4444;
+  --admin-success:   #34d399; /* emerald-400 */
+
   /* Text */
   --ink:           #1A1816;
   --ink-2:         #4A443C;
   --ink-3:         #7A7068;
   --ink-4:         #A89E92;
+  /* Admin text aliases */
+  --admin-text:    #ffffff;
+  --admin-muted:   #cbd5e1;  /* slate-300 */
+  --admin-subtle:  #94a3b8;  /* slate-400 */
+  --admin-faint:   #64748b;  /* slate-500 */
 
   /* Status */
   --pending:       #E89320;
@@ -63,7 +80,8 @@
 
   /* Admin body override */
   body.admin {
-    @apply bg-dark text-white;
+    background-color: var(--admin-bg);
+    color: var(--admin-text);
   }
 
   h1, h2, h3 {
@@ -116,6 +134,22 @@
     @apply bg-dark-tertiary text-white border border-dark-border hover:bg-dark-secondary;
   }
 
+  /* Admin-themed button variants */
+  .btn-admin {
+    background: var(--admin-card-2);
+    @apply text-white border transition-all duration-150;
+    border-color: var(--admin-border-2);
+  }
+  .btn-admin:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .btn-accent {
+    background: var(--accent-cyan);
+    @apply text-[#0c0e12] font-semibold hover:brightness-110 transition-all duration-150;
+  }
+
   .btn-ghost {
     @apply text-ink-secondary hover:text-ink hover:bg-surface-secondary;
   }
@@ -131,6 +165,26 @@
 
   .card-dark {
     @apply bg-dark-card rounded-2xl border border-dark-border;
+  }
+
+  /* Admin-themed card */
+  .card-admin {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    @apply rounded-2xl;
+  }
+  .card-admin-2 {
+    background: var(--admin-card-2);
+    border: 1px solid var(--admin-border-2);
+    @apply rounded-2xl;
+  }
+  .card-admin-hover {
+    @apply card-admin transition-all duration-200;
+  }
+  .card-admin-hover:hover {
+    border-color: rgba(34, 211, 238, 0.25);
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.06);
+    transform: translateY(-1px);
   }
 
   .card-hover {
@@ -149,19 +203,39 @@
     @apply focus:border-brand;
   }
 
+  /* Admin-themed input */
+  .input-admin {
+    @apply w-full rounded-xl px-4 py-3 text-sm transition-all duration-150;
+    background: var(--admin-card-2);
+    border: 1px solid var(--admin-border-2);
+    color: var(--admin-text);
+  }
+  .input-admin::placeholder { color: var(--admin-faint); }
+  .input-admin:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+  }
+
   .label {
     @apply block text-xs font-medium text-ink-secondary mb-1.5 uppercase tracking-wide;
   }
 
   /* ─ Admin Sidebar ─ */
   .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium;
-    @apply text-ink-3 hover:text-white hover:bg-dark-tertiary transition-all duration-150;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium relative;
+    color: var(--admin-subtle);
+    transition: all 0.15s ease;
+  }
+  .sidebar-item:hover {
+    color: #ffffff;
+    background: var(--admin-card-2);
   }
 
   .sidebar-item.active {
-    @apply text-white bg-dark-tertiary;
-    box-shadow: inset 0 0 0 1px rgba(193, 125, 60, 0.15), 0 0 16px rgba(193, 125, 60, 0.12);
+    color: #ffffff;
+    background: var(--admin-card-2);
+    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.15), 0 0 16px rgba(34, 211, 238, 0.08);
     position: relative;
   }
   .sidebar-item.active::before {
@@ -171,9 +245,9 @@
     top: 25%;
     bottom: 25%;
     width: 3px;
-    background: var(--brand);
+    background: var(--accent-cyan);
     border-radius: 0 99px 99px 0;
-    box-shadow: 0 0 8px var(--brand);
+    box-shadow: 0 0 8px var(--accent-cyan);
   }
 
   .sidebar-item .icon {
@@ -189,6 +263,13 @@
   .badge-cooking  { @apply badge bg-orange-50 text-orange-700 border border-orange-200; }
   .badge-served   { @apply badge bg-green-50  text-green-700  border border-green-200; }
   .badge-error    { @apply badge bg-red-50    text-red-700    border border-red-200; }
+
+  /* Admin dark-mode badges */
+  .badge-admin-pending  { @apply badge; background: rgba(232,147,32,0.12);  color: #fbbf24; border: 1px solid rgba(232,147,32,0.25); }
+  .badge-admin-success  { @apply badge; background: rgba(52,211,153,0.12);  color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  .badge-admin-error    { @apply badge; background: rgba(239,68,68,0.12);   color: #ef4444; border: 1px solid rgba(239,68,68,0.25); }
+  .badge-admin-info     { @apply badge; background: rgba(34,211,238,0.12);  color: #22d3ee; border: 1px solid rgba(34,211,238,0.25); }
+  .badge-admin-live     { @apply badge; background: rgba(37,99,235,0.15);   color: #60a5fa; border: 1px solid rgba(37,99,235,0.30); }
 
   /* ─ Food Type Indicators ─ */
   .veg-dot {
@@ -269,6 +350,32 @@
   /* ─ Order Card ─ */
   .order-card {
     @apply card-dark p-4 hover:border-brand/40 transition-all duration-200;
+  }
+
+  /* ─ Admin Stat Card ─ */
+  .stat-card-admin {
+    @apply card-admin p-5;
+  }
+  .stat-card-admin .stat-label {
+    @apply section-label mb-2;
+    color: var(--admin-faint);
+  }
+  .stat-card-admin .stat-value {
+    @apply text-3xl font-display font-semibold;
+    color: var(--admin-text);
+  }
+  .stat-card-admin .stat-delta {
+    @apply text-xs mt-1 flex items-center gap-1;
+    color: var(--admin-subtle);
+  }
+
+  /* ─ Admin Order Card ─ */
+  .order-card-admin {
+    @apply card-admin p-4 transition-all duration-200;
+  }
+  .order-card-admin:hover {
+    border-color: rgba(34, 211, 238, 0.30);
+    box-shadow: 0 0 16px rgba(34, 211, 238, 0.06);
   }
 }
 

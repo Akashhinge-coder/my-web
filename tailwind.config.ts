@@ -40,6 +40,18 @@ const config: Config = {
           card: "#1E1C19",
           border: "#2E2B27",
         },
+        /* ── Admin Panel Theme ── */
+        admin: {
+          bg:        "#0c0e12",
+          card:      "#111420",
+          "card-2":  "#131622",
+          border:    "#141722",
+          "border-2":"#1e293b",
+        },
+        accent: {
+          cyan:  "#22d3ee",
+          blue:  "#2563eb",
+        },
         ink: {
           DEFAULT: "#1A1816",
           secondary: "#4A443C",
@@ -81,6 +93,8 @@ const config: Config = {
         "card-lg":"0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.04)",
         brand:   "0 4px 14px rgba(193,125,60,0.35)",
         glow:    "0 0 40px rgba(193,125,60,0.15)",
+        "glow-cyan": "0 0 24px rgba(34,211,238,0.20)",
+        "glow-blue": "0 0 24px rgba(37,99,235,0.20)",
       },
       animation: {
         "fade-in":    "fadeIn 0.4s ease forwards",
