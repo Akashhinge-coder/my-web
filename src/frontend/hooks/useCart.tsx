@@ -11,6 +11,8 @@ interface CartState {
   tableId: string;
   sessionId: string | null;
   sessionError: string | null;
+  isBootstrapping: boolean;
+  isLoaded: boolean;
 }
 
 // ── Actions ──────────────────────────────────────────────────
@@ -22,7 +24,9 @@ type Action =
   | { type: "CLEAR" }
   | { type: "SET_SESSION"; sessionId: string }
   | { type: "SET_SESSION_ERROR"; error: string | null }
-  | { type: "LOAD";   state: Omit<CartState, "sessionError"> };
+  | { type: "FINISH_BOOTSTRAP" }
+  | { type: "LOAD";   state: Omit<CartState, "sessionError" | "isBootstrapping" | "isLoaded"> }
+  | { type: "LOAD_EMPTY" };
 
 function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
@@ -55,12 +59,24 @@ function reducer(state: CartState, action: Action): CartState {
       };
     case "CLEAR":
       return { ...state, items: [] };
-    case "SET_SESSION":
-      return { ...state, sessionId: action.sessionId, sessionError: null };
+    case "SET_SESSION": {
+      const isNewSession = state.sessionId && state.sessionId !== action.sessionId;
+      return { 
+        ...state, 
+        sessionId: action.sessionId, 
+        sessionError: null, 
+        isBootstrapping: false,
+        items: isNewSession ? [] : state.items
+      };
+    }
     case "SET_SESSION_ERROR":
-      return { ...state, sessionError: action.error };
+      return { ...state, sessionError: action.error, isBootstrapping: false };
+    case "FINISH_BOOTSTRAP":
+      return { ...state, isBootstrapping: false };
     case "LOAD":
-      return { ...state, ...action.state, sessionError: null };
+      return { ...state, ...action.state, sessionError: null, isBootstrapping: state.isBootstrapping, isLoaded: true };
+    case "LOAD_EMPTY":
+      return { ...state, isLoaded: true };
     default:
       return state;
   }
@@ -102,6 +118,8 @@ export function CartProvider({
     tableId,
     sessionId: null,
     sessionError: null,
+    isBootstrapping: true,
+    isLoaded: false,
   });
 
   // Load from localStorage on mount
@@ -111,14 +129,19 @@ export function CartProvider({
       if (saved) {
         const parsed = JSON.parse(saved);
         dispatch({ type: "LOAD", state: parsed });
+      } else {
+        dispatch({ type: "LOAD_EMPTY" });
       }
-    } catch { /* ignore */ }
+    } catch {
+      dispatch({ type: "LOAD_EMPTY" });
+    }
   }, [STORAGE_KEY]);
 
   // Save to localStorage on change
   useEffect(() => {
+    if (!state.isLoaded) return;
     try {
-      const { sessionError, ...toSave } = state;
+      const { sessionError, isBootstrapping, isLoaded, ...toSave } = state;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch { /* ignore */ }
   }, [state, STORAGE_KEY]);
@@ -137,6 +160,8 @@ export function CartProvider({
       .then((res) => {
         if (res.sessionId) {
           dispatch({ type: "SET_SESSION", sessionId: res.sessionId });
+        } else {
+          dispatch({ type: "FINISH_BOOTSTRAP" });
         }
       })
       .catch((err: any) => {

@@ -1,9 +1,11 @@
 "use client";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCart } from "@/frontend/hooks/useCart";
 import { useCartPricing } from "@/frontend/hooks/useCartPricing";
 import { formatINR } from "@/lib/utils";
 import { ArrowLeft, Minus, Plus, Trash2, ShoppingCart, ChevronRight } from "lucide-react";
+import { ordersApi } from "@/frontend/api/orders";
 
 export default function CartPage() {
   const params = useParams<{ slug: string; tableId: string }>();
@@ -108,7 +110,7 @@ export default function CartPage() {
           className="w-full py-4 rounded-2xl text-white font-semibold flex items-center justify-between px-5"
           style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
         >
-          <span>Place Order</span>
+          <span>Continue to Confirmation</span>
           <div className="flex items-center gap-1">
             <span>{formatINR(pricing.grandTotal)}</span>
             <ChevronRight className="w-5 h-5" />

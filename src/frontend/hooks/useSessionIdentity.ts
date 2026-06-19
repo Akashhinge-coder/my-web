@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/frontend/api/http";
 
 export interface SessionIdentity {
   id: string;
@@ -10,6 +11,7 @@ export interface SessionIdentity {
   sessionId: string;
   tableId: string;
   restaurantId: string;
+  sessionMode?: "open" | "host_approval";
   pendingGuests?: { id: string; name: string; phone?: string; created_at: string }[];
 }
 
@@ -19,14 +21,11 @@ export function useSessionIdentity() {
 
   async function fetchIdentity() {
     try {
-      const res = await fetch("/api/v1/sessions/me");
-      const data = await res.json();
-      if (data.success) {
-        setIdentity(data.data);
-      } else {
-        setIdentity(null);
-      }
+      const timestamp = Date.now();
+      const data = await apiFetch<SessionIdentity>(`/api/v1/sessions/me?t=${timestamp}`);
+      setIdentity(data);
     } catch (e) {
+      console.error("fetchIdentity failed:", e);
       setIdentity(null);
     } finally {
       setLoading(false);
@@ -35,26 +34,26 @@ export function useSessionIdentity() {
 
   useEffect(() => {
     fetchIdentity();
-    
-    // Poll every 5 seconds if the user is a host (to get pending guests)
-    // or if they are pending (though WelcomePage handles pending, good to be safe)
-    const interval = setInterval(fetchIdentity, 5000);
-    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Only poll if the user is a host AND the restaurant uses host_approval mode.
+    // If it's an "open" session, guests join automatically, so no approval polling is needed!
+    if (identity?.role === "host" && identity?.sessionMode === "host_approval") {
+      const interval = setInterval(fetchIdentity, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [identity?.role, identity?.sessionMode]);
 
   const approveGuest = async (participantId: string, action: "approve" | "deny") => {
     try {
-      const res = await fetch("/api/v1/guests/approve", {
+      await apiFetch("/api/v1/guests/approve", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ participantId, action }),
       });
-      const data = await res.json();
-      if (data.success) {
-        fetchIdentity(); // Refresh the list
-      }
+      fetchIdentity(); // Refresh the list
     } catch (e) {
-      console.error("Failed to approve guest");
+      console.error("Failed to approve guest:", e);
     }
   };
 

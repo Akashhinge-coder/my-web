@@ -115,7 +115,8 @@ function mapOrder(raw: any) {
 
 export class OrderRepository {
   static async create(record: CreateOrderRecordInput) {
-    const supabase = await createClient();
+    const { createAdminClient } = await import("@/config/supabase/server");
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("orders")
       .insert({
@@ -148,7 +149,8 @@ export class OrderRepository {
 
   static async createItems(items: CreateOrderItemInput[]) {
     if (items.length === 0) return [];
-    const supabase = await createClient();
+    const { createAdminClient } = await import("@/config/supabase/server");
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("order_items")
       .insert(
@@ -240,7 +242,8 @@ export class OrderRepository {
   }
 
   static async listBySession(sessionId: string) {
-    const supabase = await createClient();
+    const { createAdminClient } = await import("@/config/supabase/server");
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("orders")
       .select(CUSTOMER_ORDER_SELECT)

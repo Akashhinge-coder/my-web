@@ -82,11 +82,12 @@ export const ordersApi = {
     const search = new URLSearchParams();
     if (params.scope) search.set("scope", params.scope);
     if (params.sessionId) search.set("sessionId", params.sessionId);
+    search.set("t", Date.now().toString());
     return apiFetch<unknown[]>(`/api/v1/orders?${search}`);
   },
 
   listBySession(sessionId: string) {
-    return apiFetch<unknown[]>(`/api/v1/orders/session?sessionId=${sessionId}`);
+    return apiFetch<unknown[]>(`/api/v1/orders/session?sessionId=${sessionId}&t=${Date.now()}`);
   },
 
   /** Customer QR ordering — restaurantId from QR URL is intentional */

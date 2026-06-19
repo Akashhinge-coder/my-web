@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/frontend/hooks/useCart";
 import { useCartPricing } from "@/frontend/hooks/useCartPricing";
 import { formatINR, cn, timeAgo } from "@/lib/utils";
@@ -26,7 +26,6 @@ const STATUS_CONFIG = {
   served: { label: "Served", color: "text-green-600", bg: "bg-green-50  border-green-200", icon: CheckCircle2 },
 };
 
-
 export default function CustomerOrdersView({
   slug,
   tableId,
@@ -35,15 +34,16 @@ export default function CustomerOrdersView({
   tableId: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const cart = useCart();
 
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(cart.state.sessionId);
   const [placing, setPlacing] = useState(false);
-  const [placed, setPlaced] = useState(false);
+  const [placed, setPlaced] = useState(searchParams?.get("placed") === "true");
   const { pricing, loading: pricingLoading } = useCartPricing(restaurantId, cart.state.items);
 
-  const { data: orders = [], loading, setData } = useSessionOrders(sessionId);
+  const { data: orders = [], loading, error, setData } = useSessionOrders(sessionId);
   const orderList = (orders ?? []) as Order[];
 
   useEffect(() => {
@@ -152,58 +152,73 @@ export default function CustomerOrdersView({
           </div>
         )}
 
-        {loading && orderList.length === 0 ? (
-          <div className="text-center py-12 text-ink-3">Loading orders…</div>
-        ) : orderList.length > 0 ? (
-          <div className="space-y-3">
-            <h2 className="font-semibold text-ink">Order History</h2>
-            {orderList.map((order) => {
-              const cfg = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG];
-              const StatusIcon = cfg?.icon || Clock;
-              const items = order.items ?? [];
-
-              return (
-                <div key={order.id} className="bg-white rounded-2xl border border-border p-4 shadow-card">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-ink">{order.order_number}</span>
-                        <span className="text-xs text-ink-4">{timeAgo(order.created_at)}</span>
-                      </div>
-                      {order.placed_by_name && (
-                        <span className="text-xs font-medium text-brand/80">Ordered by {order.placed_by_name}</span>
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
-                        cfg?.bg,
-                        cfg?.color
-                      )}
-                    >
-                      <StatusIcon className="w-3 h-3" />
-                      {cfg?.label}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5 mb-3">
-                    {items.map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-ink-3">
-                        <span className="w-5 h-5 rounded-md bg-surface-secondary flex items-center justify-center text-xs font-bold text-ink-3">
-                          {item.quantity}
-                        </span>
-                        {item.item_name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <span className="text-sm text-ink-3">Order total</span>
-                    <span className="font-display font-semibold text-ink">{formatINR(order.total)}</span>
-                  </div>
-                </div>
-              );
-            })}
+        {error ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl mb-4">
+            <p className="font-semibold text-sm mb-1">Could not load orders</p>
+            <p className="text-xs">{error}</p>
           </div>
         ) : null}
+
+        {loading && orderList.length === 0 ? (
+          <div className="text-center py-12 text-ink-3">Loading orders…</div>
+        ) : (
+          <div className="space-y-3">
+            <h2 className="font-semibold text-ink">Order History</h2>
+            {orderList.length > 0 ? (
+              orderList.map((order) => {
+                const cfg = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG];
+                const StatusIcon = cfg?.icon || Clock;
+                const items = order.items ?? [];
+
+                return (
+                  <div key={order.id} className="bg-white rounded-2xl border border-border p-4 shadow-card">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-ink">{order.order_number}</span>
+                          <span className="text-xs text-ink-4">{timeAgo(order.created_at)}</span>
+                        </div>
+                        {order.placed_by_name && (
+                          <span className="text-xs font-medium text-brand/80">Ordered by {order.placed_by_name}</span>
+                        )}
+                      </div>
+                      <span
+                        className={cn(
+                          "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
+                          cfg?.bg,
+                          cfg?.color
+                        )}
+                      >
+                        <StatusIcon className="w-3 h-3" />
+                        {cfg?.label}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 mb-3">
+                      {items.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-ink-3">
+                          <span className="w-5 h-5 rounded-md bg-surface-secondary flex items-center justify-center text-xs font-bold text-ink-3">
+                            {item.quantity}
+                          </span>
+                          {item.item_name}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-border">
+                      <span className="text-sm text-ink-3">Order total</span>
+                      <span className="font-display font-semibold text-ink">{formatINR(order.total)}</span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : cart.totalItems > 0 ? (
+              <div className="bg-white/50 rounded-2xl border border-border border-dashed p-6 text-center shadow-sm">
+                <Clock className="w-8 h-8 text-ink-4 mx-auto mb-2 opacity-50" />
+                <p className="text-ink-3 text-sm font-medium">You haven't placed any orders yet.</p>
+                <p className="text-ink-4 text-xs mt-1">Place your order above to see it here.</p>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {orderList.length === 0 && cart.totalItems === 0 && !loading && (
           <div className="text-center py-16">

@@ -43,7 +43,7 @@ export async function approveGuest(req: NextRequest) {
     // 1. Fetch the Host's participant record
     const { data: hostParticipant, error: hostError } = await supabase
       .from("session_participants")
-      .select("*, sessions(host_participant_id)")
+      .select("*")
       .eq("participant_token", hostToken)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -69,7 +69,12 @@ export async function approveGuest(req: NextRequest) {
       return fail("FORBIDDEN", "You are not in the same session", 403);
     }
     
-    const session = hostParticipant.sessions;
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("host_participant_id")
+      .eq("id", hostParticipant.session_id)
+      .single();
+
     if (!session || session.host_participant_id !== hostParticipant.id) {
       return fail("FORBIDDEN", "Only the Host can approve or deny guests", 403);
     }

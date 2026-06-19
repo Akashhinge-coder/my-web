@@ -33,14 +33,6 @@ export async function bootstrapSession(req: NextRequest) {
       return fail("NOT_FOUND", "Table not found", 404);
     }
 
-    // Physical QR code scan required
-    if (!qrToken || table.qr_token !== qrToken) {
-      return fail("INVALID_QR", "Physical QR scan required to start or join a dining session", 403);
-    }
-
-    const restaurant = await RestaurantRepository.getSettingsById(table.restaurant_id);
-    const sessionMode = restaurant.session_mode ?? "open";
-
     // Fetch active session
     const activeSession = await SessionRepository.findActiveByTableWithTokenAdmin(tableId);
 
@@ -56,6 +48,14 @@ export async function bootstrapSession(req: NextRequest) {
         });
       }
     }
+
+    // Physical QR code scan required (only for new participants)
+    if (!qrToken || table.qr_token !== qrToken) {
+      return fail("INVALID_QR", "Physical QR scan required to start or join a dining session", 403);
+    }
+
+    const restaurant = await RestaurantRepository.getSettingsById(table.restaurant_id);
+    const sessionMode = restaurant.session_mode ?? "open";
 
     // 2. We are creating a new participant. Name is required.
     if (!name || name.trim() === "") {

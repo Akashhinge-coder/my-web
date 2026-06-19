@@ -122,6 +122,7 @@ export default function AdminMenuView() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categoryNameInput, setCategoryNameInput] = useState("");
@@ -280,6 +281,31 @@ export default function AdminMenuView() {
   }
 
   const availableCount = dishes.filter((d) => d.is_available).length;
+
+  const handleEnglishNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setForm((p) => ({ ...p, name: newName }));
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    
+    if (newName.trim()) {
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/v1/transliterate?text=${encodeURIComponent(newName)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.result) {
+              setForm((p) => ({ ...p, name_hindi: data.result }));
+            }
+          }
+        } catch (error) {
+          console.error("Transliteration error:", error);
+        }
+      }, 500);
+    } else {
+      setForm((p) => ({ ...p, name_hindi: "" }));
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -551,7 +577,7 @@ export default function AdminMenuView() {
                 <input
                   className="input-dark"
                   value={form.name}
-                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  onChange={handleEnglishNameChange}
                 />
               </div>
               <div>

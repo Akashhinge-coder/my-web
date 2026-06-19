@@ -47,7 +47,8 @@ export async function listOrders(req: NextRequest) {
 export async function listSessionOrders(req: NextRequest) {
   try {
     const { sessionId } = parseQuery(sessionOrdersQuerySchema, req.nextUrl.searchParams);
-    const orders = await OrderService.listBySession(sessionId);
+    const sessionToken = req.cookies.get("participant_token")?.value;
+    const orders = await OrderService.listBySession(sessionId, sessionToken);
     return ok(orders);
   } catch (error) {
     return handleError(error);
@@ -72,7 +73,7 @@ export async function createOrder(req: NextRequest, restaurantId: string) {
 export async function placeOrder(req: NextRequest, restaurantId: string, options?: { isCustomer?: boolean }) {
   try {
     const isCustomer = options?.isCustomer ?? false;
-    const sessionToken = req.cookies.get("session_token")?.value;
+    const sessionToken = req.cookies.get("participant_token")?.value;
     const idempotencyKey = req.headers.get("idempotency-key");
  
     if (isCustomer) {

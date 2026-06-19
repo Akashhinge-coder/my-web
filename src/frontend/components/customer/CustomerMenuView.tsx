@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -12,12 +12,14 @@ import {
   Minus,
   X,
   UtensilsCrossed,
+  Receipt,
 } from "lucide-react";
 import { useCustomerMenu } from "@/frontend/hooks/useMenu";
 import { useCart } from "@/frontend/hooks/useCart";
 import { useCartPricing } from "@/frontend/hooks/useCartPricing";
 import { useCategoryScrollSpy } from "@/frontend/hooks/useCategoryScrollSpy";
 import { useSessionIdentity } from "@/frontend/hooks/useSessionIdentity";
+import { ordersApi } from "@/frontend/api/orders";
 import { dishDataType } from "@/lib/foodType";
 import { formatINR, cn, isValidImageSrc } from "@/lib/utils";
 import type { Category, Dish, Combo } from "@/types/domain";
@@ -121,9 +123,14 @@ function DishCard({
           </div>
 
           <button type="button" onClick={onInfo} className="text-left w-full">
-            <h3 className="font-semibold text-ink text-sm leading-tight mb-1">
+            <h3 className="font-semibold text-ink text-sm leading-tight mb-0.5">
               {dish.name}
             </h3>
+            {dish.name_hindi && (
+              <p className="text-xs text-ink-3 font-medium mb-1">
+                {dish.name_hindi}
+              </p>
+            )}
             {dish.description && (
               <p className="text-xs text-ink-3 line-clamp-2 mb-2 leading-relaxed">
                 {dish.description}
@@ -657,6 +664,18 @@ export default function CustomerMenuView({
   const [foodFilter, setFoodFilter] = useState<FoodFilterValue>("all");
   const [selectedDish, setSelectedDish] = useState<CustomerDish | null>(null);
   const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
+  const [activeOrdersCount, setActiveOrdersCount] = useState(0);
+
+  // Fetch active orders for the tracking badge
+  useEffect(() => {
+    if (!cart.state.sessionId || tableId === "preview") return;
+    ordersApi.listBySession(cart.state.sessionId)
+      .then((res: any) => {
+        const active = res.filter((o: any) => ["pending", "cooking", "served"].includes(o.status));
+        setActiveOrdersCount(active.length);
+      })
+      .catch(console.error);
+  }, [cart.state.sessionId, tableId]);
 
   const dishes = useMemo(
     () => (data?.dishes ?? []).filter((d) => d.is_available),
@@ -752,6 +771,28 @@ export default function CustomerMenuView({
     };
   }
 
+  if (loading || cart.state.isBootstrapping) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-brand"
+          style={{ background: BRAND_GRADIENT }}
+        >
+          <UtensilsCrossed className="w-8 h-8 animate-pulse" />
+        </div>
+        <p className="text-ink-3 text-sm font-medium">Preparing menu…</p>
+        <div className="w-full max-w-sm space-y-3 mt-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-28 rounded-2xl bg-surface-secondary animate-pulse"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (cart.state.sessionError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
@@ -767,28 +808,6 @@ export default function CustomerMenuView({
             ? "Please scan the physical QR code located on your table to browse the menu and place orders."
             : cart.state.sessionError}
         </p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-surface px-6">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-brand"
-          style={{ background: BRAND_GRADIENT }}
-        >
-          <UtensilsCrossed className="w-8 h-8 animate-pulse" />
-        </div>
-        <p className="text-ink-3 text-sm font-medium">Loading menu…</p>
-        <div className="w-full max-w-sm space-y-3 mt-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-28 rounded-2xl bg-surface-secondary animate-pulse"
-            />
-          ))}
-        </div>
       </div>
     );
   }
@@ -837,9 +856,16 @@ export default function CustomerMenuView({
               <p className="font-display font-semibold text-white text-sm truncate">
                 {restaurant.name}
               </p>
-              <p className="text-xs text-white/60">
-                Table {table.table_number}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-white/60">
+                  Table {table.table_number}
+                </p>
+                {identity && (
+                  <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-white/80 uppercase font-semibold">
+                    {identity.role}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -853,22 +879,38 @@ export default function CustomerMenuView({
               <Search className="w-4 h-4" />
             </button>
             {tableId !== "preview" && (
-              <button
-                type="button"
-                onClick={() => router.push(`/${slug}/${tableId}/cart`)}
-                className="relative p-2.5 rounded-xl text-white/70 hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="View cart"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                {cart.totalItems > 0 && (
-                  <span
-                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
-                    style={{ background: BRAND_GRADIENT }}
-                  >
-                    {cart.totalItems > 99 ? "99+" : cart.totalItems}
-                  </span>
-                )}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/${slug}/${tableId}/orders`)}
+                  className="relative p-2.5 rounded-xl text-white/70 hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Order History"
+                >
+                  <Receipt className="w-4 h-4" />
+                  {activeOrdersCount > 0 && (
+                    <>
+                      <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-orange-500 animate-ping" />
+                      <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-orange-500" />
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/${slug}/${tableId}/cart`)}
+                  className="relative p-2.5 rounded-xl text-white/70 hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="View cart"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {cart.totalItems > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                      style={{ background: BRAND_GRADIENT }}
+                    >
+                      {cart.totalItems > 99 ? "99+" : cart.totalItems}
+                    </span>
+                  )}
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -949,6 +991,46 @@ export default function CustomerMenuView({
 
       {/* Menu body */}
       <div className="px-4 pt-5 space-y-8">
+        
+        {/* Host Pending Guests Section */}
+        {identity?.role === "host" && identity.pendingGuests && identity.pendingGuests.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+                <UtensilsCrossed className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-orange-900 text-sm">Guests Waiting</h3>
+                <p className="text-xs text-orange-700">Approve guests to let them order</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {identity.pendingGuests.map(guest => (
+                <div key={guest.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-orange-100">
+                  <div>
+                    <p className="font-medium text-sm text-ink">{guest.name}</p>
+                    {guest.phone && <p className="text-xs text-ink-3">{guest.phone}</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => approveGuest(guest.id, "deny")}
+                      className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+                    >
+                      Deny
+                    </button>
+                    <button
+                      onClick={() => approveGuest(guest.id, "approve")}
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                    >
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {groupedSections.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-ink-3 text-sm">No dishes match your filters.</p>

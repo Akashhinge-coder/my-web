@@ -189,7 +189,19 @@ export class OrderService {
     });
   }
 
-  static async listBySession(sessionId: string) {
+  static async listBySession(sessionId: string, sessionToken?: string) {
+    if (!sessionToken) {
+      throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
+    }
+
+    const participant = await SessionParticipantRepository.findByTokenGlobally(sessionToken);
+    if (!participant || participant.session_id !== sessionId) {
+      throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
+    }
+    if (participant.status !== "approved") {
+      throw new AuthError("You must be approved to view orders", 403, "UNAUTHORIZED_SESSION");
+    }
+
     return OrderRepository.listBySession(sessionId);
   }
 
@@ -245,16 +257,30 @@ export class OrderService {
         throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
       }
 
-      // Resolve session from the token — returns ANY status (active or closed)
-      const tokenSession = await SessionRepository.findByToken(cookieToken);
+      // Resolve participant and their session from the token
+      const participant = await SessionParticipantRepository.findByTokenGlobally(cookieToken);
 
-      if (!tokenSession) {
-        console.warn("AUDIT FAILURE: session_token cookie does not match any session", {
+      if (!participant || !participant.sessions) {
+        console.warn("AUDIT FAILURE: participant_token cookie does not match any valid session", {
           tableId: dto.tableId,
           restaurantId,
         });
         throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
       }
+
+      const tokenSession = participant.sessions;
+
+      // Prevent pending guests from ordering
+      if (participant.status === "pending") {
+        throw new AuthError("Your request is pending host approval", 403, "PENDING_APPROVAL");
+      }
+
+      if (participant.status !== "approved") {
+        throw new AuthError("You are not approved to place orders", 403, "UNAUTHORIZED_SESSION");
+      }
+
+      placedByName = participant.name;
+      placedByParticipantId = participant.id;
 
       // If dto.sessionId is supplied, it must exactly match the resolved session.
       const inputSessionId = dto.sessionId ?? null;
@@ -278,17 +304,17 @@ export class OrderService {
           tableId: dto.tableId,
           restaurantId,
         });
-        throw new AuthError("Dining session has expired", 401, "UNAUTHORIZED_SESSION");
+        throw new AuthError("Dining session has expired", 401, "EXPIRED_SESSION");
       }
 
       if (tokenSession.status !== "active") {
-        console.warn("AUDIT FAILURE: inactive session", {
+        console.warn("AUDIT FAILURE: attempting to order on non-active session", {
           sessionId: tokenSession.id,
           status: tokenSession.status,
           tableId: dto.tableId,
           restaurantId,
         });
-        throw new ValidationError("Dining session is not active");
+        throw new ValidationError(`Orders cannot be placed on ${tokenSession.status} sessions`);
       }
 
       // Cross-restaurant: return opaque 404 — do not reveal session ownership details.
@@ -314,16 +340,6 @@ export class OrderService {
         throw new ValidationError("Session does not belong to the specified table");
       }
 
-      const participant = await SessionParticipantRepository.findByToken(tokenSession.id, cookieToken);
-      if (!participant) {
-        throw new AuthError("Participant identity not found", 401, "UNAUTHORIZED_SESSION");
-      }
-      if (participant.status !== "approved") {
-        throw new AuthError("You must be approved by the host to place orders", 403, "UNAUTHORIZED_SESSION");
-      }
-
-      placedByName = participant.name;
-      placedByParticipantId = participant.id;
       session = tokenSession;
     } else {
       // ── ADMIN / SYSTEM FLOW ───────────────────────────────────────────────────
@@ -448,10 +464,11 @@ export class OrderService {
       if (!cookieToken) {
         throw new AuthError("No dining session cookie found", 401, "UNAUTHORIZED_SESSION");
       }
-      const tokenSession = await SessionRepository.findByToken(cookieToken);
-      if (!tokenSession) {
+      const participant = await SessionParticipantRepository.findByTokenGlobally(cookieToken);
+      if (!participant || !participant.sessions) {
         throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");
       }
+      const tokenSession = participant.sessions;
       const inputSessionId = dto.sessionId ?? null;
       if (inputSessionId && tokenSession.id !== inputSessionId) {
         throw new AuthError("Dining session not found or unauthorized", 401, "UNAUTHORIZED_SESSION");

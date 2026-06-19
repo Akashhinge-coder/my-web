@@ -15,6 +15,31 @@ export class SessionParticipantRepository {
     return data as SessionParticipant | null;
   }
 
+  static async findByTokenGlobally(participantToken: string) {
+    const supabase = createAdminClient();
+    const { data: participant, error: participantError } = await supabase
+      .from("session_participants")
+      .select("*")
+      .eq("participant_token", participantToken)
+      .maybeSingle();
+
+    if (participantError) throw participantError;
+    if (!participant) return null;
+
+    const { data: session, error: sessionError } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("id", participant.session_id)
+      .single();
+
+    if (sessionError) throw sessionError;
+
+    return {
+      ...participant,
+      sessions: session,
+    };
+  }
+
   static async create(params: {
     sessionId: string;
     participantToken: string;
