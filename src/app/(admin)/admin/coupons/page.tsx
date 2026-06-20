@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback } from "react";
 import { couponsApi, type Coupon } from "@/frontend/api/coupons.api";
@@ -122,7 +123,7 @@ export default function CouponsPage() {
           <h1 className="page-title text-white">Coupons</h1>
           <p className="page-subtitle">{activeCoupons.length} active · {inactiveCoupons.length} inactive</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+        <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />New Coupon
         </button>
       </div>
@@ -134,19 +135,19 @@ export default function CouponsPage() {
       )}
 
       {showAdd && (
-        <div className="card-dark p-6 border-brand/30">
+        <div className="card-admin p-6 border-accent-cyan/30">
           <h3 className="font-semibold text-white mb-5">Create Coupon</h3>
 
           <div className="mb-4">
-            <label className="label text-ink-3">Coupon code</label>
+            <label className="label text-slate-400">Coupon code</label>
             <div className="flex gap-2">
               <input
-                className="input-dark font-mono uppercase flex-1"
+                className="input-admin font-mono uppercase flex-1"
                 placeholder="SAVE20"
                 value={form.code}
                 onChange={(e) => setForm((previous) => ({ ...previous, code: e.target.value.toUpperCase() }))}
               />
-              <button onClick={generateCode} className="btn-md btn-dark whitespace-nowrap">
+              <button onClick={generateCode} className="btn-md btn-admin whitespace-nowrap">
                 Generate
               </button>
             </div>
@@ -154,7 +155,7 @@ export default function CouponsPage() {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="label text-ink-3">Discount type</label>
+              <label className="label text-slate-400">Discount type</label>
               <div className="flex gap-2">
                 {[
                   { value: "percent", label: "% Off" },
@@ -166,8 +167,8 @@ export default function CouponsPage() {
                     className={cn(
                       "flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all",
                       form.type === type.value
-                        ? "bg-brand/10 border-brand/30 text-brand"
-                        : "border-dark-border text-ink-4"
+                        ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
+                        : "border-admin-border-2 text-slate-500"
                     )}
                   >
                     {type.label}
@@ -176,11 +177,11 @@ export default function CouponsPage() {
               </div>
             </div>
             <div>
-              <label className="label text-ink-3">
+              <label className="label text-slate-400">
                 {form.type === "percent" ? "Discount %" : "Discount Rs."}
               </label>
               <input
-                className="input-dark"
+                className="input-admin"
                 type="number"
                 placeholder={form.type === "percent" ? "20" : "100"}
                 value={form.value}
@@ -191,9 +192,9 @@ export default function CouponsPage() {
 
           <div className="grid grid-cols-4 gap-4 mb-5">
             <div>
-              <label className="label text-ink-3">Min order</label>
+              <label className="label text-slate-400">Min order</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 type="number"
                 placeholder="0"
                 value={form.minOrder}
@@ -201,9 +202,9 @@ export default function CouponsPage() {
               />
             </div>
             <div>
-              <label className="label text-ink-3">Max discount</label>
+              <label className="label text-slate-400">Max discount</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 type="number"
                 placeholder="No cap"
                 value={form.maxDiscount}
@@ -211,9 +212,9 @@ export default function CouponsPage() {
               />
             </div>
             <div>
-              <label className="label text-ink-3">Max uses</label>
+              <label className="label text-slate-400">Max uses</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 type="number"
                 placeholder="Unlimited"
                 value={form.maxUses}
@@ -221,9 +222,9 @@ export default function CouponsPage() {
               />
             </div>
             <div>
-              <label className="label text-ink-3">Expires on</label>
+              <label className="label text-slate-400">Expires on</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 type="date"
                 value={form.expiresAt}
                 onChange={(e) => setForm((previous) => ({ ...previous, expiresAt: e.target.value }))}
@@ -232,10 +233,10 @@ export default function CouponsPage() {
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark flex-1">
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin flex-1">
               <X className="w-4 h-4" />Cancel
             </button>
-            <button onClick={saveCoupon} disabled={saving || !form.code || !form.value} className="btn-md btn-primary flex-1">
+            <button onClick={saveCoupon} disabled={saving || !form.code || !form.value} className="btn-md btn-accent flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Create Coupon
             </button>
@@ -245,13 +246,13 @@ export default function CouponsPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((item) => <div key={item} className="card-dark p-5 shimmer h-20" />)}
+          {[1, 2, 3].map((item) => <div key={item} className="card-admin p-5 animate-pulse h-20 bg-white/5" />)}
         </div>
       ) : coupons.length === 0 ? (
         <div className="text-center py-16">
-          <Tag className="w-12 h-12 mx-auto mb-4 text-ink-4 opacity-30" />
-          <p className="text-ink-3 font-medium">No coupons yet</p>
-          <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-4 inline-flex">
+          <Tag className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
+          <p className="text-slate-400 font-medium">No coupons yet</p>
+          <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Create first coupon
           </button>
         </div>
@@ -262,17 +263,17 @@ export default function CouponsPage() {
             const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
 
             return (
-              <div key={coupon.id} className={cn("card-dark p-4 transition-all", !coupon.isActive && "opacity-50")}>
+              <div key={coupon.id} className={cn("card-admin-hover p-4 transition-all", !coupon.isActive && "opacity-50")}>
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-mono font-bold text-white text-base">{coupon.code}</span>
                       <button
                         onClick={() => copyCode(coupon.code)}
-                        className="p-1 rounded-md text-ink-4 hover:text-brand transition-colors"
+                        className="p-1 rounded-md text-slate-500 hover:text-accent-cyan transition-colors"
                       >
                         {copied === coupon.code
-                          ? <Check className="w-3 h-3 text-green-400" />
+                          ? <Check className="w-3 h-3 text-[#34d399]" />
                           : <Copy className="w-3 h-3" />}
                       </button>
                       {isExpired && (
@@ -281,8 +282,8 @@ export default function CouponsPage() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-ink-4 flex-wrap">
-                      <span className="text-brand font-semibold">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
+                      <span className="text-accent-cyan font-semibold">
                         {coupon.type === "percent" ? `${coupon.value}% off` : `${formatINR(coupon.value)} off`}
                       </span>
                       {coupon.minOrder > 0 && <span>Min {formatINR(coupon.minOrder)}</span>}
@@ -293,8 +294,8 @@ export default function CouponsPage() {
                       )}
                     </div>
                     {coupon.maxUses && (
-                      <div className="mt-2 h-1 bg-dark-tertiary rounded-full overflow-hidden w-32">
-                        <div className="h-full bg-brand rounded-full" style={{ width: `${Math.min(usagePercent, 100)}%` }} />
+                      <div className="mt-2 h-1 bg-admin-card-2 rounded-full overflow-hidden w-32 border border-admin-border-2">
+                        <div className="h-full bg-accent-cyan rounded-full" style={{ width: `${Math.min(usagePercent, 100)}%` }} />
                       </div>
                     )}
                   </div>
@@ -302,13 +303,13 @@ export default function CouponsPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleCoupon(coupon.id, coupon.isActive)}
-                      className={cn("transition-colors", coupon.isActive ? "text-green-400" : "text-ink-4")}
+                      className={cn("transition-colors", coupon.isActive ? "text-[#34d399]" : "text-slate-500")}
                     >
                       {coupon.isActive ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
                     </button>
                     <button
                       onClick={() => deleteCoupon(coupon.id)}
-                      className="p-2 rounded-xl text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

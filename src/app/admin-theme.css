@@ -1,0 +1,68 @@
+:root {
+  /* Core Background & Surfaces */
+  --admin-bg:        #0c0e12;
+  --admin-card:      #111420;
+  --admin-card-2:    #131622;
+  --admin-border:    #141722;
+  --admin-border-2:  #1e293b;
+
+  /* Accents */
+  --accent-cyan:     #22d3ee;
+  --accent-blue:     #2563eb;
+  --admin-success:   #34d399;
+  --admin-warning:   #facc15;
+  --admin-error:     #ef4444;
+  --admin-purple:    #a78bfa;
+
+  /* Text Colors */
+  --admin-text:      #ffffff;
+  --admin-muted:     #cbd5e1;
+  --admin-subtle:    #94a3b8;
+  --admin-faint:     #64748b;
+}
+
+/* Base Styles for Admin Panel */
+.admin-theme {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+.admin-theme .card-admin {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 1rem;
+}
+
+.admin-theme .card-admin-2 {
+  background: var(--admin-card-2);
+  border: 1px solid var(--admin-border-2);
+  border-radius: 1rem;
+}
+
+.admin-theme .input-admin {
+  background: var(--admin-card-2);
+  border: 1px solid var(--admin-border-2);
+  color: var(--admin-text);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.admin-theme .input-admin:focus {
+  border-color: var(--accent-cyan);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.1);
+}
+
+.admin-theme .btn-admin {
+  background: var(--admin-card-2);
+  border: 1px solid var(--admin-border-2);
+  color: var(--admin-text);
+  border-radius: 0.75rem;
+  transition: all 0.2s;
+}
+
+.admin-theme .btn-admin:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}

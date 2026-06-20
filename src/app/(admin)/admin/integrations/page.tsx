@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useEffect, useState } from "react";
 import {
   integrationsApi,
@@ -76,21 +77,21 @@ export default function IntegrationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="page-header">
         <h1 className="page-title text-white flex items-center gap-2">
-          <Link2 className="w-6 h-6 text-brand" />Integrations
+          <Link2 className="w-6 h-6 text-accent-cyan" />Integrations
         </h1>
-        <p className="page-subtitle">Connect MENUARA with external platforms</p>
+        <p className="page-subtitle text-slate-400">Connect MENUARA with external platforms</p>
       </div>
 
       {/* WhatsApp EOD Report */}
-      <div className="card-dark p-6 border-green-500/20">
+      <div className="card-admin p-6 border-[#34d399]/20">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-5 h-5 text-green-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-[#34d399]" />
             </div>
             <div>
               <h3 className="font-semibold text-white mb-1">WhatsApp End-of-Day Report</h3>
-              <p className="text-xs text-ink-3 leading-relaxed">
+              <p className="text-xs text-slate-400 leading-relaxed">
                 Send today's revenue summary, top dishes, and payment breakdown directly to your WhatsApp.
                 Opens WhatsApp with a pre-filled message — tap Send.
               </p>
@@ -99,11 +100,11 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Today preview */}
-        <div className="bg-dark-tertiary rounded-xl p-4 mb-4 font-mono text-xs text-ink-3 space-y-1 leading-relaxed">
+        <div className="bg-admin-card-2 border border-admin-border-2 rounded-xl p-4 mb-4 font-mono text-xs text-slate-400 space-y-1 leading-relaxed">
           <p className="text-white font-semibold">📊 MENUARA Daily Report</p>
           <p>🏪 {restaurant?.name}</p>
           <p>📅 {new Date().toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" })}</p>
-          <p className="mt-1">💰 Revenue: <span className="text-brand">{formatINR(todayStats.revenue)}</span></p>
+          <p className="mt-1">💰 Revenue: <span className="text-accent-cyan">{formatINR(todayStats.revenue)}</span></p>
           <p>📦 Orders: {todayStats.orders}</p>
           <p>👥 Covers: {todayStats.covers}</p>
           <p>🏆 Top dish: {todayStats.topDish}</p>
@@ -111,7 +112,7 @@ export default function IntegrationsPage() {
         </div>
 
         <button onClick={sendWhatsAppReport} disabled={sending}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-semibold transition-colors">
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#34d399] hover:brightness-110 text-[#0c0e12] font-semibold transition-all">
           {sent ? (
             <><Check className="w-4 h-4" />Opening WhatsApp…</>
           ) : (
@@ -123,7 +124,7 @@ export default function IntegrationsPage() {
       {/* Other integrations */}
       <div className="space-y-4">
         {INTEGRATIONS.map(int => (
-          <div key={int.id} className="card-dark p-6">
+          <div key={int.id} className="card-admin p-6">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex items-start gap-3">
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${int.bg}`}>
@@ -134,13 +135,13 @@ export default function IntegrationsPage() {
                     <h3 className="font-semibold text-white">{int.name}</h3>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${
                       int.status === "configured"
-                        ? "bg-green-500/10 border-green-500/20 text-green-400"
-                        : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                        ? "bg-[#34d399]/10 border-[#34d399]/20 text-[#34d399]"
+                        : "bg-[#facc15]/10 border-[#facc15]/20 text-[#facc15]"
                     }`}>
                       {int.status === "configured" ? "✓ Connected" : "Coming soon"}
                     </span>
                   </div>
-                  <p className="text-xs text-ink-3 leading-relaxed">{int.desc}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">{int.desc}</p>
                 </div>
               </div>
             </div>
@@ -148,8 +149,8 @@ export default function IntegrationsPage() {
             {int.steps.length > 0 && (
               <div className="mt-3 space-y-1.5">
                 {int.steps.map((step, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-ink-4">
-                    <span className="w-4 h-4 rounded-full bg-dark-tertiary border border-dark-border flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                  <div key={i} className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className="w-4 h-4 rounded-full bg-admin-card-2 border border-admin-border-2 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                       {i + 1}
                     </span>
                     {step}

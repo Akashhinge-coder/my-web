@@ -74,7 +74,7 @@ export default function AdminOrdersView() {
               "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
               filter === f
                 ? "text-[#0c0e12] font-semibold"
-                : "text-white/60 hover:text-white"
+                : "text-slate-400 hover:text-white"
             )}
             style={filter === f
               ? { background: 'var(--accent-cyan)' }
@@ -86,9 +86,8 @@ export default function AdminOrdersView() {
             <span
               className={cn(
                 "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-                filter === f ? "bg-black/20" : "text-white/40"
+                filter === f ? "bg-black/20" : "bg-[#1e293b] text-slate-500"
               )}
-              style={filter !== f ? { background: 'var(--admin-border-2)' } : {}}
             >
               {counts[f]}
             </span>
@@ -100,9 +99,9 @@ export default function AdminOrdersView() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="card-admin p-5 space-y-3">
-              <div className="shimmer h-4 rounded w-24" />
-              <div className="shimmer h-3 rounded w-full" />
-              <div className="shimmer h-3 rounded w-3/4" />
+              <div className="animate-pulse h-4 rounded w-24 bg-white/5" />
+              <div className="animate-pulse h-3 rounded w-full bg-white/5" />
+              <div className="animate-pulse h-3 rounded w-3/4 bg-white/5" />
             </div>
           ))}
         </div>

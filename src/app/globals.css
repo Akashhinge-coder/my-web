@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+@import './admin-theme.css';
 
 @tailwind base;
 @tailwind components;
@@ -38,20 +39,16 @@
   --admin-border-2:  #1e293b;
   --accent-cyan:     #22d3ee;
   --accent-blue:     #2563eb;
-  --admin-error:     #e13a3e;
-  --admin-error-2:   #ef4444;
-  --admin-success:   #34d399; /* emerald-400 */
+  --admin-error:     #ef4444;
+  --admin-success:   #34d399;
+  --admin-warning:   #facc15;
+  --admin-purple:    #a78bfa;
 
-  /* Text */
-  --ink:           #1A1816;
-  --ink-2:         #4A443C;
-  --ink-3:         #7A7068;
-  --ink-4:         #A89E92;
   /* Admin text aliases */
-  --admin-text:    #ffffff;
-  --admin-muted:   #cbd5e1;  /* slate-300 */
-  --admin-subtle:  #94a3b8;  /* slate-400 */
-  --admin-faint:   #64748b;  /* slate-500 */
+  --admin-text:      #ffffff;
+  --admin-muted:     #cbd5e1;  /* slate-300 */
+  --admin-subtle:    #94a3b8;  /* slate-400 */
+  --admin-faint:     #64748b;  /* slate-500 */
 
   /* Status */
   --pending:       #E89320;

@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
 import { reservationsApi } from "@/frontend/api/reservations.api";
 import { cn } from "@/lib/utils";
@@ -7,10 +8,10 @@ import type { ReservationStatus } from "@/types/domain";
 import type { ReservationTableOption, ReservationWithTable } from "@/types/reservations";
 
 const STATUS_CONFIG = {
-  confirmed: { label: "Confirmed", color: "text-blue-400",   bg: "bg-blue-400/10 border-blue-400/30" },
-  seated:    { label: "Seated",    color: "text-green-400",  bg: "bg-green-400/10 border-green-400/30" },
-  cancelled: { label: "Cancelled", color: "text-red-400",    bg: "bg-red-400/10 border-red-400/30" },
-  no_show:   { label: "No Show",   color: "text-amber-400",  bg: "bg-amber-400/10 border-amber-400/30" },
+  confirmed: { label: "Confirmed", color: "text-[#3b82f6]",   bg: "bg-[#3b82f6]/10 border-[#3b82f6]/30" },
+  seated:    { label: "Seated",    color: "text-[#34d399]",  bg: "bg-[#34d399]/10 border-[#34d399]/30" },
+  cancelled: { label: "Cancelled", color: "text-[#f87171]",    bg: "bg-[#f87171]/10 border-[#f87171]/30" },
+  no_show:   { label: "No Show",   color: "text-[#facc15]",  bg: "bg-[#facc15]/10 border-[#facc15]/30" },
 };
 
 const EMPTY = { guest_name: "", guest_phone: "", party_size: "2", reserved_at: "", notes: "", table_id: "" };
@@ -85,7 +86,7 @@ export default function ReservationsPage() {
           <h1 className="page-title text-white">Reservations</h1>
           <p className="page-subtitle">Today & upcoming bookings</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+        <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />New Booking
         </button>
       </div>
@@ -98,12 +99,12 @@ export default function ReservationsPage() {
             className={cn(
               "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border transition-all",
               activeStatus === s
-                ? "bg-brand text-white border-brand"
-                : "bg-dark-card border-dark-border text-ink-3 hover:text-white"
+                ? "bg-accent-cyan text-[#0c0e12] border-accent-cyan"
+                : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:text-white"
             )}
           >
             {s === "all" ? "All" : STATUS_CONFIG[s as keyof typeof STATUS_CONFIG]?.label}
-            <span className="ml-1.5 text-xs opacity-70">
+            <span className={cn("ml-1.5 text-xs", activeStatus === s ? "opacity-70" : "text-slate-500")}>
               {s === "all" ? reservations.length : reservations.filter(r => r.status === s).length}
             </span>
           </button>
@@ -112,24 +113,24 @@ export default function ReservationsPage() {
 
       {/* Add form */}
       {showAdd && (
-        <div className="card-dark p-6 border-brand/30">
+        <div className="card-admin p-6 border-accent-cyan/30">
           <h3 className="font-semibold text-white mb-5">New Reservation</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="label text-ink-3">Guest name</label>
-              <input className="input-dark" placeholder="Sharma Family"
+              <label className="label text-slate-400">Guest name</label>
+              <input className="input-admin" placeholder="Sharma Family"
                 value={form.guest_name} onChange={e => setForm(p => ({ ...p, guest_name: e.target.value }))} autoFocus />
             </div>
             <div>
-              <label className="label text-ink-3">Phone number</label>
-              <input className="input-dark" placeholder="98765 43210"
+              <label className="label text-slate-400">Phone number</label>
+              <input className="input-admin" placeholder="98765 43210"
                 value={form.guest_phone} onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="label text-ink-3">Party size</label>
-              <select className="input-dark" value={form.party_size}
+              <label className="label text-slate-400">Party size</label>
+              <select className="input-admin" value={form.party_size}
                 onChange={e => setForm(p => ({ ...p, party_size: e.target.value }))}>
                 {[1,2,3,4,5,6,7,8,10,12,15,20].map(n => (
                   <option key={n} value={n}>{n} {n === 1 ? "person" : "people"}</option>
@@ -137,16 +138,16 @@ export default function ReservationsPage() {
               </select>
             </div>
             <div>
-              <label className="label text-ink-3">Date & time</label>
-              <input className="input-dark" type="datetime-local"
+              <label className="label text-slate-400">Date & time</label>
+              <input className="input-admin" type="datetime-local"
                 value={form.reserved_at} onChange={e => setForm(p => ({ ...p, reserved_at: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-ink-3">
+              <label className="label text-slate-400">
                 Assign table
-                <span className="text-ink-4 normal-case font-normal ml-1">(optional)</span>
+                <span className="text-slate-500 normal-case font-normal ml-1">(optional)</span>
               </label>
-              <select className="input-dark" value={form.table_id}
+              <select className="input-admin" value={form.table_id}
                 onChange={e => setForm(p => ({ ...p, table_id: e.target.value }))}>
                 <option value="">Auto assign</option>
                 {compatibleTables(parseInt(form.party_size, 10)).map(t => (
@@ -158,16 +159,16 @@ export default function ReservationsPage() {
             </div>
           </div>
           <div className="mb-5">
-            <label className="label text-ink-3">Notes (optional)</label>
-            <input className="input-dark" placeholder="Birthday celebration, window seat preferred..."
+            <label className="label text-slate-400">Notes (optional)</label>
+            <input className="input-admin" placeholder="Birthday celebration, window seat preferred..."
               value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark flex-1">
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin flex-1">
               <X className="w-4 h-4" />Cancel
             </button>
             <button onClick={saveReservation} disabled={saving || !form.guest_name || !form.reserved_at}
-              className="btn-md btn-primary flex-1">
+              className="btn-md btn-accent flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Confirm Booking
             </button>
@@ -178,13 +179,13 @@ export default function ReservationsPage() {
       {/* Reservations list */}
       {loading ? (
         <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="card-dark p-5 shimmer h-24" />)}
+          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-24 bg-white/5" />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
-          <Calendar className="w-12 h-12 mx-auto mb-4 text-ink-4 opacity-30" />
-          <p className="text-ink-3 font-medium">No reservations for today</p>
-          <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-4 inline-flex">
+          <Calendar className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
+          <p className="text-slate-400 font-medium">No reservations for today</p>
+          <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Add booking
           </button>
         </div>
@@ -196,7 +197,7 @@ export default function ReservationsPage() {
             const waLink = `https://wa.me/91${res.guest_phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hi ${res.guest_name}! Your table at ${restaurantName} is confirmed for ${resDate.toLocaleString("en-IN")} for ${res.party_size} people. See you soon! 🍽️`)}`;
 
             return (
-              <div key={res.id} className="card-dark p-4">
+              <div key={res.id} className="card-admin-hover p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -205,7 +206,7 @@ export default function ReservationsPage() {
                         {cfg?.label}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-ink-4 flex-wrap">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {resDate.toLocaleString("en-IN", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}

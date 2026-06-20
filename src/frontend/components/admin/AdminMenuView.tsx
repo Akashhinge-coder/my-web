@@ -325,7 +325,7 @@ export default function AdminMenuView() {
             <Plus className="w-4 h-4" />
             Category
           </button>
-          <button type="button" onClick={openAddDish} className="btn-md btn-primary mt-1">
+          <button type="button" onClick={openAddDish} className="btn-md btn-accent mt-1">
             <Plus className="w-4 h-4" />
             Add Dish
           </button>
@@ -392,10 +392,10 @@ export default function AdminMenuView() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="card-admin overflow-hidden">
-              <div className="shimmer h-36" />
+              <div className="animate-pulse h-36 bg-white/5" />
               <div className="p-4 space-y-2">
-                <div className="shimmer h-4 rounded w-2/3" />
-                <div className="shimmer h-3 rounded w-1/2" />
+                <div className="animate-pulse h-4 rounded w-2/3 bg-white/5" />
+                <div className="animate-pulse h-3 rounded w-1/2 bg-white/5" />
               </div>
             </div>
           ))}
@@ -408,7 +408,7 @@ export default function AdminMenuView() {
             {dishes.length === 0 ? "Add your first dish to get started" : "Try a different search or category"}
           </p>
           {dishes.length === 0 && (
-            <button type="button" onClick={openAddDish} className="btn-md btn-primary mt-4 inline-flex">
+            <button type="button" onClick={openAddDish} className="btn-md btn-accent mt-4 inline-flex">
               <Plus className="w-4 h-4" />
               Add Dish
             </button>
@@ -819,7 +819,7 @@ export default function AdminMenuView() {
                 disabled={
                   saving || !form.name.trim() || !form.price || !form.category_id
                 }
-                className="btn-md btn-primary flex-1"
+                className="btn-md btn-accent flex-1"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -877,7 +877,7 @@ export default function AdminMenuView() {
                 type="button"
                 onClick={() => void addCategory()}
                 disabled={savingCategory || !categoryNameInput.trim()}
-                className="btn-md btn-primary flex-1"
+                className="btn-md btn-accent flex-1"
               >
                 {savingCategory ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

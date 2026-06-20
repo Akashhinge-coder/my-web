@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
 import { tablesApi } from "@/frontend/api/tables.api";
 import { useTablesRealtime } from "@/frontend/hooks/useTablesRealtime";
@@ -7,10 +8,10 @@ import { Plus, QrCode, Users, Edit2, Check, X, Download, Trash2 } from "lucide-r
 import type { Table, TableStatus } from "@/types/domain";
 
 const STATUS_CONFIG = {
-  available: { label: "Available", color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/20", dot: "bg-emerald-400" },
-  occupied:  { label: "Occupied",  color: "text-red-400",     bg: "bg-red-400/10 border-red-400/20",         dot: "bg-red-400"     },
-  reserved:  { label: "Reserved",  color: "text-purple-400",  bg: "bg-purple-400/10 border-purple-400/20",   dot: "bg-purple-400"  },
-  cleaning:  { label: "Cleaning",  color: "text-amber-400",   bg: "bg-amber-400/10 border-amber-400/20",     dot: "bg-amber-400"   },
+  available: { label: "Available", color: "text-[#34d399]", bg: "bg-[#34d399]/10 border-[#34d399]/20", dot: "bg-[#34d399]" },
+  occupied:  { label: "Occupied",  color: "text-[#f87171]",     bg: "bg-[#f87171]/10 border-[#f87171]/20",         dot: "bg-[#f87171]"     },
+  reserved:  { label: "Reserved",  color: "text-[#a78bfa]",  bg: "bg-[#a78bfa]/10 border-[#a78bfa]/20",   dot: "bg-[#a78bfa]"  },
+  cleaning:  { label: "Cleaning",  color: "text-[#facc15]",   bg: "bg-[#facc15]/10 border-[#facc15]/20",     dot: "bg-[#facc15]"   },
 } as const;
 
 type TableStatusKey = keyof typeof STATUS_CONFIG;
@@ -105,7 +106,7 @@ export default function TablesPage() {
       {/* Status summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {(Object.entries(STATUS_CONFIG) as [TableStatusKey, typeof STATUS_CONFIG[TableStatusKey]][]).map(([status, cfg]) => (
-          <div key={status} className={`rounded-xl border p-4 ${cfg.bg}`}>
+          <div key={status} className={`stat-card-admin p-4 ${cfg.bg}`}>
             <div className="flex items-center gap-2 mb-1">
               <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
               <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
@@ -117,25 +118,25 @@ export default function TablesPage() {
 
       {/* Add table form */}
       {showAdd && (
-        <div className="card-dark p-5 border-brand/30">
+        <div className="card-admin p-5 border-accent-cyan/30">
           <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-brand" />
+            <Plus className="w-4 h-4 text-accent-cyan" />
             New Table
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="label text-ink-3">Table Number</label>
+              <label className="label text-slate-400">Table Number</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 placeholder="T13"
                 value={newTable.table_number}
                 onChange={e => setNewTable(p => ({ ...p, table_number: e.target.value }))}
               />
             </div>
             <div>
-              <label className="label text-ink-3">Seats</label>
+              <label className="label text-slate-400">Seats</label>
               <select
-                className="input-dark"
+                className="input-admin"
                 value={newTable.seating_capacity}
                 onChange={e => setNewTable(p => ({ ...p, seating_capacity: e.target.value }))}
               >
@@ -143,9 +144,9 @@ export default function TablesPage() {
               </select>
             </div>
             <div>
-              <label className="label text-ink-3">Type</label>
+              <label className="label text-slate-400">Type</label>
               <select
-                className="input-dark"
+                className="input-admin"
                 value={newTable.table_type}
                 onChange={e => setNewTable(p => ({ ...p, table_type: e.target.value }))}
               >
@@ -156,9 +157,9 @@ export default function TablesPage() {
               </select>
             </div>
             <div>
-              <label className="label text-ink-3">Floor</label>
+              <label className="label text-slate-400">Floor</label>
               <input
-                className="input-dark"
+                className="input-admin"
                 placeholder="Ground Floor"
                 value={newTable.floor}
                 onChange={e => setNewTable(p => ({ ...p, floor: e.target.value }))}
@@ -169,7 +170,7 @@ export default function TablesPage() {
             <button onClick={addTable} disabled={saving} className="btn-md btn-primary">
               {saving ? "Adding…" : <><Check className="w-4 h-4" />Add Table</>}
             </button>
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark">
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin">
               <X className="w-4 h-4" />
               Cancel
             </button>
@@ -181,9 +182,9 @@ export default function TablesPage() {
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {[1,2,3,4,5,6,7,8].map(i => (
-            <div key={i} className="card-dark p-5 space-y-3">
-              <div className="shimmer h-4 rounded w-16" />
-              <div className="shimmer h-3 rounded w-24" />
+            <div key={i} className="card-admin p-5 space-y-3">
+              <div className="shimmer h-4 rounded w-16 bg-white/5" />
+              <div className="shimmer h-3 rounded w-24 bg-white/5" />
             </div>
           ))}
         </div>
@@ -192,7 +193,7 @@ export default function TablesPage() {
           {tables.map((table) => {
             const cfg = STATUS_CONFIG[table.status as TableStatusKey];
             return (
-              <div key={table.id} className={cn("card-dark p-4 flex flex-col gap-3 transition-all hover:border-opacity-60", `hover:${cfg.bg}`)}>
+              <div key={table.id} className={cn("card-admin-hover p-4 flex flex-col gap-3 transition-all", `hover:${cfg.bg}`)}>
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div>
@@ -200,20 +201,20 @@ export default function TablesPage() {
                       {table.table_number}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
-                      <Users className="w-3 h-3 text-ink-4" />
-                      <span className="text-xs text-ink-4">{table.seating_capacity} seats</span>
+                      <Users className="w-3 h-3 text-slate-500" />
+                      <span className="text-xs text-slate-500">{table.seating_capacity} seats</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => setEditingId(editingId === table.id ? null : table.id)}
-                      className="p-1.5 rounded-lg text-ink-4 hover:text-white hover:bg-dark-tertiary transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => deleteTable(table.id)}
-                      className="p-1.5 rounded-lg text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -228,15 +229,15 @@ export default function TablesPage() {
 
                 {/* Floor tag */}
                 {table.floor && (
-                  <p className="text-[10px] text-ink-4 bg-dark-tertiary rounded-md px-2 py-1 self-start">
+                  <p className="text-[10px] text-slate-400 bg-white/5 rounded-md px-2 py-1 self-start border border-white/5">
                     {table.floor}
                   </p>
                 )}
 
                 {/* Status changer (when editing) */}
                 {editingId === table.id && (
-                  <div className="space-y-1 pt-1 border-t border-dark-border">
-                    <p className="text-[10px] text-ink-4 uppercase tracking-wide mb-1.5">Change status</p>
+                  <div className="space-y-1 pt-1 border-t border-admin-border-2">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5">Change status</p>
                     {(Object.keys(STATUS_CONFIG) as TableStatusKey[]).map((s) => (
                       <button
                         key={s}
@@ -245,7 +246,7 @@ export default function TablesPage() {
                           "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all",
                           table.status === s
                             ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} font-medium`
-                            : "text-ink-3 hover:bg-dark-tertiary"
+                            : "text-slate-400 hover:bg-white/5"
                         )}
                       >
                         <div className={cn("w-1.5 h-1.5 rounded-full", STATUS_CONFIG[s].dot)} />
@@ -257,23 +258,23 @@ export default function TablesPage() {
                 )}
 
                 {/* QR */}
-                <div className="flex items-center gap-2 pt-1 border-t border-dark-border">
+                <div className="flex items-center gap-2 pt-1 border-t border-admin-border-2">
                   <a
                     href={generateQRUrl(restaurantSlug, table.id, table.qr_token)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-accent-cyan transition-colors"
                   >
                     <QrCode className="w-3 h-3" />
                     View QR
                   </a>
-                  <span className="text-dark-border">·</span>
+                  <span className="text-slate-700">·</span>
                   <button
                     onClick={() => {
                       const url = generateQRUrl(restaurantSlug, table.id, table.qr_token);
                       window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`, "_blank");
                     }}
-                    className="flex items-center gap-1.5 text-[10px] text-ink-4 hover:text-brand transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-accent-cyan transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     Download

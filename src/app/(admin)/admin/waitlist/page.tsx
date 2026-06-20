@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
 import { waitlistApi } from "@/frontend/api/waitlist.api";
 import { cn, timeAgo } from "@/lib/utils";
@@ -88,37 +89,37 @@ export default function WaitlistPage() {
           <h1 className="page-title text-white">Waitlist</h1>
           <p className="page-subtitle">{waiting.length} waiting · {notified.length} notified</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+        <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />Add to waitlist
         </button>
       </div>
 
       {/* Add form */}
       {showAdd && (
-        <div className="card-dark p-5 border-brand/30">
+        <div className="card-admin p-5 border-accent-cyan/30">
           <h3 className="font-semibold text-white mb-4">Add Walk-in Guest</h3>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="col-span-1">
-              <label className="label text-ink-3">Guest name</label>
-              <input className="input-dark" placeholder="Patel Family" autoFocus
+              <label className="label text-slate-400">Guest name</label>
+              <input className="input-admin" placeholder="Patel Family" autoFocus
                 value={form.guest_name} onChange={e => setForm(p => ({ ...p, guest_name: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-ink-3">Phone</label>
-              <input className="input-dark" placeholder="98765 43210"
+              <label className="label text-slate-400">Phone</label>
+              <input className="input-admin" placeholder="98765 43210"
                 value={form.guest_phone} onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-ink-3">Party size</label>
-              <select className="input-dark" value={form.party_size}
+              <label className="label text-slate-400">Party size</label>
+              <select className="input-admin" value={form.party_size}
                 onChange={e => setForm(p => ({ ...p, party_size: e.target.value }))}>
                 {[1,2,3,4,5,6,7,8,10,12].map(n => <option key={n} value={n}>{n} people</option>)}
               </select>
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-dark flex-1"><X className="w-4 h-4" />Cancel</button>
-            <button onClick={addToWaitlist} disabled={saving || !form.guest_name} className="btn-md btn-primary flex-1">
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin flex-1"><X className="w-4 h-4" />Cancel</button>
+            <button onClick={addToWaitlist} disabled={saving || !form.guest_name} className="btn-md btn-accent flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Add to Waitlist
             </button>
@@ -128,23 +129,23 @@ export default function WaitlistPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="card-dark p-5 shimmer h-20" />)}
+          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-20 bg-white/5" />)}
         </div>
       ) : waitlist.length === 0 ? (
         <div className="text-center py-16">
-          <Users className="w-12 h-12 mx-auto mb-4 text-ink-4 opacity-30" />
-          <p className="text-ink-3 font-medium">Waitlist is empty</p>
-          <p className="text-xs text-ink-4 mt-1">Walk-in guests will appear here</p>
+          <Users className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
+          <p className="text-slate-400 font-medium">Waitlist is empty</p>
+          <p className="text-xs text-slate-500 mt-1">Walk-in guests will appear here</p>
         </div>
       ) : (
         <div className="space-y-3">
           {waitlist.map((entry, index) => (
             <div key={entry.id} className={cn(
-              "card-dark p-4 flex items-center gap-4",
-              entry.status === "notified" && "border-green-500/30"
+              "card-admin-hover p-4 flex items-center gap-4",
+              entry.status === "notified" && "border-[#34d399]/30"
             )}>
               {/* Position number */}
-              <div className="w-8 h-8 rounded-full bg-dark-tertiary border border-dark-border flex items-center justify-center text-sm font-bold text-ink-3 flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-admin-card-2 border border-admin-border-2 flex items-center justify-center text-sm font-bold text-slate-500 flex-shrink-0">
                 {index + 1}
               </div>
 
@@ -152,12 +153,12 @@ export default function WaitlistPage() {
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="font-semibold text-white text-sm">{entry.guest_name}</p>
                   {entry.status === "notified" && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 text-[#34d399]">
                       Notified
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-xs text-ink-4">
+                <div className="flex items-center gap-3 text-xs text-slate-500">
                   <span className="flex items-center gap-1">
                     <Users className="w-3 h-3" />{entry.party_size} people
                   </span>
@@ -171,18 +172,18 @@ export default function WaitlistPage() {
               <div className="flex gap-2">
                 {entry.guest_phone && entry.status === "waiting" && (
                   <button onClick={() => notifyGuest(entry)}
-                    className="btn-sm bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 text-xs">
+                    className="btn-sm bg-[#34d399]/20 text-[#34d399] border border-[#34d399]/30 hover:bg-[#34d399]/30 text-xs">
                     <MessageCircle className="w-3 h-3" />Notify
                   </button>
                 )}
                 {entry.status === "notified" && (
                   <button onClick={() => seatGuest(entry.id)}
-                    className="btn-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs">
+                    className="btn-sm bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6]/30 text-xs">
                     <Check className="w-3 h-3" />Seated
                   </button>
                 )}
                 <button onClick={() => removeGuest(entry.id)}
-                  className="p-2 rounded-xl text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                  className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>

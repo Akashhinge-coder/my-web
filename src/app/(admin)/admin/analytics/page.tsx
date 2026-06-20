@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
 import { analyticsApi } from "@/frontend/api/analytics.api";
 import { formatINR, formatINRCompact } from "@/lib/utils";
@@ -62,7 +63,7 @@ export default function AnalyticsPage() {
         <h1 className="page-title text-white">Analytics</h1>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1,2,3,4].map(i => <div key={i} className="card-dark p-5 shimmer h-28" />)}
+        {[1,2,3,4].map(i => <div key={i} className="card-admin p-5 animate-pulse h-28 bg-white/5" />)}
       </div>
     </div>
   );
@@ -76,11 +77,11 @@ export default function AnalyticsPage() {
           <p className="page-subtitle">Business performance overview</p>
         </div>
         {/* Range selector */}
-        <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1">
+        <div className="flex gap-1 bg-[#131622] border border-[#1e293b] rounded-xl p-1">
           {(["7","30","90"] as const).map(r => (
             <button key={r} onClick={() => setRange(r)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                range === r ? "bg-brand text-white" : "text-ink-4 hover:text-white"
+                range === r ? "bg-[#22d3ee] text-[#0c0e12]" : "text-slate-400 hover:text-white"
               }`}>
               {r}d
             </button>
@@ -91,12 +92,12 @@ export default function AnalyticsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Revenue",     value: formatINRCompact(totalRevenue), full: formatINR(totalRevenue), icon: TrendingUp, color: "text-brand",   bg: "bg-brand/10 border-brand/20" },
-          { label: "Orders",      value: totalOrders.toString(),          icon: ShoppingBag,             color: "text-amber-400",  bg: "bg-amber-400/10 border-amber-400/20" },
-          { label: "Covers",      value: totalCovers.toString(),          icon: Users,                   color: "text-blue-400",   bg: "bg-blue-400/10 border-blue-400/20" },
-          { label: "Avg Rating",  value: avgRating > 0 ? `${avgRating.toFixed(1)} ⭐` : "—", icon: Star, color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
+          { label: "Revenue",     value: formatINRCompact(totalRevenue), full: formatINR(totalRevenue), icon: TrendingUp, color: "text-[#22d3ee]",   bg: "bg-[#22d3ee]/10 border-[#22d3ee]/20" },
+          { label: "Orders",      value: totalOrders.toString(),          icon: ShoppingBag,             color: "text-[#facc15]",  bg: "bg-[#facc15]/10 border-[#facc15]/20" },
+          { label: "Covers",      value: totalCovers.toString(),          icon: Users,                   color: "text-[#3b82f6]",   bg: "bg-[#3b82f6]/10 border-[#3b82f6]/20" },
+          { label: "Avg Rating",  value: avgRating > 0 ? `${avgRating.toFixed(1)} ⭐` : "—", icon: Star, color: "text-[#fbbf24]", bg: "bg-[#fbbf24]/10 border-[#fbbf24]/20" },
         ].map(stat => (
-          <div key={stat.label} className="stat-card">
+          <div key={stat.label} className="stat-card-admin">
             <div className="flex items-start justify-between mb-3">
               <p className="stat-label">{stat.label}</p>
               <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${stat.bg}`}>
@@ -105,16 +106,16 @@ export default function AnalyticsPage() {
             </div>
             <p className="stat-value" title={(stat as { full?: string }).full}>{stat.value}</p>
             {stat.label === "Revenue" && avgOrder > 0 && (
-              <p className="text-xs text-ink-4 mt-1">Avg order: {formatINR(avgOrder)}</p>
+              <p className="text-xs text-slate-500 mt-1">Avg order: {formatINR(avgOrder)}</p>
             )}
           </div>
         ))}
       </div>
 
       {/* Revenue chart */}
-      <div className="card-dark p-6">
+      <div className="card-admin p-6">
         <h2 className="font-semibold text-white mb-6 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-brand" />
+          <TrendingUp className="w-4 h-4 text-accent-cyan" />
           Daily Revenue
         </h2>
         <div className="flex items-end gap-1.5 h-40">
@@ -130,19 +131,19 @@ export default function AnalyticsPage() {
                     style={{
                       height: `${Math.max(height, 2)}%`,
                       background: day.revenue > 0
-                        ? "linear-gradient(180deg,#C17D3C,#E8A85F)"
-                        : "#2E2B27",
+                        ? "linear-gradient(180deg,#22d3ee,#2563eb)"
+                        : "#1e293b",
                       minHeight: "4px",
                     }}
                   >
                     {day.revenue > 0 && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-dark-card border border-dark-border rounded-md px-1.5 py-0.5 text-[9px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#111420] border border-[#1e293b] rounded-md px-1.5 py-0.5 text-[9px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                         {formatINRCompact(day.revenue)}
                       </div>
                     )}
                   </div>
                 </div>
-                <span className="text-[9px] text-ink-4 rotate-45 origin-left whitespace-nowrap hidden sm:block">
+                <span className="text-[9px] text-slate-500 rotate-45 origin-left whitespace-nowrap hidden sm:block">
                   {label}
                 </span>
               </div>
@@ -154,34 +155,34 @@ export default function AnalyticsPage() {
       {/* Top dishes + Payment breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top dishes */}
-        <div className="card-dark p-6">
+        <div className="card-admin p-6">
           <h2 className="font-semibold text-white mb-5 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-brand" />
+            <BarChart3 className="w-4 h-4 text-accent-cyan" />
             Top Dishes
           </h2>
           {topDishes.length === 0 ? (
-            <p className="text-ink-4 text-sm text-center py-8">No orders in this period</p>
+            <p className="text-slate-500 text-sm text-center py-8">No orders in this period</p>
           ) : (
             <div className="space-y-3">
               {topDishes.map((dish, i) => (
                 <div key={dish.name} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-ink-4 w-4">{i + 1}</span>
+                  <span className="text-xs font-bold text-slate-500 w-4">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm text-white truncate">{dish.name}</span>
-                      <span className="text-xs text-ink-4 ml-2">{dish.count} orders</span>
+                      <span className="text-xs text-slate-500 ml-2">{dish.count} orders</span>
                     </div>
-                    <div className="h-1.5 bg-dark-tertiary rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#131622] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{
                           width: `${(dish.count / maxDishCount) * 100}%`,
-                          background: i === 0 ? "linear-gradient(90deg,#C17D3C,#E8A85F)" : "#3C3C3C",
+                          background: i === 0 ? "linear-gradient(90deg,#22d3ee,#2563eb)" : "#1e293b",
                         }}
                       />
                     </div>
                   </div>
-                  <span className="text-xs text-brand font-semibold">{formatINRCompact(dish.revenue)}</span>
+                  <span className="text-xs text-accent-cyan font-semibold">{formatINRCompact(dish.revenue)}</span>
                 </div>
               ))}
             </div>
@@ -189,10 +190,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Payment breakdown */}
-        <div className="card-dark p-6">
+        <div className="card-admin p-6">
           <h2 className="font-semibold text-white mb-5">Payment Methods</h2>
           {paymentData.length === 0 ? (
-            <p className="text-ink-4 text-sm text-center py-8">No payments in this period</p>
+            <p className="text-slate-500 text-sm text-center py-8">No payments in this period</p>
           ) : (
             <div className="space-y-3">
               {paymentData.map(pm => {
@@ -203,12 +204,12 @@ export default function AnalyticsPage() {
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm text-white capitalize">{pm.method}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-ink-4">{pm.count} txn</span>
+                        <span className="text-xs text-slate-500">{pm.count} txn</span>
                         <span className="text-sm font-semibold text-white">{formatINRCompact(pm.amount)}</span>
-                        <span className="text-xs text-ink-4 w-8 text-right">{pct.toFixed(0)}%</span>
+                        <span className="text-xs text-slate-500 w-8 text-right">{pct.toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="h-1.5 bg-dark-tertiary rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#131622] rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
                     </div>
                   </div>
@@ -220,7 +221,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Peak hours heatmap */}
-      <div className="card-dark p-6">
+      <div className="card-admin p-6">
         <h2 className="font-semibold text-white mb-5">Peak Hours</h2>
         <div className="flex items-end gap-1 h-24">
           {peakHours.map(h => {
@@ -231,18 +232,18 @@ export default function AnalyticsPage() {
               <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
                 <div className="w-full rounded-t-sm transition-all" style={{
                   height: `${Math.max(height, 2)}%`,
-                  background: isPeak ? "linear-gradient(180deg,#C17D3C,#E8A85F)" : "#2E2B27",
+                  background: isPeak ? "linear-gradient(180deg,#22d3ee,#2563eb)" : "#1e293b",
                   minHeight: "3px",
                 }} />
                 {(h.hour % 3 === 0) && (
-                  <span className="text-[9px] text-ink-4">{hour12}</span>
+                  <span className="text-[9px] text-slate-500">{hour12}</span>
                 )}
               </div>
             );
           })}
         </div>
         {peakHours.length > 0 && (
-          <p className="text-xs text-ink-4 mt-3">
+          <p className="text-xs text-slate-500 mt-3">
             Busiest hour: {(() => {
               const peak = peakHours.reduce((a, b) => a.count > b.count ? a : b);
               const h = peak.hour;

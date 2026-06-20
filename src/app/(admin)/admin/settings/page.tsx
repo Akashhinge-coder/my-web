@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from "react";
 import { ApiClientError } from "@/frontend/api/http";
@@ -246,7 +247,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-brand animate-spin" />
+        <Loader2 className="w-8 h-8 text-accent-cyan animate-spin" />
       </div>
     );
   }
@@ -258,32 +259,32 @@ export default function SettingsPage() {
         <p className="page-subtitle">Restaurant profile and configuration</p>
       </div>
 
-      <div className="card-dark p-6 space-y-5">
+      <div className="card-admin p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
-          <Store className="w-4 h-4 text-brand" />
+          <Store className="w-4 h-4 text-accent-cyan" />
           <h2 className="font-semibold text-white">Restaurant Info</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label text-ink-3">Restaurant name</label>
-            <input className="input-dark" value={form.name || ""} onChange={(e) => set("name", e.target.value)} />
+            <label className="label text-slate-400">Restaurant name</label>
+            <input className="input-admin" value={form.name || ""} onChange={(e) => set("name", e.target.value)} />
           </div>
           <div>
-            <label className="label text-ink-3">URL slug</label>
-            <input className="input-dark bg-dark-tertiary opacity-50 cursor-not-allowed" value={form.slug || ""} disabled />
-            <p className="text-xs text-ink-4 mt-1">menuara.app/{form.slug}/...</p>
+            <label className="label text-slate-400">URL slug</label>
+            <input className="input-admin bg-white/5 opacity-50 cursor-not-allowed" value={form.slug || ""} disabled />
+            <p className="text-xs text-slate-500 mt-1">menuara.app/{form.slug}/...</p>
           </div>
         </div>
 
         <div>
-          <label className="label text-ink-3 flex items-center gap-1.5">
+          <label className="label text-slate-400 flex items-center gap-1.5">
             <Phone className="w-3 h-3" />Owner mobile
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-3 text-sm">+91</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">+91</span>
             <input
-              className="input-dark pl-12"
+              className="input-admin pl-12"
               value={form.phone || ""}
               onChange={(e) => set("phone", e.target.value)}
               placeholder="98765 43210"
@@ -292,11 +293,11 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="label text-ink-3 flex items-center gap-1.5">
+          <label className="label text-slate-400 flex items-center gap-1.5">
             <MapPin className="w-3 h-3" />Address
           </label>
           <textarea
-            className="input-dark resize-none"
+            className="input-admin resize-none"
             rows={2}
             value={form.address || ""}
             onChange={(e) => set("address", e.target.value)}
@@ -305,9 +306,9 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="label text-ink-3">Restaurant Logo</label>
+          <label className="label text-slate-400">Restaurant Logo</label>
           <div className="flex items-center gap-4 mt-2">
-            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-dark-tertiary border border-dark-border flex items-center justify-center flex-shrink-0">
+            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-admin-card-2 border border-admin-border-2 flex items-center justify-center flex-shrink-0">
               {previewUrl ? (
                 <img
                   src={previewUrl}
@@ -316,21 +317,21 @@ export default function SettingsPage() {
                 />
               ) : (
                 <div
-                  className="w-full h-full flex items-center justify-center text-white font-bold text-2xl"
-                  style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+                  className="w-full h-full flex items-center justify-center text-[#0c0e12] font-bold text-2xl"
+                  style={{ background: "linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))" }}
                 >
                   {form.name?.charAt(0).toUpperCase() || "M"}
                 </div>
               )}
               {uploading && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <Loader2 className="w-5 h-5 text-brand animate-spin" />
+                  <Loader2 className="w-5 h-5 text-accent-cyan animate-spin" />
                 </div>
               )}
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <label className="btn-sm btn-primary cursor-pointer inline-flex items-center gap-1.5">
+                <label className="btn-sm btn-accent cursor-pointer inline-flex items-center gap-1.5">
                   <Upload className="w-3.5 h-3.5" />
                   Choose Logo
                   <input
@@ -352,7 +353,7 @@ export default function SettingsPage() {
                   </button>
                 )}
               </div>
-              <p className="text-xs text-ink-4">
+              <p className="text-xs text-slate-500">
                 PNG, JPG or WebP (max 5 MB). Logo will be optimized.
               </p>
             </div>
@@ -366,31 +367,31 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="card-dark p-6 space-y-5">
+      <div className="card-admin p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
-          <FileText className="w-4 h-4 text-brand" />
+          <FileText className="w-4 h-4 text-accent-cyan" />
           <h2 className="font-semibold text-white">GST Settings</h2>
         </div>
 
         <div>
-          <label className="label text-ink-3">GST Number</label>
+          <label className="label text-slate-400">GST Number</label>
           <input
-            className="input-dark font-mono"
+            className="input-admin font-mono"
             value={form.gstNumber || ""}
             onChange={(e) => set("gstNumber", e.target.value.toUpperCase())}
             placeholder="27AAPFU0939F1ZV"
             maxLength={15}
           />
-          <p className="text-xs text-ink-4 mt-1">Appears on all GST invoices</p>
+          <p className="text-xs text-slate-500 mt-1">Appears on all GST invoices</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label text-ink-3 flex items-center gap-1.5">
+            <label className="label text-slate-400 flex items-center gap-1.5">
               <Percent className="w-3 h-3" />CGST Rate
             </label>
             <input
-              className="input-dark"
+              className="input-admin"
               type="number"
               step="0.5"
               min="0"
@@ -400,11 +401,11 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="label text-ink-3 flex items-center gap-1.5">
+            <label className="label text-slate-400 flex items-center gap-1.5">
               <Percent className="w-3 h-3" />SGST Rate
             </label>
             <input
-              className="input-dark"
+              className="input-admin"
               type="number"
               step="0.5"
               min="0"
@@ -414,8 +415,8 @@ export default function SettingsPage() {
             />
           </div>
         </div>
-        <div className="bg-brand/10 border border-brand/20 rounded-xl p-3">
-          <p className="text-xs text-brand">
+        <div className="bg-accent-cyan/10 border border-accent-cyan/20 rounded-xl p-3">
+          <p className="text-xs text-accent-cyan">
             Total GST: {((form.cgstRate || 0) + (form.sgstRate || 0)).toFixed(1)}%
             {" · "}
             On Rs.1,000 bill: CGST Rs.{((form.cgstRate || 0) * 10).toFixed(0)} + SGST Rs.
@@ -425,9 +426,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="card-dark p-6 space-y-4">
+      <div className="card-admin p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
-          <Globe className="w-4 h-4 text-brand" />
+          <Globe className="w-4 h-4 text-accent-cyan" />
           <h2 className="font-semibold text-white">Menu Language</h2>
         </div>
         <div className="flex gap-3 flex-wrap">
@@ -444,8 +445,8 @@ export default function SettingsPage() {
               className={cn(
                 "px-3 py-2 rounded-xl border text-sm transition-all",
                 form.language === lang.value
-                  ? "bg-brand/10 border-brand/30 text-brand"
-                  : "border-dark-border text-ink-4 hover:border-brand/30"
+                  ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
+                  : "border-admin-border-2 text-slate-400 hover:border-accent-cyan/30"
               )}
             >
               {lang.label}
@@ -454,29 +455,29 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="card-dark p-6 space-y-4">
+      <div className="card-admin p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
-          <Users className="w-4 h-4 text-brand" />
+          <Users className="w-4 h-4 text-accent-cyan" />
           <h2 className="font-semibold text-white">Ordering Experience</h2>
         </div>
         <div>
-          <label className="label text-ink-3 mb-3 block">Session Mode</label>
+          <label className="label text-slate-400 mb-3 block">Session Mode</label>
           <div className="flex gap-4 flex-col sm:flex-row">
             <button
               onClick={() => set("sessionMode", "open")}
               className={cn(
                 "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
                 form.sessionMode === "open"
-                  ? "bg-brand/10 border-brand text-white shadow-sm shadow-brand/20"
-                  : "bg-dark-tertiary border-dark-border text-ink-3 hover:border-brand/50"
+                  ? "bg-accent-cyan/10 border-accent-cyan text-white shadow-sm shadow-accent-cyan/20"
+                  : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:border-accent-cyan/50"
               )}
             >
               {form.sessionMode === "open" && (
-                <div className="absolute top-0 right-0 w-16 h-16 bg-brand/10 rotate-45 translate-x-8 -translate-y-8" />
+                <div className="absolute top-0 right-0 w-16 h-16 bg-accent-cyan/10 rotate-45 translate-x-8 -translate-y-8" />
               )}
               <h3 className="font-semibold mb-1 flex items-center gap-2">
                 Open Ordering
-                {form.sessionMode === "open" && <Check className="w-4 h-4 text-brand" />}
+                {form.sessionMode === "open" && <Check className="w-4 h-4 text-accent-cyan" />}
               </h3>
               <p className="text-xs opacity-80 leading-relaxed">
                 Anyone at the table can scan and order immediately. Best for casual dining.
@@ -488,16 +489,16 @@ export default function SettingsPage() {
               className={cn(
                 "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
                 form.sessionMode === "host_approval"
-                  ? "bg-brand/10 border-brand text-white shadow-sm shadow-brand/20"
-                  : "bg-dark-tertiary border-dark-border text-ink-3 hover:border-brand/50"
+                  ? "bg-accent-cyan/10 border-accent-cyan text-white shadow-sm shadow-accent-cyan/20"
+                  : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:border-accent-cyan/50"
               )}
             >
               {form.sessionMode === "host_approval" && (
-                <div className="absolute top-0 right-0 w-16 h-16 bg-brand/10 rotate-45 translate-x-8 -translate-y-8" />
+                <div className="absolute top-0 right-0 w-16 h-16 bg-accent-cyan/10 rotate-45 translate-x-8 -translate-y-8" />
               )}
               <h3 className="font-semibold mb-1 flex items-center gap-2">
                 Host Approval
-                {form.sessionMode === "host_approval" && <Check className="w-4 h-4 text-brand" />}
+                {form.sessionMode === "host_approval" && <Check className="w-4 h-4 text-accent-cyan" />}
               </h3>
               <p className="text-xs opacity-80 leading-relaxed">
                 The first person to scan becomes the Host. Other guests must be approved by the Host to view the menu.
@@ -514,7 +515,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <button onClick={save} disabled={saving || !restaurant} className={cn("btn-lg w-full", saved ? "bg-green-500 text-white" : "btn-primary")}>
+      <button onClick={save} disabled={saving || !restaurant} className={cn("btn-lg w-full", saved ? "bg-[#34d399] text-[#0c0e12]" : "btn-accent")}>
         {saving ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />Saving...
