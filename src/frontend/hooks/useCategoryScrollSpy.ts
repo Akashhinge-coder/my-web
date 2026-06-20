@@ -44,7 +44,7 @@ export function useCategoryScrollSpy(categoryIds: string[]) {
         if (id) setActiveCategoryId(id);
       },
       {
-        rootMargin: "-128px 0px -55% 0px",
+        rootMargin: "-220px 0px -55% 0px",
         threshold: [0, 0.15, 0.35, 0.55, 0.75, 1],
       }
     );

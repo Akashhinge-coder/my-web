@@ -128,6 +128,8 @@ export default function AdminMenuView() {
   const [categoryNameInput, setCategoryNameInput] = useState("");
   const [savingCategory, setSavingCategory] = useState(false);
 
+  const [customAllergyInput, setCustomAllergyInput] = useState("");
+
   const filteredDishes = useMemo(() => {
     return dishes.filter((dish) => {
       if (categoryFilter !== "all" && dish.category_id !== categoryFilter) return false;
@@ -207,6 +209,15 @@ export default function AdminMenuView() {
         ? prev.allergy_tags.filter((t) => t !== tag)
         : [...prev.allergy_tags, tag],
     }));
+  }
+
+  function addCustomAllergy() {
+    const tag = customAllergyInput.trim().toLowerCase();
+    if (!tag) return;
+    if (!form.allergy_tags.includes(tag)) {
+      setForm((prev) => ({ ...prev, allergy_tags: [...prev.allergy_tags, tag] }));
+    }
+    setCustomAllergyInput("");
   }
 
   async function saveDish() {
@@ -754,22 +765,48 @@ export default function AdminMenuView() {
 
             <div className="mb-4">
               <label className="label text-ink-3">Allergy tags</label>
-              <div className="flex flex-wrap gap-2">
-                {ALLERGY_TAGS.map((tag) => (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(new Set([...ALLERGY_TAGS, ...form.allergy_tags])).map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleAllergy(tag)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all",
+                        form.allergy_tags.includes(tag)
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                          : "border-dark-border text-ink-4"
+                      )}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Custom allergy..."
+                    className="input-dark text-xs py-2 px-3 h-auto w-40"
+                    value={customAllergyInput}
+                    onChange={(e) => setCustomAllergyInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomAllergy();
+                      }
+                    }}
+                  />
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => toggleAllergy(tag)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all",
-                      form.allergy_tags.includes(tag)
-                        ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                        : "border-dark-border text-ink-4"
-                    )}
+                    onClick={addCustomAllergy}
+                    disabled={!customAllergyInput.trim()}
+                    className="btn-md btn-dark py-2 px-3 text-xs"
                   >
-                    {tag}
+                    <Plus className="w-3.5 h-3.5" />
+                    Add
                   </button>
-                ))}
+                </div>
               </div>
             </div>
 

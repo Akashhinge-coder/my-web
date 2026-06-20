@@ -158,7 +158,15 @@ export function CartProvider({
 
     sessionsApi.bootstrap(tableId, qrToken)
       .then((res) => {
-        if (res.sessionId) {
+        if (res.status === "needs_name" || res.status === "pending" || res.status === "denied") {
+          if (!window.location.pathname.endsWith("/welcome")) {
+            window.location.href = `/${restaurantSlug}/${tableId}/welcome${window.location.search}`;
+          }
+          dispatch({ type: "FINISH_BOOTSTRAP" });
+          return;
+        }
+
+        if (res.sessionId && res.status === "approved") {
           dispatch({ type: "SET_SESSION", sessionId: res.sessionId });
         } else {
           dispatch({ type: "FINISH_BOOTSTRAP" });
@@ -168,7 +176,7 @@ export function CartProvider({
         console.error("Session bootstrap failed:", err);
         const errMsg = err?.message || String(err);
         
-        // If the backend says Name is required, they haven't gone through the welcome flow
+        // In case it somehow still throws a name error, handle it
         if (errMsg.includes("Name is required")) {
           if (!window.location.pathname.endsWith("/welcome")) {
             window.location.href = `/${restaurantSlug}/${tableId}/welcome${window.location.search}`;

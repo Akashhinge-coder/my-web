@@ -21,9 +21,9 @@ import { useSessionOrders } from "@/frontend/hooks/useOrderFeed";
 import type { Order } from "@/types/domain";
 
 const STATUS_CONFIG = {
-  pending: { label: "Waiting", color: "text-amber-600", bg: "bg-amber-50  border-amber-200", icon: Clock },
-  cooking: { label: "Cooking", color: "text-orange-600", bg: "bg-orange-50 border-orange-200", icon: ChefHat },
-  served: { label: "Served", color: "text-green-600", bg: "bg-green-50  border-green-200", icon: CheckCircle2 },
+  pending: { label: "Waiting", color: "text-amber-400", bg: "bg-amber-900/30  border-amber-900/50", icon: Clock },
+  cooking: { label: "Cooking", color: "text-orange-400", bg: "bg-orange-900/30 border-orange-900/50", icon: ChefHat },
+  served: { label: "Served", color: "text-green-400", bg: "bg-green-900/30  border-green-900/50", icon: CheckCircle2 },
 };
 
 export default function CustomerOrdersView({
@@ -85,28 +85,28 @@ export default function CustomerOrdersView({
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-32">
-      <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border px-4 py-4 flex items-center gap-3">
+    <div className="min-h-screen bg-dark pb-32">
+      <div className="sticky top-0 z-40 bg-dark/90 backdrop-blur-md border-b border-dark-border px-4 py-4 flex items-center gap-3">
         <button
           onClick={() => router.back()}
           type="button"
-          className="p-2 rounded-xl text-ink-3 hover:bg-surface-secondary"
+          className="p-2 rounded-xl text-zinc-400 hover:bg-dark-secondary"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display text-xl font-semibold text-ink">Your Orders</h1>
+        <h1 className="font-display text-xl font-semibold text-white">Your Orders</h1>
       </div>
 
       <div className="px-4 py-5 space-y-4">
         {cart.totalItems > 0 && (
-          <div className="bg-white rounded-2xl border-2 border-brand/30 p-5 shadow-card">
-            <h2 className="font-semibold text-ink mb-3 flex items-center gap-2">
+          <div className="bg-dark-card rounded-2xl border-2 border-brand/50 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+            <h2 className="font-semibold text-white mb-3 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-brand" />
               Ready to order ({cart.totalItems} items)
             </h2>
             <div className="space-y-2 mb-4">
               {cart.state.items.map((item) => (
-                <div key={item.id} className="flex justify-between text-sm text-ink-3">
+                <div key={item.id} className="flex justify-between text-sm text-zinc-400">
                   <span>
                     {item.quantity}× {item.name}
                   </span>
@@ -114,9 +114,9 @@ export default function CustomerOrdersView({
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between pt-3 border-t border-border mb-4">
-              <span className="font-semibold text-ink">Total</span>
-              <span className="font-display font-semibold text-ink text-lg">
+            <div className="flex items-center justify-between pt-3 border-t border-dark-border mb-4">
+              <span className="font-semibold text-white">Total</span>
+              <span className="font-display font-semibold text-white text-lg">
                 {formatINR(pricing.grandTotal)}
               </span>
             </div>
@@ -143,78 +143,103 @@ export default function CustomerOrdersView({
         )}
 
         {placed && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0" />
+          <div className="bg-green-950/40 border border-green-900/50 rounded-2xl p-4 flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-green-800 text-sm">Order placed!</p>
-              <p className="text-green-600 text-xs mt-0.5">Your kitchen is preparing it now</p>
+              <p className="font-semibold text-green-100 text-sm">Order placed!</p>
+              <p className="text-green-300 text-xs mt-0.5">Your kitchen is preparing it now</p>
             </div>
           </div>
         )}
 
         {error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl mb-4">
+          <div className="bg-red-950/40 border border-red-900/50 text-red-400 p-4 rounded-2xl mb-4">
             <p className="font-semibold text-sm mb-1">Could not load orders</p>
             <p className="text-xs">{error}</p>
           </div>
         ) : null}
 
         {loading && orderList.length === 0 ? (
-          <div className="text-center py-12 text-ink-3">Loading orders…</div>
+          <div className="text-center py-12 text-zinc-500">Loading orders…</div>
         ) : (
-          <div className="space-y-3">
-            <h2 className="font-semibold text-ink">Order History</h2>
+          <div className="mt-8 space-y-6">
+            <h2 className="font-display text-2xl font-bold text-white mb-2">Order Timeline</h2>
             {orderList.length > 0 ? (
-              orderList.map((order) => {
-                const cfg = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG];
-                const StatusIcon = cfg?.icon || Clock;
-                const items = order.items ?? [];
+              <div className="relative pl-6 space-y-8 border-l-2 border-brand/20 ml-2">
+                {orderList.map((order, idx) => {
+                  const cfg = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.pending;
+                  const StatusIcon = cfg.icon || Clock;
+                  const items = order.items ?? [];
+                  const isLatest = idx === 0;
 
-                return (
-                  <div key={order.id} className="bg-white rounded-2xl border border-border p-4 shadow-card">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-ink">{order.order_number}</span>
-                          <span className="text-xs text-ink-4">{timeAgo(order.created_at)}</span>
+                  return (
+                    <div key={order.id} className="relative">
+                      {/* Timeline dot */}
+                      <div className={cn(
+                        "absolute -left-[33px] top-4 w-4 h-4 rounded-full border-2 border-white shadow-sm z-10",
+                        order.status === "pending" ? "bg-amber-500 animate-pulse" : 
+                        order.status === "cooking" ? "bg-orange-500" : "bg-green-500"
+                      )} />
+                      
+                      <div className={cn(
+                        "bg-dark-card rounded-3xl border p-5 shadow-sm transition-all relative overflow-hidden",
+                        isLatest ? "border-brand/40 shadow-card" : "border-dark-border opacity-90"
+                      )}>
+                        {isLatest && <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10" />}
+                        
+                        <div className="flex flex-col mb-4 relative z-10">
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="font-display font-bold text-lg text-white">Order ID {order.order_number}</span>
+                            <span className={cn(
+                              "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border shadow-sm",
+                              cfg.bg,
+                              cfg.color
+                            )}>
+                              <StatusIcon className="w-3.5 h-3.5" />
+                              {cfg.label}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            {order.placed_by_name ? (
+                              <span className="text-[11px] font-semibold text-brand uppercase tracking-wider">
+                                Ordered by {order.placed_by_name}
+                              </span>
+                            ) : <span />}
+                            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                              {timeAgo(order.created_at)}
+                            </span>
+                          </div>
                         </div>
-                        {order.placed_by_name && (
-                          <span className="text-xs font-medium text-brand/80">Ordered by {order.placed_by_name}</span>
-                        )}
+                        
+                        <div className="space-y-3 mb-5 relative z-10">
+                          {items.map((item, i) => (
+                            <div key={i} className="flex items-start gap-3">
+                              <span className="w-6 h-6 rounded-lg bg-dark-tertiary flex items-center justify-center text-xs font-bold text-white flex-shrink-0 border border-dark-border">
+                                {item.quantity}
+                              </span>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-semibold text-zinc-300 leading-tight mt-0.5">{item.item_name}</span>
+                                {item.notes && <span className="text-[11px] text-zinc-500 mt-1 font-medium bg-dark-tertiary px-2 py-0.5 rounded w-max">Note: {item.notes}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t border-dashed border-dark-border relative z-10">
+                          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Order Total</span>
+                          <span className="font-display text-xl font-bold text-white">{formatINR(order.total)}</span>
+                        </div>
                       </div>
-                      <span
-                        className={cn(
-                          "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
-                          cfg?.bg,
-                          cfg?.color
-                        )}
-                      >
-                        <StatusIcon className="w-3 h-3" />
-                        {cfg?.label}
-                      </span>
                     </div>
-                    <div className="space-y-1.5 mb-3">
-                      {items.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-ink-3">
-                          <span className="w-5 h-5 rounded-md bg-surface-secondary flex items-center justify-center text-xs font-bold text-ink-3">
-                            {item.quantity}
-                          </span>
-                          {item.item_name}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="text-sm text-ink-3">Order total</span>
-                      <span className="font-display font-semibold text-ink">{formatINR(order.total)}</span>
-                    </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             ) : cart.totalItems > 0 ? (
-              <div className="bg-white/50 rounded-2xl border border-border border-dashed p-6 text-center shadow-sm">
-                <Clock className="w-8 h-8 text-ink-4 mx-auto mb-2 opacity-50" />
-                <p className="text-ink-3 text-sm font-medium">You haven't placed any orders yet.</p>
-                <p className="text-ink-4 text-xs mt-1">Place your order above to see it here.</p>
+              <div className="bg-dark-card rounded-2xl border border-dark-border border-dashed p-6 text-center shadow-sm">
+                <Clock className="w-8 h-8 text-zinc-500 mx-auto mb-2 opacity-50" />
+                <p className="text-zinc-400 text-sm font-medium">You haven't placed any orders yet.</p>
+                <p className="text-zinc-500 text-xs mt-1">Place your order above to see it here.</p>
               </div>
             ) : null}
           </div>
@@ -222,8 +247,8 @@ export default function CustomerOrdersView({
 
         {orderList.length === 0 && cart.totalItems === 0 && !loading && (
           <div className="text-center py-16">
-            <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-ink-4 opacity-30" />
-            <p className="text-ink-3 font-medium">No orders yet</p>
+            <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-zinc-500 opacity-30" />
+            <p className="text-zinc-400 font-medium">No orders yet</p>
             <button
               onClick={() => router.push(`/${slug}/${tableId}`)}
               type="button"
@@ -237,7 +262,7 @@ export default function CustomerOrdersView({
       </div>
 
       {orderList.length > 0 && cart.totalItems === 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom bg-white/90 backdrop-blur-md border-t border-border">
+        <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom bg-dark/90 backdrop-blur-md border-t border-dark-border">
           <button
             onClick={() => router.push(`/${slug}/${tableId}`)}
             type="button"

@@ -40,6 +40,13 @@ const config: Config = {
           card: "#1E1C19",
           border: "#2E2B27",
         },
+        midnight: {
+          DEFAULT: "#000000",
+          secondary: "#0A0A0A",
+          tertiary: "#111111",
+          card: "#0D0D0D",
+          border: "#1F1F1F",
+        },
         ink: {
           DEFAULT: "#1A1816",
           secondary: "#4A443C",
