@@ -67,7 +67,7 @@ export const sessionsApi = {
       "/api/v1/sessions/bootstrap",
       {
         method: "POST",
-        body: JSON.stringify({ tableId, qrToken }),
+        body: JSON.stringify({ tableId, qrToken, checkOnly: true }),
       }
     );
   },

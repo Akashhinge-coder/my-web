@@ -62,7 +62,9 @@ export default function RegisterPage() {
     }
     if (s === 2) {
       if (!form.restaurantName.trim()) return "Restaurant name is required";
-      if (!validatePhone(form.phone)) return "Enter a valid 10-digit Indian mobile number";
+      const cleanPhone = form.phone.replace(/\D/g, "");
+      if (cleanPhone.length !== 10) return "Phone number must be exactly 10 digits";
+      if (!/^[6-9]/.test(cleanPhone)) return "Mobile number must start with 6, 7, 8, or 9";
     }
     if (s === 3) {
       if (form.gstNumber && !validateGST(form.gstNumber))
@@ -305,7 +307,7 @@ export default function RegisterPage() {
                 <input
                   type="tel"
                   value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
+                  onChange={(e) => set("phone", e.target.value.replace(/\D/g, ""))}
                   className="input-dark pl-12"
                   placeholder="98765 43210"
                   maxLength={10}

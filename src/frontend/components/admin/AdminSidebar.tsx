@@ -118,7 +118,7 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
             <p className="section-label px-2 mb-1.5" style={{ color: 'var(--admin-faint)' }}>{group.group}</p>
             <div className="space-y-0.5">
               {group.items.map((item) => (
-                <Link key={item.href} href={item.href}
+                <Link key={item.href} href={item.href} scroll={false}
                   onClick={() => setMobileOpen(false)}
                   className={cn("sidebar-item", isActive(item.href) && "active")}>
                   <item.icon className="icon" />

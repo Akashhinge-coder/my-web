@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types/domain";
 
@@ -14,13 +15,25 @@ export function CategoryNav({
   activeCategoryId,
   onSelect,
 }: CategoryNavProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!activeCategoryId || !containerRef.current) return;
+    const btn = containerRef.current.querySelector(
+      `[data-category-id="${activeCategoryId}"]`
+    );
+    if (btn) {
+      btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  }, [activeCategoryId]);
   return (
-    <div className="flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-0.5">
+    <div ref={containerRef} className="flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-0.5">
       {categories.map((cat) => {
         const isActive = activeCategoryId === cat.id;
         return (
           <button
             key={cat.id}
+            data-category-id={cat.id}
             type="button"
             onClick={() => onSelect(cat.id)}
             className={cn(

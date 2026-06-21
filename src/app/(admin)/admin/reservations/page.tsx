@@ -8,10 +8,10 @@ import type { ReservationStatus } from "@/types/domain";
 import type { ReservationTableOption, ReservationWithTable } from "@/types/reservations";
 
 const STATUS_CONFIG = {
-  confirmed: { label: "Confirmed", color: "text-[#3b82f6]",   bg: "bg-[#3b82f6]/10 border-[#3b82f6]/30" },
-  seated:    { label: "Seated",    color: "text-[#34d399]",  bg: "bg-[#34d399]/10 border-[#34d399]/30" },
-  cancelled: { label: "Cancelled", color: "text-[#f87171]",    bg: "bg-[#f87171]/10 border-[#f87171]/30" },
-  no_show:   { label: "No Show",   color: "text-[#facc15]",  bg: "bg-[#facc15]/10 border-[#facc15]/30" },
+  confirmed: { label: "Confirmed", color: "text-[#22d3ee]",   bg: "bg-[#22d3ee]/10 border-[#22d3ee]/20" },
+  seated:    { label: "Seated",    color: "text-[#34d399]",  bg: "bg-[#34d399]/10 border-[#34d399]/20" },
+  cancelled: { label: "Cancelled", color: "text-[#ef4444]",    bg: "bg-[#ef4444]/10 border-[#ef4444]/20" },
+  no_show:   { label: "No Show",   color: "text-[#facc15]",  bg: "bg-[#facc15]/10 border-[#facc15]/20" },
 };
 
 const EMPTY = { guest_name: "", guest_phone: "", party_size: "2", reserved_at: "", notes: "", table_id: "" };
@@ -97,14 +97,17 @@ export default function ReservationsPage() {
           <button key={s}
             onClick={() => setActiveStatus(s)}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border transition-all",
+              "px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-all duration-200",
               activeStatus === s
-                ? "bg-accent-cyan text-[#0c0e12] border-accent-cyan"
-                : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:text-white"
+                ? "bg-accent-cyan text-[#0c0e12] border-accent-cyan shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                : "bg-admin-card-2 border-admin-border-2 text-slate-500 hover:text-white hover:border-slate-700"
             )}
           >
             {s === "all" ? "All" : STATUS_CONFIG[s as keyof typeof STATUS_CONFIG]?.label}
-            <span className={cn("ml-1.5 text-xs", activeStatus === s ? "opacity-70" : "text-slate-500")}>
+            <span className={cn(
+              "ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-black",
+              activeStatus === s ? "bg-black/10 text-[#0c0e12]" : "bg-white/5 text-slate-600"
+            )}>
               {s === "all" ? reservations.length : reservations.filter(r => r.status === s).length}
             </span>
           </button>
@@ -197,59 +200,66 @@ export default function ReservationsPage() {
             const waLink = `https://wa.me/91${res.guest_phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hi ${res.guest_name}! Your table at ${restaurantName} is confirmed for ${resDate.toLocaleString("en-IN")} for ${res.party_size} people. See you soon! 🍽️`)}`;
 
             return (
-              <div key={res.id} className="card-admin-hover p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-white">{res.guest_name}</p>
-                      <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium", cfg?.bg, cfg?.color)}>
-                        {cfg?.label}
-                      </span>
+              <div key={res.id} className="card-admin p-5 hover:border-accent-cyan/30 transition-all group">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-accent-cyan/5 border border-accent-cyan/10 flex items-center justify-center text-accent-cyan font-bold text-lg flex-shrink-0 group-hover:bg-accent-cyan/10 transition-colors">
+                        {res.guest_name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="font-bold text-white text-base">{res.guest_name}</p>
+                          <span className={cn("text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-tighter border", cfg?.bg, cfg?.color)}>
+                            {cfg?.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{res.guest_phone}</span>
+                          <span className="text-slate-700">·</span>
+                          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{res.party_size} people</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {resDate.toLocaleString("en-IN", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {res.party_size} people
-                      </span>
+
+                    <div className="flex items-center gap-4 mt-3 pl-1">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/5">
+                        <Clock className="w-3.5 h-3.5 text-accent-cyan" />
+                        <span className="font-medium text-white">{resDate.toLocaleString("en-IN", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}</span>
+                      </div>
                       {res.restaurant_tables && (
-                        <span>Table {res.restaurant_tables.table_number}</span>
-                      )}
-                      {res.guest_phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {res.guest_phone}
-                        </span>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/5">
+                          <Calendar className="w-3.5 h-3.5 text-accent-cyan" />
+                          <span className="font-medium text-white">Table {res.restaurant_tables.table_number}</span>
+                        </div>
                       )}
                     </div>
+
                     {res.notes && (
-                      <p className="text-xs text-amber-400/70 mt-1.5 bg-amber-400/5 border border-amber-400/10 rounded-lg px-2 py-1">
-                        📝 {res.notes}
+                      <p className="mt-4 text-xs text-slate-500 bg-black/20 px-3 py-2 rounded-lg border border-white/5 italic">
+                        &ldquo;{res.notes}&rdquo;
                       </p>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
                     {res.status === "confirmed" && (
                       <button onClick={() => updateStatus(res.id, "seated")}
-                        className="btn-sm bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 text-xs">
-                        <Check className="w-3 h-3" />Seat
+                        className="flex-1 md:w-32 btn-sm bg-[#34d399]/10 text-[#34d399] border border-[#34d399]/20 hover:bg-[#34d399]/20 transition-all font-bold">
+                        <Check className="w-3.5 h-3.5" />Mark Seated
                       </button>
                     )}
                     {res.status === "confirmed" && (
                       <button onClick={() => updateStatus(res.id, "cancelled")}
-                        className="btn-sm bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 text-xs">
-                        <X className="w-3 h-3" />Cancel
+                        className="flex-1 md:w-32 btn-sm bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all font-bold">
+                        <X className="w-3.5 h-3.5" />Cancel
                       </button>
                     )}
                     {res.guest_phone && (
                       <a href={waLink} target="_blank" rel="noreferrer"
-                        className="btn-sm bg-green-600/10 text-green-500 border border-green-600/20 hover:bg-green-600/20 text-xs flex items-center gap-1 justify-center">
-                        <MessageCircle className="w-3 h-3" />WA
+                        className="flex-1 md:w-32 btn-sm bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20 hover:bg-accent-cyan/20 transition-all font-bold flex items-center gap-1.5 justify-center">
+                        <MessageCircle className="w-3.5 h-3.5" />WhatsApp
                       </a>
                     )}
                   </div>

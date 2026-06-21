@@ -128,6 +128,8 @@ export default function AdminMenuView() {
   const [categoryNameInput, setCategoryNameInput] = useState("");
   const [savingCategory, setSavingCategory] = useState(false);
 
+  const [customAllergyInput, setCustomAllergyInput] = useState("");
+
   const filteredDishes = useMemo(() => {
     return dishes.filter((dish) => {
       if (categoryFilter !== "all" && dish.category_id !== categoryFilter) return false;
@@ -207,6 +209,15 @@ export default function AdminMenuView() {
         ? prev.allergy_tags.filter((t) => t !== tag)
         : [...prev.allergy_tags, tag],
     }));
+  }
+
+  function addCustomAllergy() {
+    const tag = customAllergyInput.trim().toLowerCase();
+    if (!tag) return;
+    if (!form.allergy_tags.includes(tag)) {
+      setForm((prev) => ({ ...prev, allergy_tags: [...prev.allergy_tags, tag] }));
+    }
+    setCustomAllergyInput("");
   }
 
   async function saveDish() {
@@ -320,12 +331,12 @@ export default function AdminMenuView() {
           <button
             type="button"
             onClick={() => setShowCategoryModal(true)}
-            className="btn-md btn-admin mt-1"
+            className="btn-md btn-dark mt-1"
           >
             <Plus className="w-4 h-4" />
             Category
           </button>
-          <button type="button" onClick={openAddDish} className="btn-md btn-accent mt-1">
+          <button type="button" onClick={openAddDish} className="btn-md btn-primary mt-1">
             <Plus className="w-4 h-4" />
             Add Dish
           </button>
@@ -340,9 +351,9 @@ export default function AdminMenuView() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--admin-faint)' }} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-4" />
           <input
-            className="input-admin pl-10"
+            className="input-dark pl-10"
             placeholder="Search dishes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -351,8 +362,7 @@ export default function AdminMenuView() {
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-white transition-colors"
-              style={{ color: 'var(--admin-faint)' }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-4 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -364,11 +374,12 @@ export default function AdminMenuView() {
         <button
           type="button"
           onClick={() => setCategoryFilter("all")}
-          className="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all"
-          style={categoryFilter === "all"
-            ? { background: 'var(--accent-cyan)', color: '#0c0e12' }
-            : { background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)', color: 'var(--admin-subtle)' }
-          }
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
+            categoryFilter === "all"
+              ? "bg-brand text-white"
+              : "bg-dark-card border border-dark-border text-ink-3 hover:text-white"
+          )}
         >
           All ({dishes.length})
         </button>
@@ -377,11 +388,12 @@ export default function AdminMenuView() {
             key={cat.id}
             type="button"
             onClick={() => setCategoryFilter(cat.id)}
-            className="px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all"
-            style={categoryFilter === cat.id
-              ? { background: 'var(--accent-cyan)', color: '#0c0e12' }
-              : { background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)', color: 'var(--admin-subtle)' }
-            }
+            className={cn(
+              "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
+              categoryFilter === cat.id
+                ? "bg-brand text-white"
+                : "bg-dark-card border border-dark-border text-ink-3 hover:text-white"
+            )}
           >
             {cat.name}
           </button>
@@ -391,24 +403,24 @@ export default function AdminMenuView() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="card-admin overflow-hidden">
-              <div className="animate-pulse h-36 bg-white/5" />
+            <div key={i} className="card-dark overflow-hidden">
+              <div className="shimmer h-36" />
               <div className="p-4 space-y-2">
-                <div className="animate-pulse h-4 rounded w-2/3 bg-white/5" />
-                <div className="animate-pulse h-3 rounded w-1/2 bg-white/5" />
+                <div className="shimmer h-4 rounded w-2/3" />
+                <div className="shimmer h-3 rounded w-1/2" />
               </div>
             </div>
           ))}
         </div>
       ) : filteredDishes.length === 0 ? (
         <div className="text-center py-20">
-          <UtensilsCrossed className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: 'var(--admin-subtle)' }} />
-          <p className="font-medium" style={{ color: 'var(--admin-subtle)' }}>No dishes found</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--admin-faint)' }}>
+          <UtensilsCrossed className="w-12 h-12 mx-auto mb-4 text-ink-4 opacity-40" />
+          <p className="text-ink-3 font-medium">No dishes found</p>
+          <p className="text-xs text-ink-4 mt-1">
             {dishes.length === 0 ? "Add your first dish to get started" : "Try a different search or category"}
           </p>
           {dishes.length === 0 && (
-            <button type="button" onClick={openAddDish} className="btn-md btn-accent mt-4 inline-flex">
+            <button type="button" onClick={openAddDish} className="btn-md btn-primary mt-4 inline-flex">
               <Plus className="w-4 h-4" />
               Add Dish
             </button>
@@ -425,11 +437,11 @@ export default function AdminMenuView() {
               <div
                 key={dish.id}
                 className={cn(
-                  "card-admin overflow-hidden flex flex-col transition-all",
+                  "card-dark overflow-hidden flex flex-col transition-all",
                   !dish.is_available && "opacity-60"
                 )}
               >
-                <div className="relative h-36" style={{ background: 'var(--admin-card-2)' }}>
+                <div className="relative h-36 bg-dark-tertiary">
                   {dish.image_url ? (
                     <img
                       src={dish.image_url}
@@ -437,7 +449,7 @@ export default function AdminMenuView() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--admin-faint)' }}>
+                    <div className="w-full h-full flex items-center justify-center text-ink-4">
                       <UtensilsCrossed className="w-10 h-10 opacity-30" />
                     </div>
                   )}
@@ -453,10 +465,9 @@ export default function AdminMenuView() {
                   <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                     <div
                       className={cn(
-                        "w-4 h-4 rounded-sm border-2 flex items-center justify-center",
+                        "w-4 h-4 rounded-sm border-2 bg-dark-primary/80 flex items-center justify-center",
                         border
                       )}
-                      style={{ background: 'rgba(12,14,18,0.80)' }}
                     >
                       <div
                         className={cn(
@@ -472,7 +483,7 @@ export default function AdminMenuView() {
                       />
                     </div>
                     {dish.is_special && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold text-[#0c0e12]" style={{ background: 'var(--accent-cyan)' }}>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand/90 text-white font-semibold">
                         Special
                       </span>
                     )}
@@ -489,13 +500,13 @@ export default function AdminMenuView() {
                   <div>
                     <p className="font-semibold text-white leading-snug">{dish.name}</p>
                     {dish.name_hindi && (
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--admin-faint)' }}>{dish.name_hindi}</p>
+                      <p className="text-xs text-ink-4 mt-0.5">{dish.name_hindi}</p>
                     )}
-                    <p className="text-xs mt-1" style={{ color: 'var(--admin-faint)' }}>{categoryName(dish, categories)}</p>
+                    <p className="text-xs text-ink-4 mt-1">{categoryName(dish, categories)}</p>
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-display font-bold text-lg" style={{ color: 'var(--accent-cyan)' }}>{formatINR(dish.price)}</p>
+                    <p className="font-display font-bold text-brand text-lg">{formatINR(dish.price)}</p>
                     {dish.spice_level > 0 && (
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: Math.min(dish.spice_level, 3) }).map((_, i) => (
@@ -505,12 +516,12 @@ export default function AdminMenuView() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 mt-auto pt-2 border-t" style={{ borderColor: 'var(--admin-border-2)' }}>
+                  <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-dark-border">
                     <button
                       type="button"
                       onClick={() => openEditDish(dish)}
                       disabled={busy}
-                      className="flex-1 btn-md btn-admin py-2 text-xs"
+                      className="flex-1 btn-md btn-dark py-2 text-xs"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       Edit
@@ -522,7 +533,7 @@ export default function AdminMenuView() {
                       title={dish.is_available ? "Mark sold out" : "Mark available"}
                       className={cn(
                         "flex-1 btn-md py-2 text-xs",
-                        dish.is_available ? "btn-admin" : "bg-green-500/10 border border-green-500/30 text-green-400"
+                        dish.is_available ? "btn-dark" : "bg-green-500/10 border border-green-500/30 text-green-400"
                       )}
                     >
                       {busy ? (
@@ -543,7 +554,7 @@ export default function AdminMenuView() {
                       type="button"
                       onClick={() => void deleteDish(dish.id, dish.name)}
                       disabled={busy}
-                      className="p-2 rounded-xl hover:text-red-400 hover:bg-red-500/10 transition-all" style={{ color: 'var(--admin-faint)' } as React.CSSProperties}
+                      className="p-2 rounded-xl text-ink-4 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -557,7 +568,7 @@ export default function AdminMenuView() {
 
       {modalMode !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="card-admin w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6" style={{ borderColor: 'rgba(34,211,238,0.20)' }}>
+          <div className="card-dark w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 border-brand/30">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold text-white text-lg">
                 {modalMode === "add" ? "Add Dish" : "Edit Dish"}
@@ -565,10 +576,7 @@ export default function AdminMenuView() {
               <button
                 type="button"
                 onClick={closeDishModal}
-                className="p-2 rounded-xl hover:text-white transition-all"
-                style={{ color: 'var(--admin-faint)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--admin-card-2)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                className="p-2 rounded-xl text-ink-4 hover:text-white hover:bg-dark-tertiary"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -576,17 +584,17 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="label" style={{ color: 'var(--admin-subtle)' }}>Name (English)</label>
+                <label className="label text-ink-3">Name (English)</label>
                 <input
-                  className="input-admin"
+                  className="input-dark"
                   value={form.name}
                   onChange={handleEnglishNameChange}
                 />
               </div>
               <div>
-                <label className="label" style={{ color: 'var(--admin-subtle)' }}>Name (Hindi)</label>
+                <label className="label text-ink-3">Name (Hindi)</label>
                 <input
-                  className="input-admin"
+                  className="input-dark"
                   value={form.name_hindi}
                   onChange={(e) => setForm((p) => ({ ...p, name_hindi: e.target.value }))}
                 />
@@ -594,9 +602,9 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Description</label>
+              <label className="label text-ink-3">Description</label>
               <textarea
-                className="input-admin min-h-[80px] resize-y"
+                className="input-dark min-h-[80px] resize-y"
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               />
@@ -604,9 +612,9 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="label" style={{ color: 'var(--admin-subtle)' }}>Price (₹)</label>
+                <label className="label text-ink-3">Price (₹)</label>
                 <input
-                  className="input-admin"
+                  className="input-dark"
                   type="number"
                   min="0"
                   step="0.01"
@@ -615,9 +623,9 @@ export default function AdminMenuView() {
                 />
               </div>
               <div>
-                <label className="label" style={{ color: 'var(--admin-subtle)' }}>Category</label>
+                <label className="label text-ink-3">Category</label>
                 <select
-                  className="input-admin"
+                  className="input-dark"
                   value={form.category_id}
                   onChange={(e) => setForm((p) => ({ ...p, category_id: e.target.value }))}
                 >
@@ -630,18 +638,19 @@ export default function AdminMenuView() {
                 </select>
               </div>
               <div>
-                <label className="label" style={{ color: 'var(--admin-subtle)' }}>Size</label>
+                <label className="label text-ink-3">Size</label>
                 <div className="flex gap-2">
                   {DISH_SIZES.map((size) => (
                     <button
                       key={size}
                       type="button"
                       onClick={() => setForm((p) => ({ ...p, dish_size: size }))}
-                      className="flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all"
-                      style={form.dish_size === size
-                        ? { background: 'rgba(34,211,238,0.10)', borderColor: 'rgba(34,211,238,0.30)', color: 'var(--accent-cyan)' }
-                        : { borderColor: 'var(--admin-border-2)', color: 'var(--admin-faint)' }
-                      }
+                      className={cn(
+                        "flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all",
+                        form.dish_size === size
+                          ? "bg-brand/10 border-brand/30 text-brand"
+                          : "border-dark-border text-ink-4"
+                      )}
                     >
                       {size}
                     </button>
@@ -651,18 +660,19 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Food type</label>
+              <label className="label text-ink-3">Food type</label>
               <div className="flex flex-wrap gap-2">
                 {FOOD_TYPES.map((ft) => (
                   <button
                     key={ft.value}
                     type="button"
                     onClick={() => setForm((p) => ({ ...p, food_type: ft.value }))}
-                    className="px-4 py-2 rounded-xl border text-sm font-medium transition-all"
-                    style={form.food_type === ft.value
-                      ? { background: 'rgba(34,211,238,0.10)', borderColor: 'rgba(34,211,238,0.30)', color: 'var(--accent-cyan)' }
-                      : { borderColor: 'var(--admin-border-2)', color: 'var(--admin-faint)' }
-                    }
+                    className={cn(
+                      "px-4 py-2 rounded-xl border text-sm font-medium transition-all",
+                      form.food_type === ft.value
+                        ? "bg-brand/10 border-brand/30 text-brand"
+                        : "border-dark-border text-ink-4"
+                    )}
                   >
                     {ft.label}
                   </button>
@@ -671,9 +681,9 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Spice level ({form.spice_level})</label>
+              <label className="label text-ink-3">Spice level ({form.spice_level})</label>
               <input
-                className="w-full accent-orange-500"
+                className="w-full accent-brand"
                 type="range"
                 min={0}
                 max={5}
@@ -686,7 +696,7 @@ export default function AdminMenuView() {
 
             {/* ── Dish Image Upload ── */}
             <div className="mb-4">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Dish Image</label>
+              <label className="label text-ink-3">Dish Image</label>
 
               {/* Hidden real file input */}
               <input
@@ -699,7 +709,7 @@ export default function AdminMenuView() {
 
               {imagePreview ? (
                 /* Preview state */
-                <div className="relative rounded-xl overflow-hidden group" style={{ border: '1px solid var(--admin-border-2)' }}>
+                <div className="relative rounded-xl overflow-hidden border border-dark-border group">
                   <img
                     src={imagePreview}
                     alt="Dish preview"
@@ -738,70 +748,92 @@ export default function AdminMenuView() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingImage}
-                  className="w-full h-36 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 group"
-                  style={{ borderColor: 'var(--admin-border-2)', background: 'rgba(19,22,34,0.40)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,211,238,0.40)'; (e.currentTarget as HTMLElement).style.background = 'rgba(34,211,238,0.04)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--admin-border-2)'; (e.currentTarget as HTMLElement).style.background = 'rgba(19,22,34,0.40)'; }}
+                  className="w-full h-36 rounded-xl border-2 border-dashed border-dark-border hover:border-brand/50 bg-dark-tertiary/40 hover:bg-brand/5 transition-all flex flex-col items-center justify-center gap-2 group"
                 >
                   {uploadingImage ? (
-                    <Loader2 className="w-7 h-7 animate-spin" style={{ color: 'var(--accent-cyan)' }} />
+                    <Loader2 className="w-7 h-7 text-brand animate-spin" />
                   ) : (
-                    <ImageUp className="w-7 h-7 transition-colors" style={{ color: 'var(--admin-faint)' }} />
+                    <ImageUp className="w-7 h-7 text-ink-4 group-hover:text-brand transition-colors" />
                   )}
-                  <span className="text-xs" style={{ color: 'var(--admin-faint)' }}>
+                  <span className="text-xs text-ink-4 group-hover:text-ink-3 transition-colors">
                     {uploadingImage ? "Uploading…" : "Click to select image from your device"}
                   </span>
-                  <span className="text-[10px]" style={{ color: 'rgba(100,116,139,0.60)' }}>PNG, JPEG, WebP or GIF · Max 5 MB</span>
+                  <span className="text-[10px] text-ink-4/60">PNG, JPEG, WebP or GIF · Max 5 MB</span>
                 </button>
               )}
             </div>
 
             <div className="mb-4">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Allergy tags</label>
-              <div className="flex flex-wrap gap-2">
-                {ALLERGY_TAGS.map((tag) => (
+              <label className="label text-ink-3">Allergy tags</label>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(new Set([...ALLERGY_TAGS, ...form.allergy_tags])).map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleAllergy(tag)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all",
+                        form.allergy_tags.includes(tag)
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                          : "border-dark-border text-ink-4"
+                      )}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Custom allergy..."
+                    className="input-dark text-xs py-2 px-3 h-auto w-40"
+                    value={customAllergyInput}
+                    onChange={(e) => setCustomAllergyInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomAllergy();
+                      }
+                    }}
+                  />
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => toggleAllergy(tag)}
-                    className="px-3 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all"
-                    style={form.allergy_tags.includes(tag)
-                      ? { background: 'rgba(245,158,11,0.10)', borderColor: 'rgba(245,158,11,0.30)', color: '#fbbf24' }
-                      : { borderColor: 'var(--admin-border-2)', color: 'var(--admin-faint)' }
-                    }
+                    onClick={addCustomAllergy}
+                    disabled={!customAllergyInput.trim()}
+                    className="btn-md btn-dark py-2 px-3 text-xs"
                   >
-                    {tag}
+                    <Plus className="w-3.5 h-3.5" />
+                    Add
                   </button>
-                ))}
+                </div>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-4 mb-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--admin-subtle)' }}>
+              <label className="flex items-center gap-2 text-sm text-ink-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.is_available}
                   onChange={(e) => setForm((p) => ({ ...p, is_available: e.target.checked }))}
-                  className="rounded accent-cyan-400"
-                  style={{ borderColor: 'var(--admin-border-2)' }}
+                  className="rounded border-dark-border"
                 />
                 Available on menu
               </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--admin-subtle)' }}>
+              <label className="flex items-center gap-2 text-sm text-ink-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.is_special}
                   onChange={(e) => setForm((p) => ({ ...p, is_special: e.target.checked }))}
-                  className="rounded accent-cyan-400"
-                  style={{ borderColor: 'var(--admin-border-2)' }}
+                  className="rounded border-dark-border"
                 />
                 Chef&apos;s special
               </label>
             </div>
 
             {modalMode === "edit" && editingDishId && (
-              <p className="text-xs mb-4" style={{ color: 'var(--admin-faint)' }}>
-                <Link href="/admin/menu/ar" className="hover:underline" style={{ color: 'var(--accent-cyan)' }}>
+              <p className="text-xs text-ink-4 mb-4">
+                <Link href="/admin/menu/ar" className="text-brand hover:underline">
                   AR Setup
                 </Link>
                 {" — manage 3D views for this dish"}
@@ -809,7 +841,7 @@ export default function AdminMenuView() {
             )}
 
             <div className="flex gap-3">
-              <button type="button" onClick={closeDishModal} className="btn-md btn-admin flex-1">
+              <button type="button" onClick={closeDishModal} className="btn-md btn-dark flex-1">
                 <X className="w-4 h-4" />
                 Cancel
               </button>
@@ -819,7 +851,7 @@ export default function AdminMenuView() {
                 disabled={
                   saving || !form.name.trim() || !form.price || !form.category_id
                 }
-                className="btn-md btn-accent flex-1"
+                className="btn-md btn-primary flex-1"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -835,7 +867,7 @@ export default function AdminMenuView() {
 
       {showCategoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="card-admin w-full max-w-md p-6" style={{ borderColor: 'rgba(34,211,238,0.20)' }}>
+          <div className="card-dark w-full max-w-md p-6 border-brand/30">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold text-white">Add Category</h3>
               <button
@@ -844,18 +876,15 @@ export default function AdminMenuView() {
                   setShowCategoryModal(false);
                   setCategoryNameInput("");
                 }}
-                className="p-2 rounded-xl hover:text-white transition-all"
-                style={{ color: 'var(--admin-faint)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--admin-card-2)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                className="p-2 rounded-xl text-ink-4 hover:text-white hover:bg-dark-tertiary"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="mb-5">
-              <label className="label" style={{ color: 'var(--admin-subtle)' }}>Category name</label>
+              <label className="label text-ink-3">Category name</label>
               <input
-                className="input-admin"
+                className="input-dark"
                 placeholder="e.g. Starters"
                 value={categoryNameInput}
                 onChange={(e) => setCategoryNameInput(e.target.value)}
@@ -868,7 +897,7 @@ export default function AdminMenuView() {
                   setShowCategoryModal(false);
                   setCategoryNameInput("");
                 }}
-                className="btn-md btn-admin flex-1"
+                className="btn-md btn-dark flex-1"
               >
                 <X className="w-4 h-4" />
                 Cancel
@@ -877,7 +906,7 @@ export default function AdminMenuView() {
                 type="button"
                 onClick={() => void addCategory()}
                 disabled={savingCategory || !categoryNameInput.trim()}
-                className="btn-md btn-accent flex-1"
+                className="btn-md btn-primary flex-1"
               >
                 {savingCategory ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

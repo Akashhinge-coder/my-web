@@ -14,6 +14,8 @@ const bootstrapSessionSchema = z.object({
   qrToken: z.string().uuid().optional().nullable(),
   name: z.string().optional(),
   phone: z.string().optional().nullable(),
+  checkOnly: z.boolean().optional(),
+  resend: z.boolean().optional(),
 });
 
 export async function bootstrapSession(req: NextRequest) {
@@ -24,7 +26,7 @@ export async function bootstrapSession(req: NextRequest) {
       throw new ValidationError("Invalid parameters", parsed.error.flatten().fieldErrors);
     }
 
-    const { tableId, qrToken, name, phone } = parsed.data;
+    const { tableId, qrToken, name, phone, checkOnly } = parsed.data;
     const cookieStore = cookies();
     const existingParticipantToken = cookieStore.get("participant_token")?.value;
 
@@ -40,6 +42,22 @@ export async function bootstrapSession(req: NextRequest) {
     if (activeSession && existingParticipantToken) {
       const existingParticipant = await SessionParticipantRepository.findByToken(activeSession.id, existingParticipantToken);
       if (existingParticipant) {
+        if (parsed.data.resend && existingParticipant.status === "denied") {
+          if (existingParticipant.left_at) {
+            const leftTime = new Date(existingParticipant.left_at).getTime();
+            const now = Date.now();
+            if (now - leftTime < 60000) {
+              return fail("RATE_LIMIT", "Please wait 60 seconds before resending your request", 429);
+            }
+          }
+          await SessionParticipantRepository.updateStatus(existingParticipant.id, "pending");
+          return ok({
+            sessionId: activeSession.id,
+            status: "pending",
+            role: existingParticipant.role,
+          });
+        }
+
         // Return existing state without creating a new participant
         return ok({
           sessionId: activeSession.id,
@@ -51,6 +69,7 @@ export async function bootstrapSession(req: NextRequest) {
 
     // Physical QR code scan required (only for new participants)
     if (!qrToken || table.qr_token !== qrToken) {
+      if (checkOnly) return ok({ status: "needs_qr" });
       return fail("INVALID_QR", "Physical QR scan required to start or join a dining session", 403);
     }
 
@@ -59,6 +78,7 @@ export async function bootstrapSession(req: NextRequest) {
 
     // 2. We are creating a new participant. Name is required.
     if (!name || name.trim() === "") {
+       if (checkOnly) return ok({ status: "needs_name" });
        return fail("VALIDATION_ERROR", "Name is required to join the table", 400);
     }
 
