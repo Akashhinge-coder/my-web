@@ -85,7 +85,7 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
               style={{ border: '1px solid var(--admin-border-2)' }}
             />
           ) : (
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[#0c0e12] font-display font-bold text-sm flex-shrink-0"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[#0c0e12] font-display font-bold text-sm flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' }}>
               {initials}
             </div>
@@ -101,15 +101,15 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
           href={restaurantId ? `/kitchen/${restaurantId}` : "/admin"}
           target={restaurantId ? "_blank" : undefined}
           className="flex items-center justify-between px-3 py-2 rounded-xl transition-colors group"
-          style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.18)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(34,211,238,0.14)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(34,211,238,0.08)')}
+          style={{ background: 'rgba(193,125,60,0.08)', border: '1px solid rgba(193,125,60,0.18)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(193,125,60,0.14)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(193,125,60,0.08)')}
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full animate-pulse-soft" style={{ background: 'var(--accent-cyan)' }} />
             <span className="text-xs font-medium" style={{ color: 'var(--accent-cyan)' }}>Kitchen Display</span>
           </div>
-          <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" style={{ color: 'rgba(34,211,238,0.5)' }} />
+          <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" style={{ color: 'rgba(193,125,60,0.5)' }} />
         </Link>
       </div>
       <div className="flex-1 overflow-y-auto py-2 px-3 space-y-5 scrollbar-hide">
@@ -138,7 +138,7 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
           target={restaurantSlug ? "_blank" : undefined}
           className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors group text-xs"
           style={{ background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(34,211,238,0.25)'; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(193, 125, 60, 0.25)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--admin-border-2)'; }}
         >
           <span className="group-hover:text-white transition-colors" style={{ color: 'var(--admin-subtle)' }}>View customer menu</span>

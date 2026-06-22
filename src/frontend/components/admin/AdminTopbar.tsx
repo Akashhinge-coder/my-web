@@ -42,7 +42,7 @@ export default function AdminTopbar({ restaurant, userEmail }: Props) {
           target={restaurantSlug ? "_blank" : undefined}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all hover:text-white"
           style={{ border: '1px solid var(--admin-border-2)', color: 'var(--admin-subtle)' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(34,211,238,0.35)'; e.currentTarget.style.color = '#22d3ee'; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(193,125,60,0.35)'; e.currentTarget.style.color = 'var(--accent-cyan)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--admin-border-2)'; e.currentTarget.style.color = 'var(--admin-subtle)'; }}
         >
           Customer menu
@@ -66,12 +66,12 @@ export default function AdminTopbar({ restaurant, userEmail }: Props) {
             onClick={() => setUserOpen(!userOpen)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all"
             style={{ border: '1px solid var(--admin-border-2)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,211,238,0.35)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(193,125,60,0.35)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--admin-border-2)'; }}
           >
             <div
               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.30)', color: 'var(--accent-cyan)' }}
+              style={{ background: 'rgba(193,125,60,0.15)', border: '1px solid rgba(193,125,60,0.30)', color: 'var(--accent-cyan)' }}
             >
               {userEmail.charAt(0).toUpperCase()}
             </div>

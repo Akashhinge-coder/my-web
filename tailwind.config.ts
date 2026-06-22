@@ -49,8 +49,8 @@ const config: Config = {
           "border-2":"#1e293b",
         },
         accent: {
-          cyan:  "#22d3ee",
-          blue:  "#2563eb",
+          cyan:  "#C17D3C",
+          blue:  "#E8A85F",
         },
         midnight: {
           DEFAULT: "#000000",

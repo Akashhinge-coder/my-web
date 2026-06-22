@@ -89,7 +89,7 @@ export default function LoyaltyPage() {
         {[
           { label: "Total members", value: summary.totalMembers.toString(), icon: Users, color: "text-[#a78bfa]", bg: "bg-[#a78bfa]/10 border-[#a78bfa]/20" },
           { label: "Active (30d)", value: summary.activeMembers.toString(), icon: TrendingUp, color: "text-[#34d399]", bg: "bg-[#34d399]/10 border-[#34d399]/20" },
-          { label: "Total points", value: summary.totalPoints.toLocaleString(), icon: Star, color: "text-[#22d3ee]", bg: "bg-[#22d3ee]/10 border-[#22d3ee]/20" },
+          { label: "Total points", value: summary.totalPoints.toLocaleString(), icon: Star, color: "text-[var(--accent-cyan)]", bg: "bg-[var(--accent-cyan)]/10 border-[var(--accent-cyan)]/20" },
           { label: "Total spent", value: formatINR(summary.totalSpent), icon: Gift, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" },
         ].map((stat) => (
           <div key={stat.label} className="stat-card-admin">

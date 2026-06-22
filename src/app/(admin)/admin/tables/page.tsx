@@ -95,23 +95,23 @@ export default function TablesPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
           <h1 className="page-title text-white">Tables</h1>
-          <p className="page-subtitle">{tables.length} tables · Live status</p>
+          <p className="page-subtitle text-slate-400">{tables.length} tables · Live status</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-md btn-primary mt-1">
+        <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />
           Add Table
         </button>
       </div>
 
       {/* Status summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {(Object.entries(STATUS_CONFIG) as [TableStatusKey, typeof STATUS_CONFIG[TableStatusKey]][]).map(([status, cfg]) => (
-          <div key={status} className={`stat-card-admin p-4 ${cfg.bg}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-              <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
+          <div key={status} className={cn("rounded-2xl border bg-[#111420]/80 p-5 transition-all duration-300", cfg.bg.split(' ')[1], "border-opacity-30")}>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className={cn("w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]", cfg.dot)} />
+              <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-60", cfg.color)}>{cfg.label}</span>
             </div>
-            <p className={`text-2xl font-display font-semibold ${cfg.color}`}>{counts[status]}</p>
+            <p className={cn("text-3xl font-display font-black tracking-tight", cfg.color)}>{counts[status]}</p>
           </div>
         ))}
       </div>
@@ -167,10 +167,10 @@ export default function TablesPage() {
             </div>
           </div>
           <div className="flex gap-2 mt-4">
-            <button onClick={addTable} disabled={saving} className="btn-md btn-primary">
+            <button onClick={addTable} disabled={saving} className="btn-md btn-accent flex-1">
               {saving ? "Adding…" : <><Check className="w-4 h-4" />Add Table</>}
             </button>
-            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin">
+            <button onClick={() => setShowAdd(false)} className="btn-md btn-admin flex-1">
               <X className="w-4 h-4" />
               Cancel
             </button>

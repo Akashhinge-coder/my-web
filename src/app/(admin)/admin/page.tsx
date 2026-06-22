@@ -30,8 +30,8 @@ export default async function AdminDashboard() {
       value: formatINRCompact(todayRevenue),
       full: formatINR(todayRevenue),
       icon: TrendingUp,
-      color: "text-[#22d3ee]",
-      bg: "bg-[#22d3ee]/10 border-[#22d3ee]/20",
+      color: "text-[var(--accent-cyan)]",
+      bg: "bg-[var(--accent-cyan)]/10 border-[var(--accent-cyan)]/20",
       href: "/admin/analytics",
     },
     {
