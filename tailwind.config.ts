@@ -14,7 +14,40 @@ const config: Config = {
         mono: ["var(--font-dm-mono)", "monospace"],
       },
       colors: {
-        border: "#E2DAD0",
+        border: "var(--border)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+          cyan:  "var(--accent-cyan)",
+          blue:  "var(--accent-blue)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        ring: "var(--ring)",
         brand: {
           50:  "#FEF6EC",
           100: "#FDEBD3",
@@ -42,15 +75,11 @@ const config: Config = {
         },
         /* ── Admin Panel Theme ── */
         admin: {
-          bg:        "#0c0e12",
-          card:      "#111420",
-          "card-2":  "#131622",
-          border:    "#141722",
-          "border-2":"#1e293b",
-        },
-        accent: {
-          cyan:  "#C17D3C",
-          blue:  "#E8A85F",
+          bg:        "var(--admin-bg)",
+          card:      "var(--admin-card)",
+          "card-2":  "var(--admin-card-2)",
+          border:    "var(--admin-border)",
+          "border-2":"var(--admin-border-2)",
         },
         midnight: {
           DEFAULT: "#000000",

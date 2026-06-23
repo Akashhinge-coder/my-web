@@ -1,95 +1,278 @@
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}
+
 :root {
-  /* Core Background & Surfaces */
-  --admin-bg:        #0c0e12;
-  --admin-card:      #111420;
-  --admin-card-2:    #131622;
-  --admin-border:    #141722;
-  --admin-border-2:  #1e293b;
+  --background: oklch(0.9911 0 0);
+  --foreground: oklch(0.1994 0.0470 270.6494);
+  --card: oklch(0.9851 0 0);
+  --card-foreground: oklch(0.1994 0.0470 270.6494);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.1994 0.0470 270.6494);
+  --primary: oklch(0.5729 0.2337 264.3664);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.1994 0.0470 270.6494);
+  --secondary-foreground: oklch(1.0000 0 0);
+  --muted: oklch(1.0000 0 0);
+  --muted-foreground: oklch(0.1994 0.0470 270.6494);
+  --accent: oklch(1.0000 0 0);
+  --accent-foreground: oklch(0.5729 0.2337 264.3664);
+  --destructive: oklch(0.7058 0.1918 39.5760);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9212 0.0033 17.2170);
+  --input: oklch(0.8452 0 0);
+  --ring: oklch(0.5784 0.2303 263.8862);
+  --chart-1: oklch(0.5729 0.2337 264.3664);
+  --chart-2: oklch(0.7677 0.1312 194.1427);
+  --chart-3: oklch(0.9649 0.1962 111.4216);
+  --chart-4: oklch(0.8439 0.1679 169.5646);
+  --chart-5: oklch(0.6411 0.2446 28.5713);
+  --sidebar: oklch(0.9851 0 0);
+  --sidebar-foreground: oklch(0.1994 0.0470 270.6494);
+  --sidebar-primary: oklch(0.5729 0.2337 264.3664);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(1.0000 0 0);
+  --sidebar-accent-foreground: oklch(0.5729 0.2337 264.3664);
+  --sidebar-border: oklch(1.0000 0 0);
+  --sidebar-ring: oklch(0.5784 0.2303 263.8862);
+  --font-sans: Open Sans, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 1.3rem;
+  --shadow-x: -50px;
+  --shadow-y: 2px;
+  --shadow-blur: 0px;
+  --shadow-spread: -50px;
+  --shadow-opacity: 0;
+  --shadow-color: #2e6aff;
+  --shadow-2xs: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-xs: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-sm: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00), -50px 1px 2px -51px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00), -50px 1px 2px -51px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-md: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00), -50px 2px 4px -51px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-lg: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00), -50px 4px 6px -51px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-xl: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00), -50px 8px 10px -51px hsl(222.7751 100% 59.0196% / 0.00);
+  --shadow-2xl: -50px 2px 0px -50px hsl(222.7751 100% 59.0196% / 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
 
-  /* Accents */
-  --accent-cyan:     #C17D3C;
-  --accent-blue:     #E8A85F;
-  --admin-success:   #34d399;
-  --admin-warning:   #facc15;
-  --admin-error:     #ef4444;
-  --admin-purple:    #a78bfa;
-  --accent-glow:     rgba(193, 125, 60, 0.4);
+  /* Aliases for admin-side components */
+  --admin-bg: var(--background);
+  --admin-card: var(--card);
+  --admin-card-2: var(--muted);
+  --admin-border: var(--border);
+  --admin-border-2: var(--border);
+  --accent-cyan: var(--primary);
+  --accent-blue: var(--chart-2);
+}
 
-  /* Text Colors */
-  --admin-text:      #ffffff;
-  --admin-muted:     #cbd5e1;
-  --admin-subtle:    #94a3b8;
-  --admin-faint:     #64748b;
+.dark {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1.0000 0 0);
+  --card: oklch(0.1684 0 0);
+  --card-foreground: oklch(0.8853 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1.0000 0 0);
+  --primary: oklch(0.5683 0.2366 264.2478);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(1.0000 0 0);
+  --secondary-foreground: oklch(0.1994 0.0470 270.6494);
+  --muted: oklch(0.2090 0 0);
+  --muted-foreground: oklch(0.5953 0.0215 276.1101);
+  --accent: oklch(0.1880 0.0868 261.9799);
+  --accent-foreground: oklch(0.5683 0.2366 264.2478);
+  --destructive: oklch(0.7058 0.1918 39.5760);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2746 0.0130 279.0717);
+  --input: oklch(0.2697 0.0888 269.7716);
+  --ring: oklch(0.5784 0.2303 263.8862);
+  --chart-1: oklch(0.5729 0.2337 264.3664);
+  --chart-2: oklch(0.7677 0.1312 194.1427);
+  --chart-3: oklch(0.9649 0.1962 111.4216);
+  --chart-4: oklch(0.8439 0.1679 169.5646);
+  --chart-5: oklch(0.6411 0.2446 28.5713);
+  --sidebar: oklch(0.1684 0 0);
+  --sidebar-foreground: oklch(0.8853 0 0);
+  --sidebar-primary: oklch(0.5784 0.2303 263.8862);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.1880 0.0868 261.9799);
+  --sidebar-accent-foreground: oklch(0.5683 0.2366 264.2478);
+  --sidebar-border: oklch(0.3706 0.0642 269.1117);
+  --sidebar-ring: oklch(0.5784 0.2303 263.8862);
 }
 
 /* Base Styles for Admin Panel */
 .admin-theme {
-  background-color: var(--admin-bg);
-  color: var(--admin-text);
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* Overrides for admin variables with high specificity */
+  --admin-bg: var(--background);
+  --admin-card: var(--card);
+  --admin-card-2: var(--muted);
+  --admin-border: var(--border);
+  --admin-border-2: var(--border);
+  --accent-cyan: var(--primary);
+  --accent-blue: var(--chart-2);
+
+  /* Light mode specific text variables */
+  --admin-text: var(--foreground);
+  --admin-muted: oklch(0.40 0.015 270);
+  --admin-subtle: oklch(0.55 0.015 270);
+  --admin-faint: oklch(0.68 0.01 270);
+}
+
+.dark .admin-theme,
+.admin-theme.dark {
+  /* Dark mode specific text variables */
+  --admin-text: var(--foreground);
+  --admin-muted: oklch(0.869 0.012 261.3);
+  --admin-subtle: oklch(0.707 0.022 261.1);
+  --admin-faint: oklch(0.558 0.028 259.7);
+}
+
+/* Badges overrides for light theme */
+.admin-theme:not(.dark) .badge-admin-pending {
+  background: oklch(0.95 0.10 80);
+  color: oklch(0.40 0.15 80);
+  border-color: oklch(0.90 0.10 80);
+}
+.admin-theme:not(.dark) .badge-admin-success {
+  background: oklch(0.95 0.10 145);
+  color: oklch(0.35 0.15 145);
+  border-color: oklch(0.90 0.10 145);
+}
+.admin-theme:not(.dark) .badge-admin-error {
+  background: oklch(0.95 0.10 25);
+  color: oklch(0.45 0.15 25);
+  border-color: oklch(0.90 0.10 25);
+}
+.admin-theme:not(.dark) .badge-admin-info {
+  background: oklch(0.95 0.10 200);
+  color: oklch(0.40 0.15 200);
+  border-color: oklch(0.90 0.10 200);
+}
+.admin-theme:not(.dark) .badge-admin-live {
+  background: oklch(0.93 0.10 250);
+  color: oklch(0.40 0.15 250);
+  border-color: oklch(0.85 0.10 250);
 }
 
 .admin-theme .card-admin {
-  background: var(--admin-card);
-  border: 1px solid var(--admin-border);
-  border-radius: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .admin-theme .card-admin-2 {
-  background: var(--admin-card-2);
-  border: 1px solid var(--admin-border-2);
-  border-radius: 1rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .admin-theme .input-admin {
-  background: var(--admin-card-2);
-  border: 1px solid var(--admin-border-2);
-  color: var(--admin-text);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  color: var(--foreground);
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
 }
 
 .admin-theme .input-admin:focus {
-  border-color: var(--accent-cyan);
+  border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(193, 125, 60, 0.1);
+  box-shadow: 0 0 0 2px var(--ring);
 }
 
 .admin-theme .btn-admin {
-  background: var(--admin-card-2);
-  border: 1px solid var(--admin-border-2);
-  color: var(--admin-text);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  color: var(--foreground);
   border-radius: 0.75rem;
   transition: all 0.2s;
   font-weight: 600;
 }
 
-/* Sidebar Overrides for Orange Theme */
+.admin-theme .btn-admin:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Sidebar Overrides */
 .admin-theme .sidebar-item.active {
-  color: #ffffff !important;
-  background: var(--admin-card-2) !important;
-  box-shadow: inset 0 0 0 1px rgba(193, 125, 60, 0.15), 0 0 16px rgba(193, 125, 60, 0.08) !important;
+  color: var(--primary-foreground) !important;
+  background: var(--primary) !important;
+  box-shadow: 0 4px 12px var(--ring) !important;
 }
 
 .admin-theme .sidebar-item.active::before {
-  background: var(--accent-cyan) !important;
-  box-shadow: 0 0 8px var(--accent-cyan) !important;
+  background: var(--primary-foreground) !important;
+  box-shadow: 0 0 8px var(--primary-foreground) !important;
 }
 
 .admin-theme .btn-accent {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  color: #0c0e12;
+  background: linear-gradient(135deg, var(--primary), var(--chart-2));
+  color: var(--primary-foreground);
   border-radius: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 4px 12px var(--ring);
   transition: all 0.3s ease;
   border: none;
 }
 
 .admin-theme .btn-accent:hover {
-  box-shadow: 0 0 25px rgba(193, 125, 60, 0.6);
+  opacity: 0.9;
   transform: translateY(-1px);
-  filter: brightness(1.05);
 }
 
 .admin-theme .btn-accent:active {

@@ -8,10 +8,10 @@ import { Plus, QrCode, Users, Edit2, Check, X, Download, Trash2 } from "lucide-r
 import type { Table, TableStatus } from "@/types/domain";
 
 const STATUS_CONFIG = {
-  available: { label: "Available", color: "text-[#34d399]", bg: "bg-[#34d399]/10 border-[#34d399]/20", dot: "bg-[#34d399]" },
-  occupied:  { label: "Occupied",  color: "text-[#f87171]",     bg: "bg-[#f87171]/10 border-[#f87171]/20",         dot: "bg-[#f87171]"     },
-  reserved:  { label: "Reserved",  color: "text-[#a78bfa]",  bg: "bg-[#a78bfa]/10 border-[#a78bfa]/20",   dot: "bg-[#a78bfa]"  },
-  cleaning:  { label: "Cleaning",  color: "text-[#facc15]",   bg: "bg-[#facc15]/10 border-[#facc15]/20",     dot: "bg-[#facc15]"   },
+  available: { label: "Available", color: "text-chart-3", bg: "bg-chart-3/10 border-chart-3/20", dot: "bg-chart-3" },
+  occupied:  { label: "Occupied",  color: "text-destructive", bg: "bg-destructive/10 border-destructive/20", dot: "bg-destructive" },
+  reserved:  { label: "Reserved",  color: "text-chart-4", bg: "bg-chart-4/10 border-chart-4/20", dot: "bg-chart-4" },
+  cleaning:  { label: "Cleaning",  color: "text-chart-2", bg: "bg-chart-2/10 border-chart-2/20", dot: "bg-chart-2" },
 } as const;
 
 type TableStatusKey = keyof typeof STATUS_CONFIG;
@@ -94,8 +94,8 @@ export default function TablesPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white">Tables</h1>
-          <p className="page-subtitle text-slate-400">{tables.length} tables · Live status</p>
+          <h1 className="page-title text-foreground">Tables</h1>
+          <p className="page-subtitle text-muted-foreground">{tables.length} tables · Live status</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />
@@ -106,7 +106,7 @@ export default function TablesPage() {
       {/* Status summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {(Object.entries(STATUS_CONFIG) as [TableStatusKey, typeof STATUS_CONFIG[TableStatusKey]][]).map(([status, cfg]) => (
-          <div key={status} className={cn("rounded-2xl border bg-[#111420]/80 p-5 transition-all duration-300", cfg.bg.split(' ')[1], "border-opacity-30")}>
+          <div key={status} className={cn("rounded-2xl border bg-card/80 p-5 transition-all duration-300 border-border/30", cfg.bg.split(' ')[1])}>
             <div className="flex items-center gap-2.5 mb-2">
               <div className={cn("w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]", cfg.dot)} />
               <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-60", cfg.color)}>{cfg.label}</span>
@@ -118,14 +118,14 @@ export default function TablesPage() {
 
       {/* Add table form */}
       {showAdd && (
-        <div className="card-admin p-5 border-accent-cyan/30">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-accent-cyan" />
+        <div className="card-admin p-5 border-primary/30">
+          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-primary" />
             New Table
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="label text-slate-400">Table Number</label>
+              <label className="label text-muted-foreground">Table Number</label>
               <input
                 className="input-admin"
                 placeholder="T13"
@@ -134,7 +134,7 @@ export default function TablesPage() {
               />
             </div>
             <div>
-              <label className="label text-slate-400">Seats</label>
+              <label className="label text-muted-foreground">Seats</label>
               <select
                 className="input-admin"
                 value={newTable.seating_capacity}
@@ -144,7 +144,7 @@ export default function TablesPage() {
               </select>
             </div>
             <div>
-              <label className="label text-slate-400">Type</label>
+              <label className="label text-muted-foreground">Type</label>
               <select
                 className="input-admin"
                 value={newTable.table_type}
@@ -157,7 +157,7 @@ export default function TablesPage() {
               </select>
             </div>
             <div>
-              <label className="label text-slate-400">Floor</label>
+              <label className="label text-muted-foreground">Floor</label>
               <input
                 className="input-admin"
                 placeholder="Ground Floor"
@@ -183,8 +183,8 @@ export default function TablesPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {[1,2,3,4,5,6,7,8].map(i => (
             <div key={i} className="card-admin p-5 space-y-3">
-              <div className="shimmer h-4 rounded w-16 bg-white/5" />
-              <div className="shimmer h-3 rounded w-24 bg-white/5" />
+              <div className="shimmer h-4 rounded w-16 bg-muted/20" />
+              <div className="shimmer h-3 rounded w-24 bg-muted/20" />
             </div>
           ))}
         </div>
@@ -197,24 +197,24 @@ export default function TablesPage() {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-lg font-display font-semibold text-white leading-none">
+                    <p className="text-lg font-display font-semibold text-foreground leading-none">
                       {table.table_number}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
-                      <Users className="w-3 h-3 text-slate-500" />
-                      <span className="text-xs text-slate-500">{table.seating_capacity} seats</span>
+                      <Users className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{table.seating_capacity} seats</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => setEditingId(editingId === table.id ? null : table.id)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => deleteTable(table.id)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -229,15 +229,15 @@ export default function TablesPage() {
 
                 {/* Floor tag */}
                 {table.floor && (
-                  <p className="text-[10px] text-slate-400 bg-white/5 rounded-md px-2 py-1 self-start border border-white/5">
+                  <p className="text-[10px] text-muted-foreground bg-muted/20 rounded-md px-2 py-1 self-start border border-border/5">
                     {table.floor}
                   </p>
                 )}
 
                 {/* Status changer (when editing) */}
                 {editingId === table.id && (
-                  <div className="space-y-1 pt-1 border-t border-admin-border-2">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5">Change status</p>
+                  <div className="space-y-1 pt-1 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Change status</p>
                     {(Object.keys(STATUS_CONFIG) as TableStatusKey[]).map((s) => (
                       <button
                         key={s}
@@ -246,7 +246,7 @@ export default function TablesPage() {
                           "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all",
                           table.status === s
                             ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} font-medium`
-                            : "text-slate-400 hover:bg-white/5"
+                            : "text-muted-foreground hover:bg-muted/20"
                         )}
                       >
                         <div className={cn("w-1.5 h-1.5 rounded-full", STATUS_CONFIG[s].dot)} />
@@ -258,23 +258,23 @@ export default function TablesPage() {
                 )}
 
                 {/* QR */}
-                <div className="flex items-center gap-2 pt-1 border-t border-admin-border-2">
+                <div className="flex items-center gap-2 pt-1 border-t border-border/50">
                   <a
                     href={generateQRUrl(restaurantSlug, table.id, table.qr_token)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-accent-cyan transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors"
                   >
                     <QrCode className="w-3 h-3" />
                     View QR
                   </a>
-                  <span className="text-slate-700">·</span>
+                  <span className="text-border">·</span>
                   <button
                     onClick={() => {
                       const url = generateQRUrl(restaurantSlug, table.id, table.qr_token);
                       window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`, "_blank");
                     }}
-                    className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-accent-cyan transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     Download

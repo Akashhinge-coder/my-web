@@ -21,7 +21,7 @@ export default function AdminLayout({
   const userEmail = session?.user?.email ?? "";
 
   return (
-    <div className="min-h-screen flex admin-theme" style={{ background: 'var(--admin-bg)' }}>
+    <div className="min-h-screen flex admin-theme bg-background text-foreground">
       <AdminSidebar
         restaurant={restaurant}
         userRole={userRole}

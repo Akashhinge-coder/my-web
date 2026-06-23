@@ -120,10 +120,10 @@ export default function HappyHoursPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white flex items-center gap-2">
-            <Zap className="w-6 h-6 text-accent-cyan" />Happy Hours
+          <h1 className="page-title text-foreground flex items-center gap-2">
+            <Zap className="w-6 h-6 text-primary" />Happy Hours
           </h1>
-          <p className="page-subtitle text-slate-400">Time-based automatic discounts on your menu</p>
+          <p className="page-subtitle text-muted-foreground">Time-based automatic discounts on your menu</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />Add Rule
@@ -136,20 +136,20 @@ export default function HappyHoursPage() {
         </div>
       )}
 
-      <div className="card-admin p-4 border-accent-cyan/20">
-        <p className="text-xs text-slate-400 leading-relaxed">
-          <span className="text-accent-cyan font-medium">How it works:</span> When a happy hour rule is active, the discount automatically applies to eligible items on the customer menu. Customers see the discounted price live - no coupon code needed.
+      <div className="card p-4 border-primary/20 bg-card">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          <span className="text-primary font-medium">How it works:</span> When a happy hour rule is active, the discount automatically applies to eligible items on the customer menu. Customers see the discounted price live - no coupon code needed.
         </p>
       </div>
 
       {showAdd && (
-        <div className="card-admin p-6 border-accent-cyan/30">
-          <h3 className="font-semibold text-white mb-5">New Happy Hour Rule</h3>
+        <div className="card p-6 border-primary/30 bg-card">
+          <h3 className="font-semibold text-foreground mb-5">New Happy Hour Rule</h3>
           <div className="space-y-4">
             <div>
-              <label className="label text-slate-400">Rule name</label>
+              <label className="label text-muted-foreground">Rule name</label>
               <input
-                className="input-admin"
+                className="input"
                 placeholder="Afternoon Special, Weekend Happy Hour..."
                 value={form.name}
                 onChange={(event) => setForm((previous) => ({ ...previous, name: event.target.value }))}
@@ -159,7 +159,7 @@ export default function HappyHoursPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label text-slate-400">Discount type</label>
+                <label className="label text-muted-foreground">Discount type</label>
                 <div className="flex gap-2">
                   {[
                     { value: "percent", label: "% Off" },
@@ -171,8 +171,8 @@ export default function HappyHoursPage() {
                       className={cn(
                         "flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all",
                         form.discountType === type.value
-                          ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
-                          : "border-admin-border-2 text-slate-500"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground"
                       )}
                     >
                       {type.label}
@@ -181,11 +181,11 @@ export default function HappyHoursPage() {
                 </div>
               </div>
               <div>
-                <label className="label text-slate-400">
+                <label className="label text-muted-foreground">
                   {form.discountType === "percent" ? "Discount %" : "Discount Rs."}
                 </label>
                 <input
-                  className="input-admin"
+                  className="input"
                   type="number"
                   placeholder={form.discountType === "percent" ? "20" : "50"}
                   value={form.discountValue}
@@ -196,18 +196,18 @@ export default function HappyHoursPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label text-slate-400">Start time</label>
+                <label className="label text-muted-foreground">Start time</label>
                 <input
-                  className="input-admin"
+                  className="input"
                   type="time"
                   value={form.startTime}
                   onChange={(event) => setForm((previous) => ({ ...previous, startTime: event.target.value }))}
                 />
               </div>
               <div>
-                <label className="label text-slate-400">End time</label>
+                <label className="label text-muted-foreground">End time</label>
                 <input
-                  className="input-admin"
+                  className="input"
                   type="time"
                   value={form.endTime}
                   onChange={(event) => setForm((previous) => ({ ...previous, endTime: event.target.value }))}
@@ -216,7 +216,7 @@ export default function HappyHoursPage() {
             </div>
 
             <div>
-              <label className="label text-slate-400">Active days</label>
+              <label className="label text-muted-foreground">Active days</label>
               <div className="flex gap-2 flex-wrap">
                 {DAYS.map((day) => (
                   <button
@@ -225,8 +225,8 @@ export default function HappyHoursPage() {
                     className={cn(
                       "px-3 py-2 rounded-xl border text-sm font-medium transition-all",
                       form.days.includes(day.value)
-                        ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
-                        : "border-admin-border-2 text-slate-500 hover:border-accent-cyan/30"
+                        ? "bg-primary/10 border-primary/30 text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/30"
                     )}
                   >
                     {day.label}
@@ -234,12 +234,12 @@ export default function HappyHoursPage() {
                 ))}
               </div>
               {form.days.length === 0 && (
-                <p className="text-xs text-red-400 mt-1">Select at least one day</p>
+                <p className="text-xs text-destructive mt-1">Select at least one day</p>
               )}
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setShowAdd(false)} className="btn-md btn-admin flex-1">
+              <button onClick={() => setShowAdd(false)} className="btn-md btn-outline flex-1">
                 <X className="w-4 h-4" />Cancel
               </button>
               <button
@@ -257,13 +257,13 @@ export default function HappyHoursPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2].map((item) => <div key={item} className="card-admin p-5 animate-pulse h-24 bg-white/5" />)}
+          {[1, 2].map((item) => <div key={item} className="card p-5 animate-pulse h-24 bg-muted/20" />)}
         </div>
       ) : hours.length === 0 ? (
         <div className="text-center py-16">
-          <Clock className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
-          <p className="text-slate-400 font-medium">No happy hour rules yet</p>
-          <p className="text-xs text-slate-500 mt-1">Create time-based discounts to drive traffic in slow hours</p>
+          <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
+          <p className="text-muted-foreground font-medium">No happy hour rules yet</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Create time-based discounts to drive traffic in slow hours</p>
           <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Create first rule
           </button>
@@ -274,23 +274,23 @@ export default function HappyHoursPage() {
             <div
               key={hour.id}
               className={cn(
-                "card-admin-hover p-5 transition-all",
-                hour.isActive && "border-accent-cyan/40",
+                "card p-5 transition-all bg-card",
+                hour.isActive && "border-primary/40",
                 !hour.isActive && "opacity-50"
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <p className="font-semibold text-white">{hour.name}</p>
+                    <p className="font-semibold text-foreground">{hour.name}</p>
                     {hour.isActive && (
-                      <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/20 text-accent-cyan">
+                      <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
                         Enabled
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
-                    <span className="text-accent-cyan font-semibold">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                    <span className="text-primary font-semibold">
                       {hour.discountType === "percent" ? `${hour.discountValue}% off` : `Rs.${hour.discountValue} off`}
                     </span>
                     <span className="flex items-center gap-1">
@@ -299,7 +299,7 @@ export default function HappyHoursPage() {
                     </span>
                     <div className="flex gap-1">
                       {hour.days.map((day) => (
-                        <span key={day} className="px-1.5 py-0.5 rounded-md bg-admin-card-2 border border-admin-border-2 capitalize text-[10px]">
+                        <span key={day} className="px-1.5 py-0.5 rounded-md bg-muted border border-border capitalize text-[10px]">
                           {day}
                         </span>
                       ))}
@@ -309,7 +309,7 @@ export default function HappyHoursPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleActive(hour.id, hour.isActive)}
-                    className={cn("transition-colors", hour.isActive ? "text-[#34d399]" : "text-slate-500")}
+                    className={cn("transition-colors", hour.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}
                   >
                     {hour.isActive
                       ? <ToggleRight className="w-6 h-6" />
@@ -318,7 +318,7 @@ export default function HappyHoursPage() {
                   </button>
                   <button
                     onClick={() => deleteHour(hour.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

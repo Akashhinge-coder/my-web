@@ -30,8 +30,8 @@ export default async function AdminDashboard() {
       value: formatINRCompact(todayRevenue),
       full: formatINR(todayRevenue),
       icon: TrendingUp,
-      color: "text-[var(--accent-cyan)]",
-      bg: "bg-[var(--accent-cyan)]/10 border-[var(--accent-cyan)]/20",
+      color: "text-primary",
+      bg: "bg-primary/10 border-primary/20",
       href: "/admin/analytics",
     },
     {
@@ -39,8 +39,8 @@ export default async function AdminDashboard() {
       value: totalOrders.toString(),
       sub: `${pendingCount} pending · ${cookingCount} cooking`,
       icon: ShoppingBag,
-      color: "text-[#facc15]",
-      bg: "bg-[#facc15]/10 border-[#facc15]/20",
+      color: "text-chart-2",
+      bg: "bg-chart-2/10 border-chart-2/20",
       href: "/admin/orders",
     },
     {
@@ -48,8 +48,8 @@ export default async function AdminDashboard() {
       value: `${occupiedTables}/${totalTables}`,
       sub: `${availableTables} available`,
       icon: Table2,
-      color: "text-[#34d399]",
-      bg: "bg-[#34d399]/10 border-[#34d399]/20",
+      color: "text-chart-3",
+      bg: "bg-chart-3/10 border-chart-3/20",
       href: "/admin/tables",
     },
     {
@@ -57,8 +57,8 @@ export default async function AdminDashboard() {
       value: totalCovers.toString(),
       sub: `${activeSessionCount} active sessions`,
       icon: Users,
-      color: "text-[#a78bfa]",
-      bg: "bg-[#a78bfa]/10 border-[#a78bfa]/20",
+      color: "text-chart-4",
+      bg: "bg-chart-4/10 border-chart-4/20",
       href: "/admin/tables",
     },
   ];
@@ -71,16 +71,16 @@ export default async function AdminDashboard() {
   };
 
   const SOURCE_STYLES: Record<string, string> = {
-    table: "bg-white/5 text-slate-400",
-    zomato: "bg-red-500/10 text-red-400",
-    swiggy: "bg-orange-500/10 text-orange-400",
+    table: "bg-muted text-muted-foreground",
+    zomato: "bg-destructive/10 text-destructive",
+    swiggy: "bg-chart-5/10 text-chart-5",
   };
 
   const tableSummary = [
-    { label: "Available", count: availableTables, color: "text-[#34d399]", bg: "bg-[#34d399]/10 border-[#34d399]/20" },
-    { label: "Occupied", count: occupiedTables, color: "text-[#f87171]", bg: "bg-[#f87171]/10 border-[#f87171]/20" },
-    { label: "Reserved", count: reservedTables, color: "text-[#a78bfa]", bg: "bg-[#a78bfa]/10 border-[#a78bfa]/20" },
-    { label: "Cleaning", count: cleaningTables, color: "text-[#facc15]", bg: "bg-[#facc15]/10 border-[#facc15]/20" },
+    { label: "Available", count: availableTables, color: "text-chart-3", bg: "bg-chart-3/10 border-chart-3/20" },
+    { label: "Occupied", count: occupiedTables, color: "text-destructive", bg: "bg-destructive/10 border-destructive/20" },
+    { label: "Reserved", count: reservedTables, color: "text-chart-4", bg: "bg-chart-4/10 border-chart-4/20" },
+    { label: "Cleaning", count: cleaningTables, color: "text-chart-2", bg: "bg-chart-2/10 border-chart-2/20" },
   ];
 
   return (
@@ -185,10 +185,10 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-4 gap-1.5">
             {tables.slice(0, 20).map((table) => {
               const colors: Record<string, string> = {
-                available: "bg-[#34d399]/20 border-[#34d399]/30 text-[#34d399]",
-                occupied: "bg-[#f87171]/20 border-[#f87171]/30 text-[#f87171]",
-                reserved: "bg-[#a78bfa]/20 border-[#a78bfa]/30 text-[#a78bfa]",
-                cleaning: "bg-[#facc15]/20 border-[#facc15]/30 text-[#facc15]",
+                available: "bg-chart-3/20 border-chart-3/30 text-chart-3",
+                occupied: "bg-destructive/20 border-destructive/30 text-destructive",
+                reserved: "bg-chart-4/20 border-chart-4/30 text-chart-4",
+                cleaning: "bg-chart-2/20 border-chart-2/30 text-chart-2",
               };
               return (
                 <div
@@ -201,7 +201,7 @@ export default async function AdminDashboard() {
               );
             })}
             {tables.length > 20 && (
-              <div className="aspect-square rounded-lg border border-admin-border-2 flex items-center justify-center text-[10px] text-slate-500">
+              <div className="aspect-square rounded-lg border border-border flex items-center justify-center text-[10px] text-muted-foreground">
                 +{tables.length - 20}
               </div>
             )}

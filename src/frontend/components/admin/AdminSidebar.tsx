@@ -75,23 +75,21 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
 
   const SidebarContent = () => (
     <>
-      <div className="px-4 py-5 border-b" style={{ borderColor: 'var(--admin-border-2)' }}>
+      <div className="px-4 py-5 border-b border-admin-border-2">
         <Link href="/admin" className="flex items-center gap-3">
           {restaurant.logo_url ? (
             <img
               src={restaurant.logo_url}
               alt={restaurantName}
-              className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
-              style={{ border: '1px solid var(--admin-border-2)' }}
+              className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-admin-border-2"
             />
           ) : (
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[#0c0e12] font-display font-bold text-sm flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-primary-foreground font-display font-bold text-sm flex-shrink-0 bg-gradient-to-br from-accent-cyan to-accent-blue">
               {initials}
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate leading-tight">{restaurantName}</p>
+            <p className="text-sm font-semibold text-foreground truncate leading-tight">{restaurantName}</p>
             <p className="text-xs capitalize" style={{ color: 'var(--admin-faint)' }}>{userRole}</p>
           </div>
         </Link>
@@ -101,9 +99,12 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
           href={restaurantId ? `/kitchen/${restaurantId}` : "/admin"}
           target={restaurantId ? "_blank" : undefined}
           className="flex items-center justify-between px-3 py-2 rounded-xl transition-colors group"
-          style={{ background: 'rgba(193,125,60,0.08)', border: '1px solid rgba(193,125,60,0.18)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(193,125,60,0.14)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(193,125,60,0.08)')}
+          style={{ 
+            background: 'color-mix(in oklch, var(--primary) 8%, transparent)', 
+            border: '1px solid color-mix(in oklch, var(--primary) 18%, transparent)' 
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'color-mix(in oklch, var(--primary) 14%, transparent)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'color-mix(in oklch, var(--primary) 8%, transparent)'; }}
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full animate-pulse-soft" style={{ background: 'var(--accent-cyan)' }} />
@@ -132,16 +133,15 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
           </div>
         ))}
       </div>
-      <div className="px-4 pb-4 pt-2 border-t mt-2" style={{ borderColor: 'var(--admin-border-2)' }}>
+      <div className="px-4 pb-4 pt-2 border-t mt-2 border-admin-border-2">
         <Link
           href={restaurantSlug ? `/${restaurantSlug}/preview` : "/admin"}
           target={restaurantSlug ? "_blank" : undefined}
-          className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors group text-xs"
-          style={{ background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(193, 125, 60, 0.25)'; }}
+          className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors group text-xs bg-admin-card-2 border border-admin-border-2"
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'color-mix(in oklch, var(--primary) 25%, transparent)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--admin-border-2)'; }}
         >
-          <span className="group-hover:text-white transition-colors" style={{ color: 'var(--admin-subtle)' }}>View customer menu</span>
+          <span className="group-hover:text-foreground transition-colors" style={{ color: 'var(--admin-subtle)' }}>View customer menu</span>
           <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-all" style={{ color: 'var(--admin-faint)' }} />
         </Link>
       </div>
@@ -151,24 +151,21 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
   return (
     <>
       <aside
-      className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30"
-      style={{ background: 'var(--admin-card)', borderRight: '1px solid var(--admin-border-2)' }}
-    >
+        className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30 bg-admin-card border-r border-admin-border-2"
+      >
         <SidebarContent />
       </aside>
       <button onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-xl text-white"
-        style={{ background: 'var(--admin-card-2)', border: '1px solid var(--admin-border-2)' }}>
+        className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-xl text-foreground bg-admin-card-2 border border-admin-border-2">
         <Menu className="w-5 h-5" />
       </button>
       {mobileOpen && (
         <>
           <div className="md:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside
-            className="md:hidden fixed inset-y-0 left-0 w-72 z-50 flex flex-col animate-slide-in"
-            style={{ background: 'var(--admin-card)', borderRight: '1px solid var(--admin-border-2)' }}
+            className="md:hidden fixed inset-y-0 left-0 w-72 z-50 flex flex-col animate-slide-in bg-admin-card border-r border-admin-border-2"
           >
-            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:text-white transition-colors" style={{ color: 'var(--admin-faint)' }}>
+            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:text-foreground transition-colors" style={{ color: 'var(--admin-faint)' }}>
               <X className="w-4 h-4" />
             </button>
             <SidebarContent />

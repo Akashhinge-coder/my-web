@@ -322,8 +322,8 @@ export default function AdminMenuView() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white">Menu &amp; Dishes</h1>
-          <p className="page-subtitle text-slate-400">
+          <h1 className="page-title text-foreground">Menu &amp; Dishes</h1>
+          <p className="page-subtitle text-muted-foreground">
             {dishes.length} dishes · {availableCount} available · {categories.length} categories
           </p>
         </div>
@@ -351,7 +351,7 @@ export default function AdminMenuView() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             className="input-admin pl-10"
             placeholder="Search dishes..."
@@ -362,7 +362,7 @@ export default function AdminMenuView() {
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
@@ -377,8 +377,8 @@ export default function AdminMenuView() {
           className={cn(
             "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-200 border",
             categoryFilter === "all"
-              ? "bg-[#C17D3C] text-[#0c0e12] border-[#C17D3C] shadow-[0_0_20px_rgba(193,125,60,0.4)]"
-              : "bg-admin-card-2 border-admin-border-2 text-slate-500 hover:text-white hover:border-slate-700"
+              ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+              : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
           )}
         >
           All ({dishes.length})
@@ -391,8 +391,8 @@ export default function AdminMenuView() {
             className={cn(
               "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-200 border",
               categoryFilter === cat.id
-                ? "bg-[#C17D3C] text-[#0c0e12] border-[#C17D3C] shadow-[0_0_20px_rgba(193,125,60,0.4)]"
-                : "bg-admin-card-2 border-admin-border-2 text-slate-500 hover:text-white hover:border-slate-700"
+                ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             )}
           >
             {cat.name}
@@ -404,19 +404,19 @@ export default function AdminMenuView() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="card-admin overflow-hidden">
-              <div className="animate-pulse h-36 bg-white/5" />
+              <div className="animate-pulse h-36 bg-muted/20" />
               <div className="p-4 space-y-2">
-                <div className="animate-pulse h-4 rounded w-2/3 bg-white/5" />
-                <div className="animate-pulse h-3 rounded w-1/2 bg-white/5" />
+                <div className="animate-pulse h-4 rounded w-2/3 bg-muted/20" />
+                <div className="animate-pulse h-3 rounded w-1/2 bg-muted/20" />
               </div>
             </div>
           ))}
         </div>
       ) : filteredDishes.length === 0 ? (
         <div className="text-center py-20">
-          <UtensilsCrossed className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-40" />
-          <p className="text-slate-400 font-medium">No dishes found</p>
-          <p className="text-xs text-slate-500 mt-1">
+          <UtensilsCrossed className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-40" />
+          <p className="font-medium text-muted-foreground">No dishes found</p>
+          <p className="text-xs text-muted-foreground mt-1">
             {dishes.length === 0 ? "Add your first dish to get started" : "Try a different search or category"}
           </p>
           {dishes.length === 0 && (
@@ -441,7 +441,7 @@ export default function AdminMenuView() {
                   !dish.is_available && "opacity-60"
                 )}
               >
-                <div className="relative h-36 bg-admin-card-2">
+                <div className="relative h-36 bg-muted">
                   {dish.image_url ? (
                     <img
                       src={dish.image_url}
@@ -449,14 +449,14 @@ export default function AdminMenuView() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-600">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <UtensilsCrossed className="w-10 h-10 opacity-30" />
                     </div>
                   )}
 
                   {!dish.is_available && (
-                    <div className="absolute inset-0 bg-[#0c0e12]/70 flex items-center justify-center backdrop-blur-[2px]">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white bg-red-500/80 px-4 py-1.5 rounded-full shadow-lg">
+                    <div className="absolute inset-0 bg-background/70 flex items-center justify-center backdrop-blur-[2px]">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white bg-destructive/80 px-4 py-1.5 rounded-full shadow-lg">
                         Sold out
                       </span>
                     </div>
@@ -465,7 +465,7 @@ export default function AdminMenuView() {
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                     <div
                       className={cn(
-                        "w-4 h-4 rounded-sm border-2 bg-[#0c0e12]/80 flex items-center justify-center",
+                        "w-4 h-4 rounded-sm border-2 bg-background/80 flex items-center justify-center",
                         border
                       )}
                     >
@@ -473,22 +473,22 @@ export default function AdminMenuView() {
                         className={cn(
                           "w-1.5 h-1.5 rounded-full",
                           dish.food_type === "non_veg"
-                            ? "bg-red-600"
+                            ? "bg-destructive"
                             : dish.food_type === "vegan"
                               ? "bg-emerald-600"
                               : dish.food_type === "jain"
                                 ? "bg-amber-600"
-                                : "bg-green-600"
+                                : "bg-emerald-500"
                         )}
                       />
                     </div>
                     {dish.is_special && (
-                      <span className="text-[9px] px-2 py-0.5 rounded-md bg-[var(--accent-cyan)] text-[#0c0e12] font-black uppercase tracking-tighter shadow-lg shadow-[var(--accent-cyan)]/20">
+                      <span className="text-[9px] px-2 py-0.5 rounded-md bg-primary text-primary-foreground font-black uppercase tracking-tighter shadow-lg shadow-primary/20">
                         Special
                       </span>
                     )}
                     {hasAr && (
-                      <span className="text-[9px] px-2 py-0.5 rounded-md bg-orange-500/90 text-white font-black flex items-center gap-0.5 uppercase tracking-tighter shadow-lg shadow-orange-500/20">
+                      <span className="text-[9px] px-2 py-0.5 rounded-md bg-chart-5/90 text-white font-black flex items-center gap-0.5 uppercase tracking-tighter shadow-lg shadow-chart-5/20">
                         <Flame className="w-2.5 h-2.5 fill-white" />
                         AR
                       </span>
@@ -498,32 +498,32 @@ export default function AdminMenuView() {
 
                 <div className="p-5 flex flex-col flex-1 gap-4">
                   <div>
-                    <p className="font-bold text-white leading-tight text-base mb-1">{dish.name}</p>
+                    <p className="font-bold text-foreground leading-tight text-base mb-1">{dish.name}</p>
                     <div className="flex items-center justify-between">
                       {dish.name_hindi && (
-                        <p className="text-xs text-slate-400 font-medium">{dish.name_hindi}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{dish.name_hindi}</p>
                       )}
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{categoryName(dish, categories)}</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{categoryName(dish, categories)}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-display font-black text-accent-cyan text-xl tracking-tight">{formatINR(dish.price)}</p>
+                    <p className="font-display font-black text-primary text-xl tracking-tight">{formatINR(dish.price)}</p>
                     {dish.spice_level > 0 && (
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: Math.min(dish.spice_level, 3) }).map((_, i) => (
-                          <Flame key={i} className="w-3.5 h-3.5 text-orange-500 fill-orange-500/20" />
+                          <Flame key={i} className="w-3.5 h-3.5 text-chart-5 fill-chart-5/20" />
                         ))}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 mt-auto pt-4 border-t border-admin-border-2">
+                  <div className="flex items-center gap-2 mt-auto pt-4 border-t border-border">
                     <button
                       type="button"
                       onClick={() => openEditDish(dish)}
                       disabled={busy}
-                      className="flex-1 btn-sm btn-admin py-2.5 text-xs font-bold bg-[#1a1f2e]/40 border-slate-700 hover:border-accent-cyan hover:text-accent-cyan transition-all"
+                      className="flex-1 btn-sm btn-admin py-2.5 text-xs font-bold bg-muted/40 border-border hover:border-primary hover:text-primary transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       Edit
@@ -536,8 +536,8 @@ export default function AdminMenuView() {
                       className={cn(
                         "flex-1 btn-sm py-2.5 text-xs font-bold transition-all",
                         dish.is_available
-                          ? "bg-[#1a1f2e]/40 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500"
-                          : "bg-[#34d399]/10 border border-[#34d399]/20 text-[#34d399] hover:bg-[#34d399]/20"
+                          ? "bg-muted/40 border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
+                          : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
                       )}
                     >
                       {busy ? (
@@ -558,7 +558,7 @@ export default function AdminMenuView() {
                       type="button"
                       onClick={() => void deleteDish(dish.id, dish.name)}
                       disabled={busy}
-                      className="p-2.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
+                      className="p-2.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all border border-transparent hover:border-destructive/20"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -572,15 +572,15 @@ export default function AdminMenuView() {
 
       {modalMode !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="card-admin w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 border-accent-cyan/20">
+          <div className="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 border-primary/20">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-white text-lg">
+              <h3 className="font-semibold text-foreground text-lg">
                 {modalMode === "add" ? "Add Dish" : "Edit Dish"}
               </h3>
               <button
                 type="button"
                 onClick={closeDishModal}
-                className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-admin-card-2"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -588,17 +588,17 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="label text-slate-400">Name (English)</label>
+                <label className="label">Name (English)</label>
                 <input
-                  className="input-admin"
+                  className="input"
                   value={form.name}
                   onChange={handleEnglishNameChange}
                 />
               </div>
               <div>
-                <label className="label text-slate-400">Name (Hindi)</label>
+                <label className="label">Name (Hindi)</label>
                 <input
-                  className="input-admin"
+                  className="input"
                   value={form.name_hindi}
                   onChange={(e) => setForm((p) => ({ ...p, name_hindi: e.target.value }))}
                 />
@@ -606,9 +606,9 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label text-slate-400">Description</label>
+              <label className="label">Description</label>
               <textarea
-                className="input-admin min-h-[80px] resize-y"
+                className="input min-h-[80px] resize-y"
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               />
@@ -616,9 +616,9 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="label text-slate-400">Price (₹)</label>
+                <label className="label">Price (₹)</label>
                 <input
-                  className="input-admin"
+                  className="input"
                   type="number"
                   min="0"
                   step="0.01"
@@ -627,9 +627,9 @@ export default function AdminMenuView() {
                 />
               </div>
               <div>
-                <label className="label text-slate-400">Category</label>
+                <label className="label">Category</label>
                 <select
-                  className="input-admin"
+                  className="input"
                   value={form.category_id}
                   onChange={(e) => setForm((p) => ({ ...p, category_id: e.target.value }))}
                 >
@@ -642,7 +642,7 @@ export default function AdminMenuView() {
                 </select>
               </div>
               <div>
-                <label className="label text-slate-400">Size</label>
+                <label className="label">Size</label>
                 <div className="flex gap-2">
                   {DISH_SIZES.map((size) => (
                     <button
@@ -652,8 +652,8 @@ export default function AdminMenuView() {
                       className={cn(
                         "flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all",
                         form.dish_size === size
-                          ? "btn-accent"
-                          : "border-admin-border-2 text-slate-500"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground"
                       )}
                     >
                       {size}
