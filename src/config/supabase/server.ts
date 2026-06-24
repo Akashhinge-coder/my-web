@@ -10,10 +10,18 @@ export async function createClient() {
     headers["x-session-token"] = sessionToken;
   }
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-anon-key",
-    {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey || url.includes("placeholder.supabase.co")) {
+    const errorMsg = "Supabase server client initialized with missing or placeholder environment variables.";
+    if (process.env.NODE_ENV === "development") {
+      console.error(`[Supabase Server] URL: ${url}, Key present: ${!!anonKey}`);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return createServerClient(url, anonKey, {
       global: {
         headers,
       },
@@ -42,10 +50,19 @@ export async function createClient() {
 }
 
 export function createAdminClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co",
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? "placeholder-service-key",
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey || url.includes("placeholder.supabase.co")) {
+    const errorMsg = "Supabase admin client initialized with missing or placeholder environment variables.";
+    if (process.env.NODE_ENV === "development") {
+      console.error(`[Supabase Admin] URL: ${url}, Service Key present: ${!!serviceKey}`);
+    }
+    throw new Error(errorMsg);
+  }
+
+  return createSupabaseClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 }
 
