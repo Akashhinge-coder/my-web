@@ -101,7 +101,7 @@ function mapOrder(raw: any) {
         delete mapped.session.restaurant_tables;
       }
       if (mapped.session.session_participants) {
-        mapped.session.host = Array.isArray(mapped.session.session_participants)
+        mapped.session.host_participant = Array.isArray(mapped.session.session_participants)
           ? mapped.session.session_participants[0]
           : mapped.session.session_participants;
         delete mapped.session.session_participants;

@@ -214,9 +214,9 @@ function KitchenCard({
           <span className="px-2 py-0.5 rounded-lg bg-dark-tertiary border border-dark-border text-xs text-ink-3">
             Table {tableNum}
           </span>
-          {order.session?.host?.name && (
+          {order.session?.host_participant?.name && (
             <span className="px-2 py-0.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400 uppercase tracking-wide">
-              {order.session.host.name}
+              {order.session.host_participant.name}
             </span>
           )}
         </div>

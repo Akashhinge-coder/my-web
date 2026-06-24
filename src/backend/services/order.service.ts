@@ -229,9 +229,16 @@ export class OrderService {
     restaurantId: string,
     options?: { sessionId?: string; isCustomer?: boolean; sessionToken?: string }
   ) {
-    const table = await TableRepository.findById(dto.tableId);
+    const [table, restaurant] = await Promise.all([
+      TableRepository.findById(dto.tableId),
+      RestaurantRepository.getById(restaurantId),
+    ]);
+
     if (!table || table.restaurant_id !== restaurantId) {
       throw new NotFoundError("Table not found for this restaurant");
+    }
+    if (!restaurant) {
+      throw new NotFoundError("Restaurant not found");
     }
 
     const isCustomer = options?.isCustomer ?? false;
@@ -358,6 +365,7 @@ export class OrderService {
         const newSession = await SessionRepository.create({
           restaurantId,
           tableId: dto.tableId,
+          sessionModeSnapshot: restaurant.session_mode,
         });
         session = newSession;
         createdSession = true;
@@ -451,9 +459,16 @@ export class OrderService {
     idempotencyKey: string,
     options?: { sessionId?: string; isCustomer?: boolean; sessionToken?: string }
   ) {
-    const table = await TableRepository.findById(dto.tableId);
+    const [table, restaurant] = await Promise.all([
+      TableRepository.findById(dto.tableId),
+      RestaurantRepository.getById(restaurantId),
+    ]);
+
     if (!table || table.restaurant_id !== restaurantId) {
       throw new NotFoundError("Table not found for this restaurant");
+    }
+    if (!restaurant) {
+      throw new NotFoundError("Restaurant not found");
     }
 
     const isCustomer = options?.isCustomer ?? false;
@@ -501,6 +516,7 @@ export class OrderService {
         session = await SessionRepository.create({
           restaurantId,
           tableId: dto.tableId,
+          sessionModeSnapshot: restaurant.session_mode,
         });
         await TableRepository.markOccupied(dto.tableId, session.id, restaurantId);
       }
