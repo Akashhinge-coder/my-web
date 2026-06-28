@@ -77,16 +77,16 @@ export default async function AdminDashboard() {
   };
 
   const tableSummary = [
-    { label: "Available", count: availableTables, color: "text-chart-3", bg: "bg-chart-3/10 border-chart-3/20" },
-    { label: "Occupied", count: occupiedTables, color: "text-destructive", bg: "bg-destructive/10 border-destructive/20" },
-    { label: "Reserved", count: reservedTables, color: "text-chart-4", bg: "bg-chart-4/10 border-chart-4/20" },
-    { label: "Cleaning", count: cleaningTables, color: "text-chart-2", bg: "bg-chart-2/10 border-chart-2/20" },
+    { label: "Available", count: availableTables, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    { label: "Occupied", count: occupiedTables, color: "text-red-500", bg: "bg-red-500/10 border-red-500/20" },
+    { label: "Reserved", count: reservedTables, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
+    { label: "Cleaning", count: cleaningTables, color: "text-blue-500", bg: "bg-blue-500/10 border-blue-500/20" },
   ];
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title text-white">Dashboard</h1>
+        <h1 className="page-title text-admin-text">Dashboard</h1>
         <p className="page-subtitle">
           {new Date().toLocaleDateString("en-IN", {
             weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -107,7 +107,7 @@ export default async function AdminDashboard() {
             {stat.sub && (
               <p className="stat-delta mt-1">{stat.sub}</p>
             )}
-            <div className="flex items-center gap-1 mt-2 text-xs text-slate-500 group-hover:text-accent-cyan transition-colors">
+            <div className="flex items-center gap-1 mt-2 text-xs text-admin-subtle group-hover:text-accent-cyan transition-colors">
               View details <ArrowUpRight className="w-3 h-3" />
             </div>
           </Link>
@@ -117,17 +117,17 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 card-admin p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-sans font-semibold text-white">Live Orders</h2>
+            <h2 className="font-sans font-semibold text-admin-text">Live Orders</h2>
             <Link href="/admin/orders" className="text-xs text-accent-cyan hover:text-accent-cyan/80 flex items-center gap-1 transition-colors">
               View all <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
 
           {recentOrders.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
+            <div className="text-center py-12 text-admin-subtle">
               <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">No orders yet today</p>
-              <p className="text-xs mt-1 text-slate-500">Orders will appear here in real time</p>
+              <p className="text-xs mt-1 text-admin-subtle">Orders will appear here in real time</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -135,23 +135,23 @@ export default async function AdminDashboard() {
                 <div key={order.id} className="order-card-admin flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm font-semibold text-white">
+                      <span className="font-mono text-sm font-semibold text-admin-text">
                         {order.orderNumber}
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${SOURCE_STYLES[order.source]}`}>
                         {order.source}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 truncate">
+                    <p className="text-xs text-admin-muted truncate">
                       {order.summary}{order.extra}
                     </p>
-                    <div className="flex items-center gap-1 mt-1 text-slate-500">
+                    <div className="flex items-center gap-1 mt-1 text-admin-subtle">
                       <Clock className="w-3 h-3" />
                       <span className="text-[10px]">{timeAgo(order.createdAt)}</span>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold text-white mb-1">
+                    <p className="text-sm font-semibold text-admin-text mb-1">
                       {formatINR(order.total)}
                     </p>
                     <span className={STATUS_STYLES[order.status] || "badge"}>
@@ -167,7 +167,7 @@ export default async function AdminDashboard() {
 
         <div className="card-admin p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-sans font-semibold text-white">Table Status</h2>
+            <h2 className="font-sans font-semibold text-admin-text">Table Status</h2>
             <Link href="/admin/tables" className="text-xs text-accent-cyan hover:text-accent-cyan/80 flex items-center gap-1 transition-colors">
               Manage <ArrowUpRight className="w-3 h-3" />
             </Link>
@@ -177,7 +177,7 @@ export default async function AdminDashboard() {
             {tableSummary.map((s) => (
               <div key={s.label} className={`p-2.5 rounded-xl border ${s.bg} text-center`}>
                 <p className={`text-xl font-display font-semibold ${s.color}`}>{s.count}</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">{s.label}</p>
+                <p className="text-[10px] text-admin-subtle mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
@@ -185,10 +185,10 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-4 gap-1.5">
             {tables.slice(0, 20).map((table) => {
               const colors: Record<string, string> = {
-                available: "bg-chart-3/20 border-chart-3/30 text-chart-3",
-                occupied: "bg-destructive/20 border-destructive/30 text-destructive",
-                reserved: "bg-chart-4/20 border-chart-4/30 text-chart-4",
-                cleaning: "bg-chart-2/20 border-chart-2/30 text-chart-2",
+                available: "bg-emerald-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
+                occupied: "bg-red-500/20 border-red-500/30 text-red-600 dark:text-red-400",
+                reserved: "bg-amber-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400",
+                cleaning: "bg-blue-500/20 border-blue-500/30 text-blue-600 dark:text-blue-400",
               };
               return (
                 <div
@@ -211,7 +211,7 @@ export default async function AdminDashboard() {
 
       {payments.length > 0 && (
         <div className="card-admin p-6">
-          <h2 className="font-sans font-semibold text-white mb-5">
+          <h2 className="font-sans font-semibold text-admin-text mb-5">
             Today&apos;s Payments
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -221,9 +221,9 @@ export default async function AdminDashboard() {
               if (total === 0) return null;
               return (
                 <div key={method} className="bg-admin-card-2 rounded-xl p-3 border border-admin-border-2 text-center">
-                  <p className="text-sm font-semibold text-white">{formatINRCompact(total)}</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wide">{method}</p>
-                  <p className="text-[10px] text-slate-500">{methodPayments.length} txn</p>
+                  <p className="text-sm font-semibold text-admin-text">{formatINRCompact(total)}</p>
+                  <p className="text-[10px] text-admin-subtle mt-0.5 uppercase tracking-wide">{method}</p>
+                  <p className="text-[10px] text-admin-subtle">{methodPayments.length} txn</p>
                 </div>
               );
             }).filter(Boolean)}

@@ -76,8 +76,8 @@ export default function SuppliersPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white">Suppliers</h1>
-          <p className="page-subtitle text-slate-400">{suppliers.length} vendors</p>
+          <h1 className="page-title text-admin-text">Suppliers</h1>
+          <p className="page-subtitle text-admin-muted">{suppliers.length} vendors</p>
         </div>
         <button onClick={() => { setShowAdd(true); setEditId(null); setForm({ ...EMPTY }); }} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />Add Supplier
@@ -86,30 +86,30 @@ export default function SuppliersPage() {
 
       {showAdd && (
         <div className="card-admin p-6 border-accent-cyan/30">
-          <h3 className="font-semibold text-white mb-5">{editId ? "Edit Supplier" : "Add Supplier"}</h3>
+          <h3 className="font-semibold text-admin-text mb-5">{editId ? "Edit Supplier" : "Add Supplier"}</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="col-span-2 sm:col-span-1">
-              <label className="label text-slate-400">Supplier name *</label>
+              <label className="label text-admin-muted">Supplier name *</label>
               <input className="input-admin" placeholder="Fresh Farms Pvt Ltd" autoFocus
                 value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-slate-400">Phone</label>
+              <label className="label text-admin-muted">Phone</label>
               <input className="input-admin" placeholder="98765 43210"
                 value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-slate-400">Email</label>
+              <label className="label text-admin-muted">Email</label>
               <input className="input-admin" placeholder="supplier@email.com" type="email"
                 value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-slate-400">Address</label>
+              <label className="label text-admin-muted">Address</label>
               <input className="input-admin" placeholder="APMC Market, Pune"
                 value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-slate-400">Notes</label>
+              <label className="label text-admin-muted">Notes</label>
               <input className="input-admin" placeholder="Delivers Mon-Sat, call before 8am"
                 value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
             </div>
@@ -128,12 +128,12 @@ export default function SuppliersPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-24 bg-white/5" />)}
+          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-24 bg-admin-card-2" />)}
         </div>
       ) : suppliers.length === 0 ? (
         <div className="text-center py-16">
           <Truck className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
-          <p className="text-slate-400 font-medium">No suppliers yet</p>
+          <p className="text-admin-muted font-medium">No suppliers yet</p>
           <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Add first supplier
           </button>
@@ -147,22 +147,22 @@ export default function SuppliersPage() {
                   <div className="w-10 h-10 rounded-xl bg-accent-cyan/10 border border-accent-cyan/20 flex items-center justify-center flex-shrink-0">
                     <Truck className="w-5 h-5 text-accent-cyan" />
                   </div>
-                  <p className="font-semibold text-white">{s.name}</p>
+                  <p className="font-semibold text-admin-text">{s.name}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(s)} className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-all">
+                  <button onClick={() => openEdit(s)} className="p-2 rounded-xl text-admin-subtle hover:text-admin-text hover:bg-admin-card-2 transition-all">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => deleteSupplier(s.id)} className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                  <button onClick={() => deleteSupplier(s.id)} className="p-2 rounded-xl text-admin-subtle hover:text-red-400 hover:bg-red-500/10 transition-all">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-              <div className="space-y-1.5 text-xs text-slate-500">
+              <div className="space-y-1.5 text-xs text-admin-subtle">
                 {s.phone   && <div className="flex items-center gap-2"><Phone   className="w-3 h-3" />{s.phone}</div>}
                 {s.email   && <div className="flex items-center gap-2"><Mail    className="w-3 h-3" />{s.email}</div>}
                 {s.address && <div className="flex items-center gap-2"><MapPin  className="w-3 h-3" />{s.address}</div>}
-                {s.notes   && <p className="text-slate-400 bg-admin-card-2 border border-admin-border-2 rounded-lg px-2.5 py-1.5 mt-2">{s.notes}</p>}
+                {s.notes   && <p className="text-admin-muted bg-admin-card-2 border border-admin-border-2 rounded-lg px-2.5 py-1.5 mt-2">{s.notes}</p>}
               </div>
             </div>
           ))}

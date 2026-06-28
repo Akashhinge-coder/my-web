@@ -94,7 +94,7 @@ export default function AdminOrdersView() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="card p-5 space-y-3">
+            <div key={i} className="card-admin p-5 space-y-3">
               <div className="animate-pulse h-4 rounded w-24 bg-muted/20" />
               <div className="animate-pulse h-3 rounded w-full bg-muted/20" />
               <div className="animate-pulse h-3 rounded w-3/4 bg-muted/20" />
@@ -119,7 +119,7 @@ export default function AdminOrdersView() {
               <div
                 key={order.id}
                 className={cn(
-                  "card p-5 flex flex-col gap-4 transition-all border",
+                  "card-admin p-5 flex flex-col gap-4 transition-all border",
                   order.status === "pending" && "border-amber-500/30",
                   order.status === "cooking" && "border-orange-500/30"
                 )}

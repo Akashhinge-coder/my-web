@@ -8,10 +8,10 @@ import { Plus, QrCode, Users, Edit2, Check, X, Download, Trash2 } from "lucide-r
 import type { Table, TableStatus } from "@/types/domain";
 
 const STATUS_CONFIG = {
-  available: { label: "Available", color: "text-chart-3", bg: "bg-chart-3/10 border-chart-3/20", dot: "bg-chart-3" },
-  occupied:  { label: "Occupied",  color: "text-destructive", bg: "bg-destructive/10 border-destructive/20", dot: "bg-destructive" },
-  reserved:  { label: "Reserved",  color: "text-chart-4", bg: "bg-chart-4/10 border-chart-4/20", dot: "bg-chart-4" },
-  cleaning:  { label: "Cleaning",  color: "text-chart-2", bg: "bg-chart-2/10 border-chart-2/20", dot: "bg-chart-2" },
+  available: { label: "Available", color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20", dot: "bg-emerald-500" },
+  occupied:  { label: "Occupied",  color: "text-red-500", bg: "bg-red-500/10 border-red-500/20", dot: "bg-red-500" },
+  reserved:  { label: "Reserved",  color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20", dot: "bg-amber-500" },
+  cleaning:  { label: "Cleaning",  color: "text-blue-500", bg: "bg-blue-500/10 border-blue-500/20", dot: "bg-blue-500" },
 } as const;
 
 type TableStatusKey = keyof typeof STATUS_CONFIG;
@@ -106,7 +106,7 @@ export default function TablesPage() {
       {/* Status summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {(Object.entries(STATUS_CONFIG) as [TableStatusKey, typeof STATUS_CONFIG[TableStatusKey]][]).map(([status, cfg]) => (
-          <div key={status} className={cn("rounded-2xl border bg-card/80 p-5 transition-all duration-300 border-border/30", cfg.bg.split(' ')[1])}>
+          <div key={status} className={cn("rounded-2xl border bg-admin-card p-5 transition-all duration-300 border-admin-border-2", cfg.bg.split(' ')[1])}>
             <div className="flex items-center gap-2.5 mb-2">
               <div className={cn("w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]", cfg.dot)} />
               <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-60", cfg.color)}>{cfg.label}</span>

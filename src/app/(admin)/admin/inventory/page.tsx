@@ -89,8 +89,8 @@ export default function InventoryPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white">Inventory</h1>
-          <p className="page-subtitle text-slate-400">{items.length} ingredients · {lowStockItems.length} low stock</p>
+          <h1 className="page-title text-admin-text">Inventory</h1>
+          <p className="page-subtitle text-admin-muted">{items.length} ingredients · {lowStockItems.length} low stock</p>
         </div>
         <button onClick={() => { setShowAdd(true); setEditId(null); setForm({ ...EMPTY }); }} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />Add Item
@@ -117,30 +117,30 @@ export default function InventoryPage() {
       {/* Add/Edit form */}
       {showAdd && (
         <div className="card-admin p-5 border-accent-cyan/30">
-          <h3 className="font-semibold text-white mb-4">{editId ? "Edit Item" : "Add Ingredient"}</h3>
+          <h3 className="font-semibold text-admin-text mb-4">{editId ? "Edit Item" : "Add Ingredient"}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
             <div className="sm:col-span-2">
-              <label className="label text-slate-400">Ingredient name</label>
+              <label className="label text-admin-muted">Ingredient name</label>
               <input className="input-admin" placeholder="Tomatoes, Chicken, Rice..."
                 value={form.ingredient_name} onChange={e => setForm(p => ({ ...p, ingredient_name: e.target.value }))} autoFocus />
             </div>
             <div>
-              <label className="label text-slate-400">Unit</label>
+              <label className="label text-admin-muted">Unit</label>
               <select className="input-admin" value={form.unit} onChange={e => setForm(p => ({ ...p, unit: e.target.value }))}>
                 {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
             </div>
             <div>
-              <label className="label text-slate-400">Current qty</label>
+              <label className="label text-admin-muted">Current qty</label>
               <input className="input-admin" type="number" placeholder="0"
                 value={form.current_qty} onChange={e => setForm(p => ({ ...p, current_qty: e.target.value }))} />
             </div>
           </div>
           <div className="mb-5 max-w-xs">
-            <label className="label text-slate-400">Low stock alert at</label>
+            <label className="label text-admin-muted">Low stock alert at</label>
             <input className="input-admin" type="number" placeholder="1"
               value={form.low_stock_alert} onChange={e => setForm(p => ({ ...p, low_stock_alert: e.target.value }))} />
-            <p className="text-xs text-slate-500 mt-1">Alert when stock falls below this amount</p>
+            <p className="text-xs text-admin-subtle mt-1">Alert when stock falls below this amount</p>
           </div>
           <div className="flex gap-3">
             <button onClick={() => { setShowAdd(false); setEditId(null); }} className="btn-md btn-admin flex-1">
@@ -157,12 +157,12 @@ export default function InventoryPage() {
       {/* Items list */}
       {loading ? (
         <div className="space-y-2">
-          {[1,2,3,4,5].map(i => <div key={i} className="card-admin p-4 animate-pulse h-16 bg-white/5" />)}
+          {[1,2,3,4,5].map(i => <div key={i} className="card-admin p-4 animate-pulse h-16 bg-admin-card-2" />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <Package className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
-          <p className="text-slate-400 font-medium">No inventory items yet</p>
+          <p className="text-admin-muted font-medium">No inventory items yet</p>
           <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Add first item
           </button>
@@ -176,14 +176,14 @@ export default function InventoryPage() {
               <div key={item.id} className={cn("card-admin-hover p-4 flex items-center gap-4 transition-all", isLow && "border-[#facc15]/30")}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-white text-sm">{item.ingredient_name}</p>
+                    <p className="font-medium text-admin-text text-sm">{item.ingredient_name}</p>
                     {isLow && <AlertTriangle className="w-3.5 h-3.5 text-[#facc15] flex-shrink-0" />}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={cn("text-sm font-semibold", isLow ? "text-[#facc15]" : "text-[#34d399]")}>
                       {item.current_qty} {item.unit}
                     </span>
-                    <span className="text-xs text-slate-500">alert at {item.low_stock_alert} {item.unit}</span>
+                    <span className="text-xs text-admin-subtle">alert at {item.low_stock_alert} {item.unit}</span>
                   </div>
                   <div className="mt-2 h-1 bg-admin-card-2 border border-admin-border-2 rounded-full overflow-hidden w-32">
                     <div className="h-full rounded-full transition-all"
@@ -194,17 +194,17 @@ export default function InventoryPage() {
                 {/* Quick qty adjust */}
                 <div className="flex items-center gap-1 bg-admin-card-2 rounded-xl px-2 py-1 border border-admin-border-2">
                   <button onClick={() => updateQty(item.id, -1)}
-                    className="w-6 h-6 rounded-md text-slate-500 hover:text-white transition-colors font-bold">−</button>
-                  <span className="text-sm font-semibold text-white w-10 text-center">{item.current_qty}</span>
+                    className="w-6 h-6 rounded-md text-admin-subtle hover:text-admin-text transition-colors font-bold">−</button>
+                  <span className="text-sm font-semibold text-admin-text w-10 text-center">{item.current_qty}</span>
                   <button onClick={() => updateQty(item.id, 1)}
-                    className="w-6 h-6 rounded-md text-slate-500 hover:text-white transition-colors font-bold">+</button>
+                    className="w-6 h-6 rounded-md text-admin-subtle hover:text-admin-text transition-colors font-bold">+</button>
                 </div>
 
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(item)} className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-all">
+                  <button onClick={() => openEdit(item)} className="p-2 rounded-xl text-admin-subtle hover:text-admin-text hover:bg-admin-card-2 transition-all">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => deleteItem(item.id)} className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                  <button onClick={() => deleteItem(item.id)} className="p-2 rounded-xl text-admin-subtle hover:text-red-400 hover:bg-red-500/10 transition-all">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>

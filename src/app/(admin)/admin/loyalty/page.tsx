@@ -71,7 +71,7 @@ export default function LoyaltyPage() {
         </div>
       )}
 
-      <div className="card p-5 border-primary/20 bg-card">
+      <div className="card-admin p-5 border-primary/20 bg-card">
         <div className="flex items-start gap-3">
           <Star className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <div>
@@ -92,7 +92,7 @@ export default function LoyaltyPage() {
           { label: "Total points", value: summary.totalPoints.toLocaleString(), icon: Star, color: "text-primary", bg: "bg-primary/10 border-primary/20" },
           { label: "Total spent", value: formatINR(summary.totalSpent), icon: Gift, color: "text-chart-2", bg: "bg-chart-2/10 border-chart-2/20" },
         ].map((stat) => (
-          <div key={stat.label} className="card p-5 bg-card">
+          <div key={stat.label} className="card-admin p-5 bg-card">
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">{stat.label}</p>
               <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${stat.bg}`}>
@@ -104,20 +104,20 @@ export default function LoyaltyPage() {
         ))}
       </div>
 
-      <div className="card p-5 bg-card">
+      <div className="card-admin p-5 bg-card">
         <h3 className="font-semibold text-foreground mb-4">Program Settings</h3>
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="label">Points earned per Rs.100</label>
-            <input className="input" type="number" value={settings.pointsPerHundred} disabled />
+            <input className="input-admin" type="number" value={settings.pointsPerHundred} disabled />
           </div>
           <div>
             <label className="label">Min points to redeem</label>
-            <input className="input" type="number" value={settings.minimumPointsToRedeem} disabled />
+            <input className="input-admin" type="number" value={settings.minimumPointsToRedeem} disabled />
           </div>
           <div>
             <label className="label">Max redemption %</label>
-            <input className="input" type="number" value={settings.maxRedemptionPercent} disabled />
+            <input className="input-admin" type="number" value={settings.maxRedemptionPercent} disabled />
           </div>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function LoyaltyPage() {
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
-            className="input"
+            className="input-admin"
             placeholder="Search by name or phone..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -135,7 +135,7 @@ export default function LoyaltyPage() {
 
         {loading ? (
           <div className="space-y-2">
-            {[1, 2, 3, 4].map((item) => <div key={item} className="card p-4 shimmer h-16" />)}
+            {[1, 2, 3, 4].map((item) => <div key={item} className="card-admin p-4 shimmer h-16" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
@@ -146,7 +146,7 @@ export default function LoyaltyPage() {
         ) : (
           <div className="space-y-2">
             {filtered.map((account, index) => (
-              <div key={account.id} className="card card-hover p-4 flex items-center gap-4 bg-card">
+              <div key={account.id} className="card-admin card-hover p-4 flex items-center gap-4 bg-card">
                 <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
                   {index + 1}
                 </div>

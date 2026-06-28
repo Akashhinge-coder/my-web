@@ -107,10 +107,10 @@ export default function CombosPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white flex items-center gap-2">
+          <h1 className="page-title text-admin-text flex items-center gap-2">
             <Package2 className="w-6 h-6 text-accent-cyan" />Combo Meals
           </h1>
-          <p className="page-subtitle text-slate-400">Bundle dishes at a special price</p>
+          <p className="page-subtitle text-admin-muted">Bundle dishes at a special price</p>
         </div>
         <button onClick={() => { setEditingId(null); setForm({ ...EMPTY }); setShowAdd(true); }} className="btn-md btn-accent mt-1">
           <Plus className="w-4 h-4" />New Combo
@@ -120,22 +120,22 @@ export default function CombosPage() {
       {/* Add/Edit form */}
       {showAdd && (
         <div className="card-admin p-6 border-accent-cyan/30">
-          <h3 className="font-semibold text-white mb-5">{editingId ? "Edit Combo Meal" : "Create Combo Meal"}</h3>
+          <h3 className="font-semibold text-admin-text mb-5">{editingId ? "Edit Combo Meal" : "Create Combo Meal"}</h3>
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
-              <label className="label text-slate-400">Combo name</label>
+              <label className="label text-admin-muted">Combo name</label>
               <input className="input-admin" placeholder="Family Thali, Student Combo..."
                 value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} autoFocus />
             </div>
             <div>
-              <label className="label text-slate-400">Combo price (₹)</label>
+              <label className="label text-admin-muted">Combo price (₹)</label>
               <input className="input-admin" type="number" placeholder="399"
                 value={form.combo_price} onChange={e => setForm(p => ({ ...p, combo_price: e.target.value }))} />
             </div>
           </div>
 
           <div className="mb-4">
-            <label className="label text-slate-400">Select dishes (min 2)</label>
+            <label className="label text-admin-muted">Select dishes (min 2)</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
               {dishes.map(dish => (
                 <button key={dish.id}
@@ -143,11 +143,11 @@ export default function CombosPage() {
                   className={cn("text-left p-2.5 rounded-xl border text-xs transition-all",
                     form.dish_ids.includes(dish.id)
                       ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
-                      : "border-admin-border-2 text-slate-400 hover:border-accent-cyan/30"
+                      : "border-admin-border-2 text-admin-muted hover:border-accent-cyan/30"
                   )}
                 >
                   <p className="font-medium truncate">{dish.name}</p>
-                  <p className="text-slate-500">{formatINR(dish.price)}</p>
+                  <p className="text-admin-subtle">{formatINR(dish.price)}</p>
                 </button>
               ))}
             </div>
@@ -156,11 +156,11 @@ export default function CombosPage() {
           {/* Price summary */}
           {form.dish_ids.length >= 2 && comboPrice > 0 && (
             <div className="bg-admin-card-2 border border-admin-border-2 rounded-xl p-4 mb-5 text-sm">
-              <div className="flex justify-between text-slate-400 mb-1">
+              <div className="flex justify-between text-admin-muted mb-1">
                 <span>Original price</span>
                 <span>{formatINR(originalPrice)}</span>
               </div>
-              <div className="flex justify-between text-slate-400 mb-1">
+              <div className="flex justify-between text-admin-muted mb-1">
                 <span>Combo price</span>
                 <span>{formatINR(comboPrice)}</span>
               </div>
@@ -188,13 +188,13 @@ export default function CombosPage() {
       {/* Combos list */}
       {loading ? (
         <div className="space-y-3">
-          {[1,2].map(i => <div key={i} className="card-admin p-5 animate-pulse h-24 bg-white/5" />)}
+          {[1,2].map(i => <div key={i} className="card-admin p-5 animate-pulse h-24 bg-admin-card-2" />)}
         </div>
       ) : combos.length === 0 ? (
         <div className="text-center py-16">
           <Package2 className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-30" />
-          <p className="text-slate-400 font-medium">No combos yet</p>
-          <p className="text-xs text-slate-500 mt-1">Combos increase average order value</p>
+          <p className="text-admin-muted font-medium">No combos yet</p>
+          <p className="text-xs text-admin-subtle mt-1">Combos increase average order value</p>
           <button onClick={() => setShowAdd(true)} className="btn-md btn-accent mt-4 inline-flex">
             <Plus className="w-4 h-4" />Create first combo
           </button>
@@ -205,12 +205,12 @@ export default function CombosPage() {
             <div key={combo.id} className={cn("card-admin-hover p-5 transition-all", !combo.is_active && "opacity-50")}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                  <p className="font-semibold text-white mb-1">{combo.name}</p>
-                  <p className="text-xs text-slate-400 leading-relaxed">{getDishNames(combo.dish_ids)}</p>
+                  <p className="font-semibold text-admin-text mb-1">{combo.name}</p>
+                  <p className="text-xs text-admin-muted leading-relaxed">{getDishNames(combo.dish_ids)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => toggleCombo(combo.id, combo.is_active)}
-                    className={cn("transition-colors", combo.is_active ? "text-[#34d399]" : "text-slate-500")}>
+                    className={cn("transition-colors", combo.is_active ? "text-emerald-500" : "text-admin-subtle")}>
                     {combo.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
                   </button>
                   <button onClick={() => {
@@ -222,13 +222,13 @@ export default function CombosPage() {
                     });
                     setShowAdd(true);
                   }}
-                    className="p-2 rounded-xl text-slate-500 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-all"
+                    className="p-2 rounded-xl text-admin-subtle hover:text-accent-cyan hover:bg-accent-cyan/10 transition-all"
                     title="Edit combo"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => deleteCombo(combo.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                    className="p-2 rounded-xl text-admin-subtle hover:text-red-400 hover:bg-red-500/10 transition-all">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -236,14 +236,14 @@ export default function CombosPage() {
               <div className="flex items-center gap-3 pt-3 border-t border-admin-border-2">
                 <div>
                   <p className="font-display font-bold text-accent-cyan text-xl">{formatINR(combo.combo_price)}</p>
-                  <p className="text-[10px] text-slate-500">combo price</p>
+                  <p className="text-[10px] text-admin-subtle">combo price</p>
                 </div>
                 {combo.savings_amount > 0 && (
-                  <div className="px-3 py-1.5 rounded-xl bg-[#34d399]/10 border border-[#34d399]/20">
+                  <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <p className="text-xs font-semibold text-[#34d399]">Save {formatINR(combo.savings_amount)}</p>
                   </div>
                 )}
-                <span className="text-xs text-slate-500 ml-auto">{combo.dish_ids.length} items</span>
+                <span className="text-xs text-admin-subtle ml-auto">{combo.dish_ids.length} items</span>
               </div>
             </div>
           ))}

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, ShoppingBag, Table2, UtensilsCrossed,
@@ -73,14 +74,17 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
     return pathname.startsWith(href);
   }
 
-  const SidebarContent = () => (
+  const sidebarContent = (
     <>
       <div className="px-4 py-5 border-b border-admin-border-2">
         <Link href="/admin" className="flex items-center gap-3">
           {restaurant.logo_url ? (
-            <img
+            <Image
               src={restaurant.logo_url}
-              alt={restaurantName}
+              alt={restaurantName || ""}
+              width={36}
+              height={36}
+              unoptimized
               className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-admin-border-2"
             />
           ) : (
@@ -153,7 +157,7 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
       <aside
         className="hidden md:flex flex-col w-60 fixed inset-y-0 left-0 z-30 bg-admin-card border-r border-admin-border-2"
       >
-        <SidebarContent />
+        {sidebarContent}
       </aside>
       <button onClick={() => setMobileOpen(true)}
         className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-xl text-foreground bg-admin-card-2 border border-admin-border-2">
@@ -168,7 +172,7 @@ export default function AdminSidebar({ restaurant, userRole }: Props) {
             <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:text-foreground transition-colors" style={{ color: 'var(--admin-faint)' }}>
               <X className="w-4 h-4" />
             </button>
-            <SidebarContent />
+            {sidebarContent}
           </aside>
         </>
       )}

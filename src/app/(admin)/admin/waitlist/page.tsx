@@ -31,7 +31,7 @@ export default function WaitlistPage() {
   useEffect(() => { fetchWaitlist(); }, [fetchWaitlist]);
 
   async function addToWaitlist() {
-    if (!form.guest_name) return;
+    if (!form.guest_name || !form.guest_phone) return;
     setSaving(true);
     try {
       await waitlistApi.addGuest({
@@ -96,22 +96,22 @@ export default function WaitlistPage() {
 
       {/* Add form */}
       {showAdd && (
-        <div className="card p-5 border-primary/30 bg-card">
+        <div className="card-admin p-5 border-primary/30 bg-card">
           <h3 className="font-semibold text-foreground mb-4">Add Walk-in Guest</h3>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="col-span-1">
-              <label className="label text-muted-foreground">Guest name</label>
-              <input className="input" placeholder="Patel Family" autoFocus
+              <label className="label text-muted-foreground">Guest name <span className="text-red-500">*</span></label>
+              <input className="input-admin" placeholder="Patel Family" autoFocus
                 value={form.guest_name} onChange={e => setForm(p => ({ ...p, guest_name: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-muted-foreground">Phone</label>
-              <input className="input" placeholder="98765 43210"
+              <label className="label text-muted-foreground">Phone <span className="text-red-500">*</span></label>
+              <input className="input-admin" placeholder="98765 43210"
                 value={form.guest_phone} onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))} />
             </div>
             <div>
-              <label className="label text-muted-foreground">Party size</label>
-              <select className="input" value={form.party_size}
+              <label className="label text-muted-foreground">Party size <span className="text-red-500">*</span></label>
+              <select className="input-admin" value={form.party_size}
                 onChange={e => setForm(p => ({ ...p, party_size: e.target.value }))}>
                 {[1,2,3,4,5,6,7,8,10,12].map(n => <option key={n} value={n}>{n} people</option>)}
               </select>
@@ -119,7 +119,7 @@ export default function WaitlistPage() {
           </div>
           <div className="flex gap-3">
             <button onClick={() => setShowAdd(false)} className="btn-md btn-outline flex-1"><X className="w-4 h-4" />Cancel</button>
-            <button onClick={addToWaitlist} disabled={saving || !form.guest_name} className="btn-md btn-accent flex-1">
+            <button onClick={addToWaitlist} disabled={saving || !form.guest_name || !form.guest_phone} className="btn-md btn-accent flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Add to Waitlist
             </button>
@@ -129,7 +129,7 @@ export default function WaitlistPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="card p-5 animate-pulse h-20 bg-muted/20" />)}
+          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-20 bg-muted/20" />)}
         </div>
       ) : waitlist.length === 0 ? (
         <div className="text-center py-16">
@@ -141,7 +141,7 @@ export default function WaitlistPage() {
         <div className="space-y-3">
           {waitlist.map((entry, index) => (
             <div key={entry.id} className={cn(
-              "card card-hover p-4 flex items-center gap-4 bg-card",
+              "card-admin card-hover p-4 flex items-center gap-4 bg-card",
               entry.status === "notified" && "border-emerald-500/30"
             )}>
               {/* Position number */}

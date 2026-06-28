@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Plus,
@@ -443,10 +444,12 @@ export default function AdminMenuView() {
               >
                 <div className="relative h-36 bg-muted">
                   {dish.image_url ? (
-                    <img
+                    <Image
                       src={dish.image_url}
-                      alt={dish.name}
-                      className="w-full h-full object-cover"
+                      alt={dish.name || ""}
+                      fill
+                      unoptimized
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -572,7 +575,7 @@ export default function AdminMenuView() {
 
       {modalMode !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 border-primary/20">
+          <div className="card-admin w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 border-primary/20">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold text-foreground text-lg">
                 {modalMode === "add" ? "Add Dish" : "Edit Dish"}
@@ -588,17 +591,17 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="label">Name (English)</label>
+                <label className="label text-muted-foreground">Name (English)</label>
                 <input
-                  className="input"
+                  className="input-admin"
                   value={form.name}
                   onChange={handleEnglishNameChange}
                 />
               </div>
               <div>
-                <label className="label">Name (Hindi)</label>
+                <label className="label text-muted-foreground">Name (Hindi)</label>
                 <input
-                  className="input"
+                  className="input-admin"
                   value={form.name_hindi}
                   onChange={(e) => setForm((p) => ({ ...p, name_hindi: e.target.value }))}
                 />
@@ -606,9 +609,9 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label">Description</label>
+              <label className="label text-muted-foreground">Description</label>
               <textarea
-                className="input min-h-[80px] resize-y"
+                className="input-admin min-h-[80px] resize-y"
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               />
@@ -616,9 +619,9 @@ export default function AdminMenuView() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="label">Price (₹)</label>
+                <label className="label text-muted-foreground">Price (₹)</label>
                 <input
-                  className="input"
+                  className="input-admin"
                   type="number"
                   min="0"
                   step="0.01"
@@ -627,9 +630,9 @@ export default function AdminMenuView() {
                 />
               </div>
               <div>
-                <label className="label">Category</label>
+                <label className="label text-muted-foreground">Category</label>
                 <select
-                  className="input"
+                  className="input-admin"
                   value={form.category_id}
                   onChange={(e) => setForm((p) => ({ ...p, category_id: e.target.value }))}
                 >
@@ -642,7 +645,7 @@ export default function AdminMenuView() {
                 </select>
               </div>
               <div>
-                <label className="label">Size</label>
+                <label className="label text-muted-foreground">Size</label>
                 <div className="flex gap-2">
                   {DISH_SIZES.map((size) => (
                     <button
@@ -664,7 +667,7 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label text-slate-400">Food type</label>
+              <label className="label text-admin-muted">Food type</label>
               <div className="flex flex-wrap gap-2">
                 {FOOD_TYPES.map((ft) => (
                   <button
@@ -675,7 +678,7 @@ export default function AdminMenuView() {
                       "px-4 py-2 rounded-xl border text-sm font-medium transition-all",
                       form.food_type === ft.value
                         ? "btn-accent"
-                        : "border-admin-border-2 text-slate-500"
+                        : "border-admin-border-2 text-admin-subtle"
                     )}
                   >
                     {ft.label}
@@ -685,7 +688,7 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label text-slate-400">Spice level ({form.spice_level})</label>
+              <label className="label text-admin-muted">Spice level ({form.spice_level})</label>
               <input
                 className="w-full accent-brand"
                 type="range"
@@ -700,7 +703,7 @@ export default function AdminMenuView() {
 
             {/* ── Dish Image Upload ── */}
             <div className="mb-4">
-              <label className="label text-slate-400">Dish Image</label>
+              <label className="label text-admin-muted">Dish Image</label>
 
               {/* Hidden real file input */}
               <input
@@ -752,14 +755,14 @@ export default function AdminMenuView() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingImage}
-                  className="w-full h-36 rounded-xl border-2 border-dashed border-admin-border-2 hover:border-accent-cyan/50 bg-admin-card-2 hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-2 group"
+                  className="w-full h-36 rounded-xl border-2 border-dashed border-admin-border-2 hover:border-accent-cyan/50 bg-admin-card-2 hover:bg-muted/50 transition-all flex flex-col items-center justify-center gap-2 group"
                 >
                   {uploadingImage ? (
                     <Loader2 className="w-7 h-7 text-accent-cyan animate-spin" />
                   ) : (
-                    <ImageUp className="w-7 h-7 text-slate-500 group-hover:text-accent-cyan transition-colors" />
+                    <ImageUp className="w-7 h-7 text-admin-subtle group-hover:text-accent-cyan transition-colors" />
                   )}
-                  <span className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                  <span className="text-xs text-admin-subtle group-hover:text-admin-muted transition-colors">
                     {uploadingImage ? "Uploading…" : "Click to select image from your device"}
                   </span>
                   <span className="text-[10px] text-slate-600">PNG, JPEG, WebP or GIF · Max 5 MB</span>
@@ -768,7 +771,7 @@ export default function AdminMenuView() {
             </div>
 
             <div className="mb-4">
-              <label className="label text-slate-400">Allergy tags</label>
+              <label className="label text-admin-muted">Allergy tags</label>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-2">
                   {Array.from(new Set([...ALLERGY_TAGS, ...form.allergy_tags])).map((tag) => (
@@ -780,7 +783,7 @@ export default function AdminMenuView() {
                         "px-3 py-1.5 rounded-lg border text-xs font-medium capitalize transition-all",
                         form.allergy_tags.includes(tag)
                           ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                          : "border-admin-border-2 text-slate-500"
+                          : "border-admin-border-2 text-admin-subtle"
                       )}
                     >
                       {tag}
@@ -815,7 +818,7 @@ export default function AdminMenuView() {
             </div>
 
             <div className="flex flex-wrap gap-4 mb-6">
-              <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-admin-muted cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.is_available}
@@ -824,7 +827,7 @@ export default function AdminMenuView() {
                 />
                 Available on menu
               </label>
-              <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-admin-muted cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.is_special}
@@ -873,20 +876,20 @@ export default function AdminMenuView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="card-admin w-full max-w-md p-6 border-accent-cyan/30">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-white">Add Category</h3>
+              <h3 className="font-semibold text-admin-text">Add Category</h3>
               <button
                 type="button"
                 onClick={() => {
                   setShowCategoryModal(false);
                   setCategoryNameInput("");
                 }}
-                className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-admin-card-2"
+                className="p-2 rounded-xl text-admin-subtle hover:text-admin-text hover:bg-admin-card-2"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="mb-5">
-              <label className="label text-slate-400">Category name</label>
+              <label className="label text-admin-muted">Category name</label>
               <input
                 className="input-admin"
                 placeholder="e.g. Starters"

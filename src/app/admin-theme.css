@@ -169,7 +169,7 @@
   --admin-text: var(--foreground);
   --admin-muted: oklch(0.40 0.015 270);
   --admin-subtle: oklch(0.55 0.015 270);
-  --admin-faint: oklch(0.68 0.01 270);
+  --admin-faint: oklch(0.60 0.01 270);
 }
 
 .dark .admin-theme,
@@ -252,12 +252,10 @@
 .admin-theme .sidebar-item.active {
   color: var(--primary-foreground) !important;
   background: var(--primary) !important;
-  box-shadow: 0 4px 12px var(--ring) !important;
 }
 
 .admin-theme .sidebar-item.active::before {
   background: var(--primary-foreground) !important;
-  box-shadow: 0 0 8px var(--primary-foreground) !important;
 }
 
 .admin-theme .btn-accent {
@@ -265,7 +263,6 @@
   color: var(--primary-foreground);
   border-radius: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 4px 12px var(--ring);
   transition: all 0.3s ease;
   border: none;
 }

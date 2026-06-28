@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["var(--font-playfair)", "Georgia", "serif"],
+        display: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-dm-mono)", "monospace"],
       },
@@ -80,6 +80,10 @@ const config: Config = {
           "card-2":  "var(--admin-card-2)",
           border:    "var(--admin-border)",
           "border-2":"var(--admin-border-2)",
+          text:      "var(--admin-text)",
+          muted:     "var(--admin-muted)",
+          subtle:    "var(--admin-subtle)",
+          faint:     "var(--admin-faint)",
         },
         midnight: {
           DEFAULT: "#000000",

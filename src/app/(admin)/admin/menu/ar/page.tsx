@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { menuApi } from "@/frontend/api/menu";
 import { restaurantsApi } from "@/frontend/api/restaurants";
 import { cn } from "@/lib/utils";
@@ -152,17 +153,17 @@ export default function ARPage() {
         {selectedDish && (
           <button
             onClick={() => setSelectedDish(null)}
-            className="mt-1 p-2 rounded-xl text-ink-4 hover:text-white hover:bg-dark-tertiary transition-all"
+            className="mt-1 p-2 rounded-xl text-admin-muted hover:text-admin-text hover:bg-admin-card-2 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
         <div>
-          <h1 className="page-title text-white flex items-center gap-2">
+          <h1 className="page-title text-admin-text flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-accent-cyan" />
             AR Setup
           </h1>
-          <p className="page-subtitle text-slate-400">
+          <p className="page-subtitle text-admin-muted">
             Upload 5 photos per dish to enable AR visualization for customers
           </p>
         </div>
@@ -176,8 +177,8 @@ export default function ARPage() {
               <AlertCircle className="w-4 h-4 text-accent-cyan" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white mb-1">How AR works</p>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-sm font-medium text-admin-text mb-1">How AR works</p>
+              <p className="text-xs text-admin-muted leading-relaxed">
                 Upload 5 photos of each dish from different angles — Front, Back, Left, Right, Top.
                 Once all 5 are uploaded and published, customers can tap "View in AR" on your menu
                 and see the dish appear on their actual table through the camera.
@@ -190,13 +191,13 @@ export default function ARPage() {
       {/* Dish selector */}
       {!selectedDish ? (
         <div>
-          <p className="section-label text-slate-500 mb-3">Select a dish to set up AR</p>
+          <p className="section-label text-admin-subtle mb-3">Select a dish to set up AR</p>
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {[1,2,3,4,5,6,7,8].map(i => (
                 <div key={i} className="card-admin p-4 space-y-2">
-                  <div className="animate-pulse h-20 rounded-lg w-full bg-white/5" />
-                  <div className="animate-pulse h-3 rounded w-3/4 bg-white/5" />
+                  <div className="animate-pulse h-20 rounded-lg w-full bg-admin-card-2" />
+                  <div className="animate-pulse h-3 rounded w-3/4 bg-admin-card-2" />
                 </div>
               ))}
             </div>
@@ -211,15 +212,15 @@ export default function ARPage() {
                   {/* Dish image */}
                   <div className="h-20 bg-admin-card-2 border border-admin-border-2 rounded-lg overflow-hidden mb-3 relative">
                     {dish.image_url ? (
-                      <img src={dish.image_url} alt={dish.name}
-                        className="w-full h-full object-cover" />
+                      <Image src={dish.image_url} alt={dish.name || ""} fill unoptimized
+                        className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl">🍽</div>
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-white truncate flex-1">{dish.name}</p>
-                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-accent-cyan transition-colors flex-shrink-0" />
+                    <p className="text-sm font-medium text-admin-text truncate flex-1">{dish.name}</p>
+                    <ChevronRight className="w-4 h-4 text-admin-subtle group-hover:text-accent-cyan transition-colors flex-shrink-0" />
                   </div>
                 </button>
               ))}
@@ -232,7 +233,7 @@ export default function ARPage() {
           {/* Left: Angle uploads */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="font-semibold text-white">{selectedDish.name}</p>
+              <p className="font-semibold text-admin-text">{selectedDish.name}</p>
               <span className={cn(
                 "text-xs px-2.5 py-1 rounded-full border font-medium",
                 allUploaded
@@ -279,8 +280,8 @@ export default function ARPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">{angle.label}</p>
-                        <p className="text-xs text-slate-500">{angle.desc}</p>
+                        <p className="text-sm font-medium text-admin-text">{angle.label}</p>
+                        <p className="text-xs text-admin-subtle">{angle.desc}</p>
 
                         {/* URL input */}
                         <input
@@ -294,7 +295,7 @@ export default function ARPage() {
 
                       {/* Preview thumb */}
                       {url && (
-                        <img src={url} alt={angle.label}
+                        <Image src={url} alt={angle.label || ""} width={48} height={48} unoptimized
                           className="w-12 h-12 rounded-lg object-cover border border-admin-border-2 flex-shrink-0" />
                       )}
                     </div>
@@ -319,7 +320,7 @@ export default function ARPage() {
                   "btn-md flex-1",
                   allUploaded
                     ? "btn-accent"
-                    : "bg-admin-card-2 text-slate-500 border border-admin-border-2 cursor-not-allowed"
+                    : "bg-admin-card-2 text-admin-subtle border border-admin-border-2 cursor-not-allowed"
                 )}
               >
                 {saving ? "Publishing..." : (
@@ -329,7 +330,7 @@ export default function ARPage() {
             </div>
 
             {!allUploaded && (
-              <p className="text-xs text-slate-500 text-center">
+              <p className="text-xs text-admin-subtle text-center">
                 Upload all 5 angles to publish AR for this dish
               </p>
             )}
@@ -337,18 +338,20 @@ export default function ARPage() {
 
           {/* Right: Preview */}
           <div className="space-y-4">
-            <p className="font-semibold text-white">Preview</p>
+            <p className="font-semibold text-admin-text">Preview</p>
 
             {/* Main preview */}
             <div className="aspect-square bg-admin-card-2 rounded-2xl border border-admin-border-2 overflow-hidden relative">
               {arAsset?.[preview] ? (
-                <img
+                <Image
                   src={arAsset[preview]!}
-                  alt={preview}
-                  className="w-full h-full object-cover"
+                  alt={preview || ""}
+                  fill
+                  unoptimized
+                  className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-slate-500">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-admin-subtle">
                   <Upload className="w-10 h-10 opacity-30" />
                   <p className="text-sm">No image for {ANGLES.find(a => a.key === preview)?.label} angle yet</p>
                 </div>
@@ -381,7 +384,7 @@ export default function ARPage() {
                     <img src={arAsset[angle.key]!} alt={angle.label}
                       className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-admin-card-2 flex items-center justify-center text-xs text-slate-500">
+                    <div className="w-full h-full bg-admin-card-2 flex items-center justify-center text-xs text-admin-subtle">
                       {angle.label.charAt(0)}
                     </div>
                   )}
@@ -401,11 +404,11 @@ export default function ARPage() {
                   "w-2 h-2 rounded-full",
                   arAsset?.is_published ? "bg-[#34d399]" : "bg-slate-500"
                 )} />
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-admin-text">
                   {arAsset?.is_published ? "AR is live" : "AR not published"}
                 </p>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-admin-subtle">
                 {arAsset?.is_published
                   ? `Customers can view this dish in AR on their camera`
                   : `Upload all 5 angles and publish to enable AR for customers`

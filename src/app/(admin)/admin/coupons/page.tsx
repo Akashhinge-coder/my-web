@@ -135,14 +135,14 @@ export default function CouponsPage() {
       )}
 
       {showAdd && (
-        <div className="card p-6 border-primary/30 bg-card">
+        <div className="card-admin p-6 border-primary/30 bg-card">
           <h3 className="font-semibold text-foreground mb-5">Create Coupon</h3>
 
           <div className="mb-4">
             <label className="label text-muted-foreground">Coupon code</label>
             <div className="flex gap-2">
               <input
-                className="input font-mono uppercase flex-1"
+                className="input-admin font-mono uppercase flex-1"
                 placeholder="SAVE20"
                 value={form.code}
                 onChange={(e) => setForm((previous) => ({ ...previous, code: e.target.value.toUpperCase() }))}
@@ -181,7 +181,7 @@ export default function CouponsPage() {
                 {form.type === "percent" ? "Discount %" : "Discount Rs."}
               </label>
               <input
-                className="input"
+                className="input-admin"
                 type="number"
                 placeholder={form.type === "percent" ? "20" : "100"}
                 value={form.value}
@@ -194,7 +194,7 @@ export default function CouponsPage() {
             <div>
               <label className="label text-muted-foreground">Min order</label>
               <input
-                className="input"
+                className="input-admin"
                 type="number"
                 placeholder="0"
                 value={form.minOrder}
@@ -204,7 +204,7 @@ export default function CouponsPage() {
             <div>
               <label className="label text-muted-foreground">Max discount</label>
               <input
-                className="input"
+                className="input-admin"
                 type="number"
                 placeholder="No cap"
                 value={form.maxDiscount}
@@ -214,7 +214,7 @@ export default function CouponsPage() {
             <div>
               <label className="label text-muted-foreground">Max uses</label>
               <input
-                className="input"
+                className="input-admin"
                 type="number"
                 placeholder="Unlimited"
                 value={form.maxUses}
@@ -224,7 +224,7 @@ export default function CouponsPage() {
             <div>
               <label className="label text-muted-foreground">Expires on</label>
               <input
-                className="input"
+                className="input-admin"
                 type="date"
                 value={form.expiresAt}
                 onChange={(e) => setForm((previous) => ({ ...previous, expiresAt: e.target.value }))}
@@ -246,7 +246,7 @@ export default function CouponsPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((item) => <div key={item} className="card p-5 animate-pulse h-20 bg-muted/20" />)}
+          {[1, 2, 3].map((item) => <div key={item} className="card-admin p-5 animate-pulse h-20 bg-muted/20" />)}
         </div>
       ) : coupons.length === 0 ? (
         <div className="text-center py-16">
@@ -263,7 +263,7 @@ export default function CouponsPage() {
             const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
 
             return (
-              <div key={coupon.id} className={cn("card p-4 transition-all bg-card", !coupon.isActive && "opacity-50")}>
+              <div key={coupon.id} className={cn("card-admin p-4 transition-all bg-card", !coupon.isActive && "opacity-50")}>
                 <div className="flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

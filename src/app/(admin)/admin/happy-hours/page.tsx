@@ -136,20 +136,20 @@ export default function HappyHoursPage() {
         </div>
       )}
 
-      <div className="card p-4 border-primary/20 bg-card">
+      <div className="card-admin p-4 border-primary/20 bg-card">
         <p className="text-xs text-muted-foreground leading-relaxed">
           <span className="text-primary font-medium">How it works:</span> When a happy hour rule is active, the discount automatically applies to eligible items on the customer menu. Customers see the discounted price live - no coupon code needed.
         </p>
       </div>
 
       {showAdd && (
-        <div className="card p-6 border-primary/30 bg-card">
+        <div className="card-admin p-6 border-primary/30 bg-card">
           <h3 className="font-semibold text-foreground mb-5">New Happy Hour Rule</h3>
           <div className="space-y-4">
             <div>
               <label className="label text-muted-foreground">Rule name</label>
               <input
-                className="input"
+                className="input-admin"
                 placeholder="Afternoon Special, Weekend Happy Hour..."
                 value={form.name}
                 onChange={(event) => setForm((previous) => ({ ...previous, name: event.target.value }))}
@@ -185,7 +185,7 @@ export default function HappyHoursPage() {
                   {form.discountType === "percent" ? "Discount %" : "Discount Rs."}
                 </label>
                 <input
-                  className="input"
+                  className="input-admin"
                   type="number"
                   placeholder={form.discountType === "percent" ? "20" : "50"}
                   value={form.discountValue}
@@ -198,7 +198,7 @@ export default function HappyHoursPage() {
               <div>
                 <label className="label text-muted-foreground">Start time</label>
                 <input
-                  className="input"
+                  className="input-admin"
                   type="time"
                   value={form.startTime}
                   onChange={(event) => setForm((previous) => ({ ...previous, startTime: event.target.value }))}
@@ -207,7 +207,7 @@ export default function HappyHoursPage() {
               <div>
                 <label className="label text-muted-foreground">End time</label>
                 <input
-                  className="input"
+                  className="input-admin"
                   type="time"
                   value={form.endTime}
                   onChange={(event) => setForm((previous) => ({ ...previous, endTime: event.target.value }))}
@@ -257,7 +257,7 @@ export default function HappyHoursPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2].map((item) => <div key={item} className="card p-5 animate-pulse h-24 bg-muted/20" />)}
+          {[1, 2].map((item) => <div key={item} className="card-admin p-5 animate-pulse h-24 bg-muted/20" />)}
         </div>
       ) : hours.length === 0 ? (
         <div className="text-center py-16">
@@ -274,7 +274,7 @@ export default function HappyHoursPage() {
             <div
               key={hour.id}
               className={cn(
-                "card p-5 transition-all bg-card",
+                "card-admin p-5 transition-all bg-card",
                 hour.isActive && "border-primary/40",
                 !hour.isActive && "opacity-50"
               )}

@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ApiClientError } from "@/frontend/api/http";
 import { settingsApi, type RestaurantSettings } from "@/frontend/api/settings.api";
 import { cn } from "@/lib/utils";
@@ -84,7 +85,7 @@ export default function SettingsPage() {
     }
 
     // 2. Load and scale the image using Canvas
-    const img = new Image();
+    const img = new window.Image();
     const objectUrl = URL.createObjectURL(file);
     img.src = objectUrl;
 
@@ -255,34 +256,34 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 animate-fade-in max-w-2xl">
       <div className="page-header">
-        <h1 className="page-title text-white">Settings</h1>
+        <h1 className="page-title text-admin-text">Settings</h1>
         <p className="page-subtitle">Restaurant profile and configuration</p>
       </div>
 
       <div className="card-admin p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
           <Store className="w-4 h-4 text-accent-cyan" />
-          <h2 className="font-semibold text-white">Restaurant Info</h2>
+          <h2 className="font-semibold text-admin-text">Restaurant Info</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label text-slate-400">Restaurant name</label>
+            <label className="label text-admin-muted">Restaurant name</label>
             <input className="input-admin" value={form.name || ""} onChange={(e) => set("name", e.target.value)} />
           </div>
           <div>
-            <label className="label text-slate-400">URL slug</label>
-            <input className="input-admin bg-white/5 opacity-50 cursor-not-allowed" value={form.slug || ""} disabled />
-            <p className="text-xs text-slate-500 mt-1">menuara.app/{form.slug}/...</p>
+            <label className="label text-admin-muted">URL slug</label>
+            <input className="input-admin bg-admin-card-2 opacity-50 cursor-not-allowed" value={form.slug || ""} disabled />
+            <p className="text-xs text-admin-subtle mt-1">menuara.app/{form.slug}/...</p>
           </div>
         </div>
 
         <div>
-          <label className="label text-slate-400 flex items-center gap-1.5">
+          <label className="label text-admin-muted flex items-center gap-1.5">
             <Phone className="w-3 h-3" />Owner mobile
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">+91</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-admin-subtle text-sm">+91</span>
             <input
               className="input-admin pl-12"
               value={form.phone || ""}
@@ -293,7 +294,7 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="label text-slate-400 flex items-center gap-1.5">
+          <label className="label text-admin-muted flex items-center gap-1.5">
             <MapPin className="w-3 h-3" />Address
           </label>
           <textarea
@@ -306,18 +307,21 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="label text-slate-400">Restaurant Logo</label>
+          <label className="label text-admin-muted">Restaurant Logo</label>
           <div className="flex items-center gap-4 mt-2">
             <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-admin-card-2 border border-admin-border-2 flex items-center justify-center flex-shrink-0">
               {previewUrl ? (
-                <img
+                <Image
                   src={previewUrl}
                   alt="logo preview"
+                  width={80}
+                  height={80}
+                  unoptimized
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div
-                  className="w-full h-full flex items-center justify-center text-[#0c0e12] font-bold text-2xl"
+                  className="w-full h-full flex items-center justify-center text-primary-foreground font-bold text-2xl"
                   style={{ background: "linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))" }}
                 >
                   {form.name?.charAt(0).toUpperCase() || "M"}
@@ -353,7 +357,7 @@ export default function SettingsPage() {
                   </button>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-admin-subtle">
                 PNG, JPG or WebP (max 5 MB). Logo will be optimized.
               </p>
             </div>
@@ -370,11 +374,11 @@ export default function SettingsPage() {
       <div className="card-admin p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
           <FileText className="w-4 h-4 text-accent-cyan" />
-          <h2 className="font-semibold text-white">GST Settings</h2>
+          <h2 className="font-semibold text-admin-text">GST Settings</h2>
         </div>
 
         <div>
-          <label className="label text-slate-400">GST Number</label>
+          <label className="label text-admin-muted">GST Number</label>
           <input
             className="input-admin font-mono"
             value={form.gstNumber || ""}
@@ -382,12 +386,12 @@ export default function SettingsPage() {
             placeholder="27AAPFU0939F1ZV"
             maxLength={15}
           />
-          <p className="text-xs text-slate-500 mt-1">Appears on all GST invoices</p>
+          <p className="text-xs text-admin-subtle mt-1">Appears on all GST invoices</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label text-slate-400 flex items-center gap-1.5">
+            <label className="label text-admin-muted flex items-center gap-1.5">
               <Percent className="w-3 h-3" />CGST Rate
             </label>
             <input
@@ -401,7 +405,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="label text-slate-400 flex items-center gap-1.5">
+            <label className="label text-admin-muted flex items-center gap-1.5">
               <Percent className="w-3 h-3" />SGST Rate
             </label>
             <input
@@ -429,7 +433,7 @@ export default function SettingsPage() {
       <div className="card-admin p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Globe className="w-4 h-4 text-accent-cyan" />
-          <h2 className="font-semibold text-white">Menu Language</h2>
+          <h2 className="font-semibold text-admin-text">Menu Language</h2>
         </div>
         <div className="flex gap-3 flex-wrap">
           {[
@@ -446,7 +450,7 @@ export default function SettingsPage() {
                 "px-3 py-2 rounded-xl border text-sm transition-all",
                 form.language === lang.value
                   ? "bg-accent-cyan/10 border-accent-cyan/30 text-accent-cyan"
-                  : "border-admin-border-2 text-slate-400 hover:border-accent-cyan/30"
+                  : "border-admin-border-2 text-admin-muted hover:border-accent-cyan/30"
               )}
             >
               {lang.label}
@@ -458,18 +462,18 @@ export default function SettingsPage() {
       <div className="card-admin p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Users className="w-4 h-4 text-accent-cyan" />
-          <h2 className="font-semibold text-white">Ordering Experience</h2>
+          <h2 className="font-semibold text-admin-text">Ordering Experience</h2>
         </div>
         <div>
-          <label className="label text-slate-400 mb-3 block">Session Mode</label>
+          <label className="label text-admin-muted mb-3 block">Session Mode</label>
           <div className="flex gap-4 flex-col sm:flex-row">
             <button
               onClick={() => set("sessionMode", "open")}
               className={cn(
                 "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
                 form.sessionMode === "open"
-                  ? "bg-accent-cyan/10 border-accent-cyan text-white shadow-sm shadow-accent-cyan/20"
-                  : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:border-accent-cyan/50"
+                  ? "bg-accent-cyan/10 border-accent-cyan text-admin-text shadow-sm shadow-accent-cyan/20"
+                  : "bg-admin-card-2 border-admin-border-2 text-admin-muted hover:border-accent-cyan/50"
               )}
             >
               {form.sessionMode === "open" && (
@@ -489,8 +493,8 @@ export default function SettingsPage() {
               className={cn(
                 "flex-1 text-left p-4 rounded-xl border transition-all relative overflow-hidden",
                 form.sessionMode === "host_approval"
-                  ? "bg-accent-cyan/10 border-accent-cyan text-white shadow-sm shadow-accent-cyan/20"
-                  : "bg-admin-card-2 border-admin-border-2 text-slate-400 hover:border-accent-cyan/50"
+                  ? "bg-accent-cyan/10 border-accent-cyan text-admin-text shadow-sm shadow-accent-cyan/20"
+                  : "bg-admin-card-2 border-admin-border-2 text-admin-muted hover:border-accent-cyan/50"
               )}
             >
               {form.sessionMode === "host_approval" && (
@@ -515,7 +519,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <button onClick={save} disabled={saving || !restaurant} className={cn("btn-lg w-full", saved ? "bg-[#34d399] text-[#0c0e12]" : "btn-accent")}>
+      <button onClick={save} disabled={saving || !restaurant} className={cn("btn-lg w-full", saved ? "bg-emerald-500 text-primary-foreground" : "btn-accent")}>
         {saving ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />Saving...

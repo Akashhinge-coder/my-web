@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { formatINR, timeAgo, cn } from "@/lib/utils";
+import Image from "next/image";
 import { ChefHat, Check, Clock, Wifi, WifiOff } from "lucide-react";
 import { ordersApi } from "@/frontend/api/orders";
 import { restaurantsApi } from "@/frontend/api/restaurants";
@@ -84,9 +85,12 @@ export default function KitchenDisplayView({ restaurantId }: { restaurantId: str
       <div className="flex items-center justify-between px-6 py-4 border-b border-dark-border bg-dark-secondary">
         <div className="flex items-center gap-3">
           {restaurant?.logo_url ? (
-            <img
+            <Image
               src={restaurant.logo_url}
-              alt={restaurant.name}
+              alt={restaurant.name || ""}
+              width={36}
+              height={36}
+              unoptimized
               className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-dark-border"
             />
           ) : (

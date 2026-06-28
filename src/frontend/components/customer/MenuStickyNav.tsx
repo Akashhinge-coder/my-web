@@ -37,9 +37,12 @@ export function MenuStickyNav({
       <div className="px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           {logoUrl ? (
-            <img
+            <Image
               src={logoUrl!}
               alt={`${restaurantName} logo`}
+              width={32}
+              height={32}
+              unoptimized
               className="w-8 h-8 rounded-xl object-cover flex-shrink-0"
             />
           ) : (

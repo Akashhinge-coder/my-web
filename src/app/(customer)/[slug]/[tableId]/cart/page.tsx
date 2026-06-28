@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCart } from "@/frontend/hooks/useCart";
 import { useCartPricing } from "@/frontend/hooks/useCartPricing";
@@ -45,7 +46,7 @@ export default function CartPage() {
         {cart.state.items.map(item => (
           <div key={item.id} className="bg-dark-card rounded-2xl border border-dark-border p-4 flex gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
             {item.imageUrl && (
-              <img src={item.imageUrl} alt={item.name}
+              <Image src={item.imageUrl} alt={item.name || ""} width={64} height={64} unoptimized
                 className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-dark-border" />
             )}
             <div className="flex-1 min-w-0">

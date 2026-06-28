@@ -95,7 +95,7 @@ export default function StaffPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {ROLES.map(role => (
-          <div key={role.value} className={cn("card p-4 border-border/50", role.bg)}>
+          <div key={role.value} className={cn("card-admin p-4 border-admin-border-2", role.bg)}>
             <div className="flex items-center gap-2 mb-1">
               <Shield className={cn("w-3.5 h-3.5", role.color)} />
               <span className={cn("text-xs font-medium", role.color)}>{role.label}</span>
@@ -109,19 +109,19 @@ export default function StaffPage() {
       </div>
 
       {showAdd && (
-        <div className="card p-6 border-primary/30 bg-card">
+        <div className="card-admin p-6 border-primary/30 bg-card">
           <h3 className="font-semibold text-foreground mb-5">
             {editId ? "Edit Staff Member" : "Add New Staff Member"}
           </h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="label text-muted-foreground">Full name</label>
-              <input className="input" placeholder="Rahul Sharma"
+              <input className="input-admin" placeholder="Rahul Sharma"
                 value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} autoFocus />
             </div>
             <div>
               <label className="label text-muted-foreground">Mobile number</label>
-              <input className="input" placeholder="98765 43210"
+              <input className="input-admin" placeholder="98765 43210"
                 value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
             </div>
           </div>
@@ -148,12 +148,12 @@ export default function StaffPage() {
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
               <label className="label text-muted-foreground">Shift start</label>
-              <input className="input" type="time"
+              <input className="input-admin" type="time"
                 value={form.shift_start} onChange={e => setForm(p => ({ ...p, shift_start: e.target.value }))} />
             </div>
             <div>
               <label className="label text-muted-foreground">Shift end</label>
-              <input className="input" type="time"
+              <input className="input-admin" type="time"
                 value={form.shift_end} onChange={e => setForm(p => ({ ...p, shift_end: e.target.value }))} />
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function StaffPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="card p-5 animate-pulse h-20 bg-muted/20" />)}
+          {[1,2,3].map(i => <div key={i} className="card-admin p-5 animate-pulse h-20 bg-muted/20" />)}
         </div>
       ) : staff.length === 0 ? (
         <div className="text-center py-16">
@@ -187,7 +187,7 @@ export default function StaffPage() {
           {staff.map(s => {
             const cfg = roleConfig(s.role);
             return (
-              <div key={s.id} className="card card-hover p-4 flex items-center gap-4 bg-card">
+              <div key={s.id} className="card-admin card-hover p-4 flex items-center gap-4 bg-card">
                 <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground font-bold flex-shrink-0">
                   {s.name.charAt(0).toUpperCase()}
                 </div>

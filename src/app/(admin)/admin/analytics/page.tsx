@@ -60,10 +60,10 @@ export default function AnalyticsPage() {
   if (loading) return (
     <div className="space-y-6 animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title text-white">Analytics</h1>
+        <h1 className="page-title text-admin-text">Analytics</h1>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1,2,3,4].map(i => <div key={i} className="card-admin p-5 animate-pulse h-28 bg-white/5" />)}
+        {[1,2,3,4].map(i => <div key={i} className="card-admin p-5 animate-pulse h-28 bg-admin-card-2" />)}
       </div>
     </div>
   );
@@ -73,15 +73,15 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
-          <h1 className="page-title text-white">Analytics</h1>
+          <h1 className="page-title text-admin-text">Analytics</h1>
           <p className="page-subtitle">Business performance overview</p>
         </div>
         {/* Range selector */}
-        <div className="flex gap-1 bg-[#131622] border border-[#1e293b] rounded-xl p-1">
+        <div className="flex gap-1 bg-admin-card-2 border border-admin-border-2 rounded-xl p-1">
           {(["7","30","90"] as const).map(r => (
             <button key={r} onClick={() => setRange(r)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                range === r ? "bg-[#22d3ee] text-[#0c0e12]" : "text-slate-400 hover:text-white"
+                range === r ? "bg-accent-cyan text-primary-foreground" : "text-admin-muted hover:text-admin-text"
               }`}>
               {r}d
             </button>
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
             </div>
             <p className="stat-value" title={(stat as { full?: string }).full}>{stat.value}</p>
             {stat.label === "Revenue" && avgOrder > 0 && (
-              <p className="text-xs text-slate-500 mt-1">Avg order: {formatINR(avgOrder)}</p>
+              <p className="text-xs text-admin-muted mt-1">Avg order: {formatINR(avgOrder)}</p>
             )}
           </div>
         ))}
@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
 
       {/* Revenue chart */}
       <div className="card-admin p-6">
-        <h2 className="font-semibold text-white mb-6 flex items-center gap-2">
+        <h2 className="font-semibold text-admin-text mb-6 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-accent-cyan" />
           Daily Revenue
         </h2>
@@ -132,18 +132,18 @@ export default function AnalyticsPage() {
                       height: `${Math.max(height, 2)}%`,
                       background: day.revenue > 0
                         ? "linear-gradient(180deg,#22d3ee,#2563eb)"
-                        : "#1e293b",
+                        : "var(--admin-card-2)",
                       minHeight: "4px",
                     }}
                   >
                     {day.revenue > 0 && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#111420] border border-[#1e293b] rounded-md px-1.5 py-0.5 text-[9px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-admin-card border border-admin-border rounded-md px-1.5 py-0.5 text-[9px] text-admin-text whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                         {formatINRCompact(day.revenue)}
                       </div>
                     )}
                   </div>
                 </div>
-                <span className="text-[9px] text-slate-500 rotate-45 origin-left whitespace-nowrap hidden sm:block">
+                <span className="text-[9px] text-admin-subtle rotate-45 origin-left whitespace-nowrap hidden sm:block">
                   {label}
                 </span>
               </div>
@@ -156,28 +156,28 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top dishes */}
         <div className="card-admin p-6">
-          <h2 className="font-semibold text-white mb-5 flex items-center gap-2">
+          <h2 className="font-semibold text-admin-text mb-5 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-accent-cyan" />
             Top Dishes
           </h2>
           {topDishes.length === 0 ? (
-            <p className="text-slate-500 text-sm text-center py-8">No orders in this period</p>
+            <p className="text-admin-muted text-sm text-center py-8">No orders in this period</p>
           ) : (
             <div className="space-y-3">
               {topDishes.map((dish, i) => (
                 <div key={dish.name} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-500 w-4">{i + 1}</span>
+                  <span className="text-xs font-bold text-admin-subtle w-4">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-white truncate">{dish.name}</span>
-                      <span className="text-xs text-slate-500 ml-2">{dish.count} orders</span>
+                      <span className="text-sm text-admin-text truncate">{dish.name}</span>
+                      <span className="text-xs text-admin-muted ml-2">{dish.count} orders</span>
                     </div>
-                    <div className="h-1.5 bg-[#131622] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-admin-card-2 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{
                           width: `${(dish.count / maxDishCount) * 100}%`,
-                          background: i === 0 ? "linear-gradient(90deg,#22d3ee,#2563eb)" : "#1e293b",
+                          background: i === 0 ? "linear-gradient(90deg,#22d3ee,#2563eb)" : "var(--admin-border-2)",
                         }}
                       />
                     </div>
@@ -191,9 +191,9 @@ export default function AnalyticsPage() {
 
         {/* Payment breakdown */}
         <div className="card-admin p-6">
-          <h2 className="font-semibold text-white mb-5">Payment Methods</h2>
+          <h2 className="font-semibold text-admin-text mb-5">Payment Methods</h2>
           {paymentData.length === 0 ? (
-            <p className="text-slate-500 text-sm text-center py-8">No payments in this period</p>
+            <p className="text-admin-muted text-sm text-center py-8">No payments in this period</p>
           ) : (
             <div className="space-y-3">
               {paymentData.map(pm => {
@@ -202,14 +202,14 @@ export default function AnalyticsPage() {
                 return (
                   <div key={pm.method}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-white capitalize">{pm.method}</span>
+                      <span className="text-sm text-admin-text capitalize">{pm.method}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-slate-500">{pm.count} txn</span>
-                        <span className="text-sm font-semibold text-white">{formatINRCompact(pm.amount)}</span>
-                        <span className="text-xs text-slate-500 w-8 text-right">{pct.toFixed(0)}%</span>
+                        <span className="text-xs text-admin-muted">{pm.count} txn</span>
+                        <span className="text-sm font-semibold text-admin-text">{formatINRCompact(pm.amount)}</span>
+                        <span className="text-xs text-admin-muted w-8 text-right">{pct.toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="h-1.5 bg-[#131622] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-admin-card-2 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
                     </div>
                   </div>
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
 
       {/* Peak hours heatmap */}
       <div className="card-admin p-6">
-        <h2 className="font-semibold text-white mb-5">Peak Hours</h2>
+        <h2 className="font-semibold text-admin-text mb-5">Peak Hours</h2>
         <div className="flex items-end gap-1 h-24">
           {peakHours.map(h => {
             const height = maxHourCount > 0 ? (h.count / maxHourCount) * 100 : 0;
@@ -232,18 +232,18 @@ export default function AnalyticsPage() {
               <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
                 <div className="w-full rounded-t-sm transition-all" style={{
                   height: `${Math.max(height, 2)}%`,
-                  background: isPeak ? "linear-gradient(180deg,#22d3ee,#2563eb)" : "#1e293b",
+                  background: isPeak ? "linear-gradient(180deg,#22d3ee,#2563eb)" : "var(--admin-border-2)",
                   minHeight: "3px",
                 }} />
                 {(h.hour % 3 === 0) && (
-                  <span className="text-[9px] text-slate-500">{hour12}</span>
+                  <span className="text-[9px] text-admin-subtle">{hour12}</span>
                 )}
               </div>
             );
           })}
         </div>
         {peakHours.length > 0 && (
-          <p className="text-xs text-slate-500 mt-3">
+          <p className="text-xs text-admin-muted mt-3">
             Busiest hour: {(() => {
               const peak = peakHours.reduce((a, b) => a.count > b.count ? a : b);
               const h = peak.hour;

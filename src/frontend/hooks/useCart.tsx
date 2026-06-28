@@ -161,6 +161,7 @@ export function CartProvider({
         if (res.status === "needs_name" || res.status === "pending" || res.status === "denied") {
           if (!window.location.pathname.endsWith("/welcome")) {
             window.location.href = `/${restaurantSlug}/${tableId}/welcome${window.location.search}`;
+            return;
           }
           dispatch({ type: "FINISH_BOOTSTRAP" });
           return;

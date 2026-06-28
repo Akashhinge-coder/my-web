@@ -87,7 +87,7 @@ export default function BillingPage() {
 
   if (loadState === "unauthorized") return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="card p-8 max-w-md text-center">
+      <div className="card-admin p-8 max-w-md text-center">
         <Receipt className="w-10 h-10 mx-auto mb-4 text-muted-foreground opacity-50" />
         <h1 className="font-display text-xl font-semibold text-foreground mb-2">
           Login required to view billing
@@ -101,7 +101,7 @@ export default function BillingPage() {
 
   if (loadState === "error") return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="card p-8 max-w-md text-center">
+      <div className="card-admin p-8 max-w-md text-center">
         <Receipt className="w-10 h-10 mx-auto mb-4 text-destructive opacity-70" />
         <h1 className="font-display text-xl font-semibold text-foreground mb-2">
           Billing unavailable
@@ -143,7 +143,7 @@ export default function BillingPage() {
               : "";
 
             return (
-              <div key={session.id} className="card overflow-hidden">
+              <div key={session.id} className="card-admin overflow-hidden">
                 {/* Session header */}
                 <div
                   className="flex items-center justify-between p-5 cursor-pointer hover:bg-muted/50 transition-colors"
@@ -302,7 +302,7 @@ export default function BillingPage() {
                               type="number"
                               value={cashReceived}
                               onChange={e => setCashReceived(e.target.value)}
-                              className="input py-1.5 text-sm"
+                              className="input-admin py-1.5 text-sm"
                               placeholder="0"
                             />
                           </div>

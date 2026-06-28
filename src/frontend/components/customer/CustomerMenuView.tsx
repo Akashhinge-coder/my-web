@@ -576,7 +576,7 @@ function ComboModal({
         <div className="overflow-y-auto scrollbar-hide flex-1 pb-24">
           <div className="relative h-[40vh] min-h-[280px] w-full bg-[#0B101E]">
             {isValidImageSrc(firstDishImage) ? (
-              <img src={firstDishImage!} alt={combo.name} className="object-cover w-full h-full" />
+              <Image src={firstDishImage!} alt={combo.name} fill unoptimized className="object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-6xl opacity-30">🍱</div>
             )}
@@ -612,7 +612,7 @@ function ComboModal({
                 {comboDishes.map((dish) => (
                   <div key={dish.id} className="flex items-center gap-3 bg-midnight-tertiary p-3 rounded-2xl border border-midnight-border">
                     {isValidImageSrc(dish.image_url) ? (
-                      <img src={dish.image_url!} alt={dish.name} className="w-12 h-12 rounded-xl object-cover border border-midnight-border shadow-sm" />
+                      <Image src={dish.image_url!} alt={dish.name} width={48} height={48} unoptimized className="w-12 h-12 rounded-xl object-cover border border-midnight-border shadow-sm" />
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-dark flex items-center justify-center text-xl border border-midnight-border shadow-sm">🍽</div>
                     )}
@@ -966,7 +966,7 @@ export default function CustomerMenuView({
               }}
             >
               {restaurant.logo_url ? (
-                 <img src={restaurant.logo_url} className="w-full h-full object-cover" alt="Logo" />
+                 <Image src={restaurant.logo_url} width={44} height={44} unoptimized className="w-full h-full object-cover" alt="Logo" />
               ) : (
                  <div className="w-full h-full flex items-center justify-center text-[#0B101E] text-[18px] font-bold">
                    {restaurant.name[0]}
@@ -1177,7 +1177,7 @@ export default function CustomerMenuView({
               type="button"
               onClick={() => {
                 setSearch("");
-                setFoodFilter("all");
+                setFilterState(DEFAULT_FILTER_STATE);
               }}
               className="mt-3 text-sm text-brand font-medium"
             >

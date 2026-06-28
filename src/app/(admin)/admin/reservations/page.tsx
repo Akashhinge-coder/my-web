@@ -42,7 +42,7 @@ export default function ReservationsPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   async function saveReservation() {
-    if (!form.guest_name || !form.reserved_at) return;
+    if (!form.guest_name || !form.guest_phone || !form.reserved_at) return;
     setSaving(true);
     try {
       await reservationsApi.create({
@@ -116,24 +116,24 @@ export default function ReservationsPage() {
 
       {/* Add form */}
       {showAdd && (
-        <div className="card p-6 border-primary/30 bg-card">
+        <div className="card-admin p-6 border-primary/30 bg-card">
           <h3 className="font-semibold text-foreground mb-5">New Reservation</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="label text-muted-foreground">Guest name</label>
-              <input className="input" placeholder="Sharma Family"
+              <label className="label text-muted-foreground">Guest name <span className="text-red-500">*</span></label>
+              <input className="input-admin" placeholder="Sharma Family"
                 value={form.guest_name} onChange={e => setForm(p => ({ ...p, guest_name: e.target.value }))} autoFocus />
             </div>
             <div>
-              <label className="label text-muted-foreground">Phone number</label>
-              <input className="input" placeholder="98765 43210"
+              <label className="label text-muted-foreground">Phone number <span className="text-red-500">*</span></label>
+              <input className="input-admin" placeholder="98765 43210"
                 value={form.guest_phone} onChange={e => setForm(p => ({ ...p, guest_phone: e.target.value }))} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="label text-muted-foreground">Party size</label>
-              <select className="input" value={form.party_size}
+              <label className="label text-muted-foreground">Party size <span className="text-red-500">*</span></label>
+              <select className="input-admin" value={form.party_size}
                 onChange={e => setForm(p => ({ ...p, party_size: e.target.value }))}>
                 {[1,2,3,4,5,6,7,8,10,12,15,20].map(n => (
                   <option key={n} value={n}>{n} {n === 1 ? "person" : "people"}</option>
@@ -141,8 +141,8 @@ export default function ReservationsPage() {
               </select>
             </div>
             <div>
-              <label className="label text-muted-foreground">Date & time</label>
-              <input className="input" type="datetime-local"
+              <label className="label text-muted-foreground">Date & time <span className="text-red-500">*</span></label>
+              <input className="input-admin" type="datetime-local"
                 value={form.reserved_at} onChange={e => setForm(p => ({ ...p, reserved_at: e.target.value }))} />
             </div>
             <div>
@@ -150,7 +150,7 @@ export default function ReservationsPage() {
                 Assign table
                 <span className="text-muted-foreground normal-case font-normal ml-1">(optional)</span>
               </label>
-              <select className="input" value={form.table_id}
+              <select className="input-admin" value={form.table_id}
                 onChange={e => setForm(p => ({ ...p, table_id: e.target.value }))}>
                 <option value="">Auto assign</option>
                 {compatibleTables(parseInt(form.party_size, 10)).map(t => (
@@ -163,14 +163,14 @@ export default function ReservationsPage() {
           </div>
           <div className="mb-5">
             <label className="label text-muted-foreground">Notes (optional)</label>
-            <input className="input" placeholder="Birthday celebration, window seat preferred..."
+            <input className="input-admin" placeholder="Birthday celebration, window seat preferred..."
               value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
           </div>
           <div className="flex gap-3">
             <button onClick={() => setShowAdd(false)} className="btn-md btn-outline flex-1">
               <X className="w-4 h-4" />Cancel
             </button>
-            <button onClick={saveReservation} disabled={saving || !form.guest_name || !form.reserved_at}
+            <button onClick={saveReservation} disabled={saving || !form.guest_name || !form.guest_phone || !form.reserved_at}
               className="btn-md btn-accent flex-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Confirm Booking
@@ -200,7 +200,7 @@ export default function ReservationsPage() {
             const waLink = `https://wa.me/91${res.guest_phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hi ${res.guest_name}! Your table at ${restaurantName} is confirmed for ${resDate.toLocaleString("en-IN")} for ${res.party_size} people. See you soon! 🍽️`)}`;
 
             return (
-              <div key={res.id} className="card p-5 hover:border-primary/30 transition-all group bg-card">
+              <div key={res.id} className="card-admin p-5 hover:border-primary/30 transition-all group bg-card">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
