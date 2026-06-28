@@ -13,6 +13,7 @@ import {
   X,
   UtensilsCrossed,
   Receipt,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useCustomerMenu } from "@/frontend/hooks/useMenu";
 import { useCart } from "@/frontend/hooks/useCart";
@@ -24,14 +25,8 @@ import { dishDataType } from "@/lib/foodType";
 import { formatINR, cn, isValidImageSrc } from "@/lib/utils";
 import type { Category, Dish, Combo } from "@/types/domain";
 import { dishHasPublishedAr, type CustomerDish } from "@/types/menu";
-
-const FOOD_FILTERS = [
-  { value: "all", label: "All" },
-  { value: "veg", label: "Veg Only" },
-  { value: "nonveg", label: "Non-Veg Only" },
-] as const;
-
-type FoodFilterValue = (typeof FOOD_FILTERS)[number]["value"];
+import { FloatingCategoryButton } from "./FloatingCategoryButton";
+import { FilterModal, type FilterState, DEFAULT_FILTER_STATE } from "./FilterModal";
 
 const FOOD_TYPE_STYLES: Record<string, string> = {
   veg: "border-green-600",
@@ -42,12 +37,13 @@ const FOOD_TYPE_STYLES: Record<string, string> = {
 
 const BRAND_GRADIENT = "linear-gradient(135deg,#C17D3C,#E8A85F)";
 
+// Old filter functions removed as they are now handled inline
 
-function matchesFoodFilter(dish: Dish, filter: FoodFilterValue): boolean {
-  if (filter === "all") return true;
-  const type = dishDataType(dish.food_type);
-  return filter === "veg" ? type === "veg" : type === "nonveg";
-}
+const FOOD_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "veg", label: "Veg Only" },
+  { value: "nonveg", label: "Non-Veg Only" },
+] as const;
 
 function matchesSearch(dish: Dish, query: string): boolean {
   const q = query.trim().toLowerCase();
@@ -686,7 +682,8 @@ export default function CustomerMenuView({
   const { identity, approveGuest } = useSessionIdentity();
 
   const [search, setSearch] = useState("");
-  const [foodFilter, setFoodFilter] = useState<FoodFilterValue>("all");
+  const [filterState, setFilterState] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState<CustomerDish | null>(null);
   const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
   const [activeOrdersCount, setActiveOrdersCount] = useState(0);
@@ -737,24 +734,34 @@ export default function CustomerMenuView({
   const { activeCategoryId, scrollToCategory, setSectionRef } =
     useCategoryScrollSpy(categoryIds);
 
-  useEffect(() => {
-    if (activeCategoryId) {
-      const btn = document.getElementById(`cat-nav-${activeCategoryId}`);
-      const container = document.getElementById("category-nav-scroll");
-      if (btn && container) {
-        const scrollLeft = btn.offsetLeft - container.offsetWidth / 2 + btn.offsetWidth / 2;
-        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-      }
-    }
-  }, [activeCategoryId]);
+  const filteredDishes = useMemo(() => {
+    let result = dishes.filter((d) => d.is_available && matchesSearch(d, search));
 
-  const filteredDishes = useMemo(
-    () =>
-      dishes.filter(
-        (d) => matchesFoodFilter(d, foodFilter) && matchesSearch(d, search)
-      ),
-    [dishes, foodFilter, search]
-  );
+    if (filterState.vegPreference !== "all") {
+      result = result.filter((d) => {
+        const type = dishDataType(d.food_type);
+        return filterState.vegPreference === "veg" ? type === "veg" : type === "nonveg";
+      });
+    }
+
+    if (filterState.topPicks) {
+      result = result.filter(d => d.is_special);
+    }
+
+    if (filterState.dietaryPreference === "spicy") {
+      result = result.filter(d => d.spice_level > 0);
+    } else if (filterState.dietaryPreference === "kids") {
+      result = result.filter(d => d.spice_level === 0);
+    }
+
+    if (filterState.sortBy === "price_asc") {
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (filterState.sortBy === "price_desc") {
+      result.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+
+    return result;
+  }, [dishes, search, filterState]);
 
   const groupedSections = useMemo(() => {
     const sorted = [...categories].sort((a, b) => a.sort_order - b.sort_order);
@@ -766,19 +773,25 @@ export default function CustomerMenuView({
             const matchesQuery = !q || c.name.toLowerCase().includes(q);
             if (!matchesQuery) return false;
 
-            if (foodFilter !== "all") {
+            if (filterState.vegPreference !== "all") {
               const comboDishes = (c.dish_ids ?? [])
                 .map(id => dishes.find(d => d.id === id))
                 .filter(Boolean) as CustomerDish[];
               
               const isNonVeg = comboDishes.some(d => dishDataType(d.food_type) === "nonveg");
               
-              if (foodFilter === "veg" && isNonVeg) return false;
-              if (foodFilter === "nonveg" && !isNonVeg) return false;
+              if (filterState.vegPreference === "veg" && isNonVeg) return false;
+              if (filterState.vegPreference === "nonveg" && !isNonVeg) return false;
             }
 
             return true;
           });
+          
+          if (filterState.sortBy === "price_asc") {
+            matchedCombos.sort((a, b) => Number(a.combo_price) - Number(b.combo_price));
+          } else if (filterState.sortBy === "price_desc") {
+            matchedCombos.sort((a, b) => Number(b.combo_price) - Number(a.combo_price));
+          }
           return {
             category,
             dishes: [],
@@ -1024,55 +1037,36 @@ export default function CustomerMenuView({
       <div id="sticky-nav-container" className="sticky top-0 z-40 category-nav shadow-[0_4px_20px_rgba(0,0,0,0.5)] pt-4 pb-1">
         {/* Sticky Search Bar (Compact) */}
         <div className="px-4 mb-3">
-          <div className="relative">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-             <input
-               value={search}
-               onChange={(e) => setSearch(e.target.value)}
-               className="w-full pl-11 py-2.5 text-sm rounded-xl bg-midnight-card border border-midnight-border text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#E8A85F]/50 shadow-sm transition-all"
-               placeholder="Search dishes..."
-             />
-             {search && (
-               <button
-                 type="button"
-                 onClick={() => setSearch("")}
-                 className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white p-1"
-               >
-                 <X className="w-4 h-4" />
-               </button>
-             )}
-          </div>
-        </div>
-
-        {/* Category Nav */}
-        <div className="px-4 pb-3">
-          <div id="category-nav-scroll" className="flex gap-2.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-            {categories.map((cat: Category) => {
-              const isActive = activeCategoryId === cat.id;
-              
-              // Map simple icons for categories
-              let icon = "🍛";
-              if (cat.name.toLowerCase().includes("starter")) icon = "🥗";
-              if (cat.name.toLowerCase().includes("bread")) icon = "🫓";
-              if (cat.name.toLowerCase().includes("drink") || cat.name.toLowerCase().includes("beverage")) icon = "🥤";
-              if (cat.name.toLowerCase().includes("dessert") || cat.name.toLowerCase().includes("sweet")) icon = "🍰";
-              if (cat.id === "combos-category-id") icon = "🔥";
-
-              return (
-                <button
-                  key={cat.id}
-                  id={`cat-nav-${cat.id}`}
-                  type="button"
-                  onClick={() => scrollToCategory(cat.id)}
-                  className={cn(
-                    "category-tab snap-start",
-                    isActive && "category-tab--active"
-                  )}
-                >
-                  <span>{icon}</span> {cat.name}
-                </button>
-              );
-            })}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className="w-11 h-11 flex items-center justify-center bg-midnight-card border border-midnight-border rounded-xl text-zinc-400 hover:text-white transition-colors relative"
+            >
+              <SlidersHorizontal className="w-5 h-5" />
+              {/* Notification dot if filters active */}
+              {(filterState.sortBy !== "none" || filterState.vegPreference !== "all" || filterState.topPicks || filterState.dietaryPreference !== "all") && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-brand" />
+              )}
+            </button>
+            <div className="relative flex-1">
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+               <input
+                 value={search}
+                 onChange={(e) => setSearch(e.target.value)}
+                 className="w-full pl-11 py-2.5 h-11 text-sm rounded-xl bg-midnight-card border border-midnight-border text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#E8A85F]/50 shadow-sm transition-all"
+                 placeholder="Search dishes..."
+               />
+               {search && (
+                 <button
+                   type="button"
+                   onClick={() => setSearch("")}
+                   className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white p-1"
+                 >
+                   <X className="w-4 h-4" />
+                 </button>
+               )}
+            </div>
           </div>
         </div>
 
@@ -1092,10 +1086,10 @@ export default function CustomerMenuView({
                 <button
                   key={f.value}
                   type="button"
-                  onClick={() => setFoodFilter(f.value)}
+                  onClick={() => setFilterState(prev => ({ ...prev, vegPreference: f.value as "all" | "veg" | "nonveg" }))}
                   className={cn(
                     "veg-filter-btn snap-start flex items-center gap-1.5",
-                    foodFilter === f.value && "veg-filter-btn--active"
+                    filterState.vegPreference === f.value && "veg-filter-btn--active"
                   )}
                 >
                   {dot} {f.label}
@@ -1251,6 +1245,13 @@ export default function CustomerMenuView({
         )}
       </div>
 
+      <FloatingCategoryButton
+        sections={groupedSections}
+        activeCategoryId={activeCategoryId}
+        onSelect={scrollToCategory}
+        isCartVisible={cart.totalItems > 0}
+      />
+
       {/* Bottom cart bar */}
       <button
         type="button"
@@ -1288,6 +1289,15 @@ export default function CustomerMenuView({
           {...comboCartHandlers(selectedCombo)}
         />
       )}
+
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        initialState={filterState}
+        onApply={setFilterState}
+        dishes={dishes}
+        combos={data?.combos ?? []}
+      />
     </div>
   );
 }
