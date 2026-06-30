@@ -39,7 +39,7 @@ export interface Staff {
 
 // ── Tables & Sessions ───────────────────────────────────────
 
-export type TableStatus = "available" | "occupied" | "reserved" | "cleaning";
+export type TableStatus = "available" | "occupied" | "reserved" | "cleaning" | "awaiting_payment";
 export type TableType   = "regular" | "booth" | "outdoor" | "private";
 
 export interface Table {
@@ -90,6 +90,7 @@ export interface Session {
   total_amount: number;
   host_participant_id: string | null;
   session_mode_snapshot: "open" | "host_approval";
+  version: number;
   // Relations
   table?: Table;
   orders?: Order[];
@@ -211,40 +212,54 @@ export interface OrderItem {
 
 // ── Payments & Billing ──────────────────────────────────────
 
-export type PaymentMethod = "upi" | "gpay" | "phonepe" | "paytm" | "cash" | "card";
+export type PaymentMethod = "razorpay" | "cash" | "pos";
+export type PaymentStatus = "created" | "pending" | "authorized" | "captured" | "failed" | "cancelled" | "expired" | "refunded";
 
 export interface Payment {
   id: string;
   session_id: string;
   restaurant_id: string;
-  method: PaymentMethod;
-  amount_paid: number;
-  amount_due: number;
-  change_returned: number;
-  cgst: number;
-  sgst: number;
-  coupon_id: string | null;
-  discount_amount: number;
-  confirmed_by: string | null;
-  razorpay_id: string | null;
-  confirmed_at: string;
+  attempt_number: number;
+  payment_method: PaymentMethod;
+  gateway: string | null;
+  gateway_order_id: string | null;
+  payment_status: PaymentStatus;
+  amount: number;
+  currency: string;
+  bill_snapshot: any;
+  bill_snapshot_version: number;
+  bill_hash: string;
+  receipt_snapshot?: any;
+  receipt_number?: string;
+  parent_payment_id?: string;
+  session_version: number;
+  failure_reason: string | null;
+  expires_at: string;
+  paid_at: string | null;
+  recorded_by_staff_id: string | null;
+  recorded_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+
   // Relations
-  confirmed_by_staff?: Staff;
-  coupon?: Coupon;
+  recorded_by_staff?: Staff;
+  session?: Session;
 }
 
-export interface Invoice {
+export interface PaymentWebhookLog {
   id: string;
-  payment_id: string;
-  restaurant_id: string;
-  invoice_number: string;
-  pdf_url: string | null;
-  subtotal: number;
-  cgst: number;
-  sgst: number;
-  discount: number;
-  total: number;
-  created_at: string;
+  gateway: string;
+  event_id: string | null;
+  event_type: string;
+  gateway_payment_id: string | null;
+  gateway_order_id: string | null;
+  payload: any;
+  signature: string | null;
+  status: string;
+  error_message: string | null;
+  received_at: string;
+  processed_at: string | null;
 }
 
 // ── Coupons ─────────────────────────────────────────────────

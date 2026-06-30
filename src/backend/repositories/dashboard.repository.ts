@@ -44,9 +44,10 @@ export class DashboardRepository {
         .limit(8),
       supabase
         .from("payments")
-        .select("amount_paid, method, confirmed_at")
+        .select("amount, payment_method, paid_at")
         .eq("restaurant_id", restaurantId)
-        .gte("confirmed_at", fromISO),
+        .eq("payment_status", "paid")
+        .gte("paid_at", fromISO),
     ]);
 
     if (todayOrdersError) throw todayOrdersError;

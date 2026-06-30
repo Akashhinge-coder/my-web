@@ -33,9 +33,9 @@ export interface DashboardRecentOrderRow {
 }
 
 export interface DashboardPaymentRow {
-  amount_paid: number | string;
-  method: string;
-  confirmed_at: string | null;
+  amount: number | string;
+  payment_method: string;
+  paid_at: string | null;
 }
 
 export interface DashboardStatsDTO {
@@ -47,6 +47,7 @@ export interface DashboardStatsDTO {
   occupiedTables: number;
   reservedTables: number;
   cleaningTables: number;
+  awaitingPaymentTables: number;
   totalTables: number;
   totalCovers: number;
   activeSessionCount: number;
@@ -105,6 +106,7 @@ export function buildDashboardDTO(params: {
       occupiedTables: params.tables.filter((table) => table.status === "occupied").length,
       reservedTables: params.tables.filter((table) => table.status === "reserved").length,
       cleaningTables: params.tables.filter((table) => table.status === "cleaning").length,
+      awaitingPaymentTables: params.tables.filter((table) => table.status === "awaiting_payment").length,
       totalTables: params.tables.length,
       totalCovers: params.activeSessions.reduce((sum, session) => sum + toNumber(session.guest_count), 0),
       activeSessionCount: params.activeSessions.length,
@@ -135,9 +137,9 @@ export function buildDashboardDTO(params: {
       seatingCapacity: table.seating_capacity,
     })),
     payments: params.payments.map((payment) => ({
-      amountPaid: toNumber(payment.amount_paid),
-      method: payment.method,
-      confirmedAt: payment.confirmed_at,
+      amountPaid: toNumber(payment.amount),
+      method: payment.payment_method,
+      confirmedAt: payment.paid_at,
     })),
   };
 }

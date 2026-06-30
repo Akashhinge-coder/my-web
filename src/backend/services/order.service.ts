@@ -673,6 +673,8 @@ export class OrderService {
       }))
     );
 
+    const session = await SessionRepository.findById(table.current_session_id);
+
     return {
       restaurant: {
         name: restaurant.name,
@@ -685,6 +687,7 @@ export class OrderService {
       orders,
       pricing,
       sessionId: table.current_session_id,
+      sessionVersion: session ? session.version : 1,
     };
   }
 }

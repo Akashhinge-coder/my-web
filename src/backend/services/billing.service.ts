@@ -8,13 +8,14 @@ import { BillingRepository } from "@/backend/repositories/billing.repository";
 import { generateInvoiceNumber } from "@/backend/utils/gst";
 import { combineOrderPricing } from "@/backend/services/pricing.service";
 import type { PaymentConfirmationDTO } from "@/backend/validations/payment.schema";
-import type { UserRole } from "@/types/domain";
 import type {
   BillingDashboard,
   BillingPaymentResult,
   BillingRestaurant,
   BillingSession,
 } from "@/types/billing";
+import { PaymentService } from "@/backend/services/payment/payment.service";
+import { createAdminClient } from "@/config/supabase/server";
 
 export class BillingService {
   static async getDashboard(): Promise<BillingDashboard> {
@@ -51,11 +52,6 @@ export class BillingService {
       throw new NotFoundError("Active billing session not found");
     }
 
-    const alreadyPaid = await BillingRepository.hasPaymentForSession(dto.sessionId);
-    if (alreadyPaid) {
-      throw new ConflictError("Already Paid");
-    }
-
     const bill = this.calculateSessionBill(session);
     const amountPaid = dto.method === "cash" && dto.amountPaid !== undefined
       ? dto.amountPaid
@@ -69,57 +65,27 @@ export class BillingService {
 
     const changeReturned = dto.method === "cash" ? Math.max(0, amountPaid - bill.total) : 0;
 
-    let payment;
-    try {
-      payment = await BillingRepository.createPayment({
-        sessionId: dto.sessionId,
-        restaurantId: access.restaurant.id,
-        method: dto.method,
-        amountPaid,
-        amountDue: bill.total,
-        changeReturned,
-        cgst: bill.cgst,
-        sgst: bill.sgst,
-        discountAmount: bill.totalDiscount,
-        confirmedBy: access.staffId,
-      });
-    } catch (err: any) {
-      if (err && err.code === "23505") {
-        throw new ConflictError("Already Paid");
-      }
-      throw err;
-    }
+    // Use the new PaymentService manual payment flow
+    await PaymentService.completeManualPayment({
+      sessionId: dto.sessionId,
+      restaurantId: access.restaurant.id,
+      method: dto.method as "cash" | "pos",
+      amount: bill.total,
+      currency: "INR",
+      billSnapshot: session.orders, // Or the combined bill
+      sessionVersion: session.version || 1, // Fallback if missing
+      staffId: access.staffId || "system", // Or however we track it
+    });
 
-    let invoice;
-    try {
-      invoice = await BillingRepository.createInvoice({
-        paymentId: payment.id,
-        restaurantId: access.restaurant.id,
-        invoiceNumber: generateInvoiceNumber(access.restaurant.slug),
-        subtotal: bill.subtotal,
-        cgst: bill.cgst,
-        sgst: bill.sgst,
-        discount: bill.totalDiscount,
-        total: bill.total,
-      });
-    } catch (err: any) {
-      if (err && err.code === "23505") {
-        // Clean up the created payment to keep database state consistent
-        const supabase = await createClient();
-        await supabase.from("payments").delete().eq("id", payment.id);
-        throw new ConflictError("Already Paid");
-      }
-      throw err;
-    }
-
+    // Close session and table
     await BillingRepository.closeSession(access.restaurant.id, dto.sessionId);
     await BillingRepository.releaseTable(access.restaurant.id, dto.sessionId);
 
     return {
       sessionId: dto.sessionId,
-      paymentId: payment.id,
-      invoiceId: invoice.id,
-      invoiceNumber: invoice.invoice_number,
+      paymentId: "manual", // Not returning ID yet
+      invoiceId: "manual",
+      invoiceNumber: "MANUAL",
       amountDue: bill.total,
       amountPaid,
       changeReturned,

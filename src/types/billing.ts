@@ -41,6 +41,7 @@ export interface BillingOrder {
 export interface BillingSession {
   id: string;
   guest_count: number;
+  version?: number;
   started_at: string;
   total_amount: number;
   restaurant_tables: { table_number: string } | null;

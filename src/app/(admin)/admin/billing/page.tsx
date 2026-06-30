@@ -15,11 +15,8 @@ import type { BillingRestaurant, BillingSession } from "@/types/billing";
 type BillingLoadState = "loading" | "success" | "unauthorized" | "error";
 
 const PAYMENT_METHODS = [
-  { id: "upi",     label: "UPI / QR",  icon: Smartphone },
-  { id: "gpay",    label: "GPay",      icon: Smartphone },
-  { id: "phonepe", label: "PhonePe",   icon: Smartphone },
-  { id: "cash",    label: "Cash",      icon: Banknote   },
-  { id: "card",    label: "Card",      icon: CreditCard },
+  { id: "cash", label: "Cash", icon: Banknote },
+  { id: "pos", label: "POS / Card", icon: CreditCard },
 ] as const;
 
 export default function BillingPage() {

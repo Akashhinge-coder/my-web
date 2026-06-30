@@ -73,7 +73,7 @@ export async function bootstrapSession(req: NextRequest) {
       return fail("INVALID_QR", "Physical QR scan required to start or join a dining session", 403);
     }
 
-    const restaurant = await RestaurantRepository.getSettingsById(table.restaurant_id);
+    const restaurant = await RestaurantRepository.getSettingsByIdAdmin(table.restaurant_id);
     const sessionMode = restaurant.session_mode ?? "open";
 
     // 2. We are creating a new participant. Name is required.

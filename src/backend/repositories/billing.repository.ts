@@ -67,7 +67,7 @@ export class BillingRepository {
     const { data, error } = await supabase
       .from("sessions")
       .select(`
-        id, guest_count, started_at, total_amount,
+        id, guest_count, started_at, total_amount, version,
         restaurant_tables(table_number),
         orders(${BILLING_ORDER_FIELDS})
       `)
@@ -87,7 +87,7 @@ export class BillingRepository {
     const { data, error } = await supabase
       .from("sessions")
       .select(`
-        id, guest_count, started_at, total_amount,
+        id, guest_count, started_at, total_amount, version,
         restaurant_tables(table_number),
         orders(${BILLING_ORDER_FIELDS})
       `)

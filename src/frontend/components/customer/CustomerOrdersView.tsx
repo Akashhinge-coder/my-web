@@ -16,9 +16,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { ordersApi, sessionsApi } from "@/frontend/api/orders";
+import type { SessionBill } from "@/frontend/api/orders";
 import { restaurantsApi } from "@/frontend/api/restaurants";
 import { useSessionOrders } from "@/frontend/hooks/useOrderFeed";
 import type { Order } from "@/types/domain";
+import { PaymentModal } from "./PaymentModal";
 
 const STATUS_CONFIG = {
   pending: { label: "Waiting", color: "text-amber-400", bg: "bg-amber-900/30  border-amber-900/50", icon: Clock },
@@ -45,6 +47,21 @@ export default function CustomerOrdersView({
 
   const { data: orders = [], loading, error, setData } = useSessionOrders(sessionId);
   const orderList = (orders ?? []) as Order[];
+
+  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [billData, setBillData] = useState<SessionBill | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const handlePayBillClick = async () => {
+    if (!slug || !tableId) return;
+    try {
+       const bill = await ordersApi.getBill(slug, tableId);
+       setBillData(bill);
+       setPaymentModalOpen(true);
+    } catch (err) {
+       alert("Could not load bill details. Please try again.");
+    }
+  };
 
   useEffect(() => {
     restaurantsApi.getBySlug(slug).then((r) => setRestaurantId(r.id));
@@ -97,6 +114,15 @@ export default function CustomerOrdersView({
         <h1 className="font-display text-xl font-semibold text-white">Your Orders</h1>
       </div>
 
+      {paymentSuccess ? (
+        <div className="px-4 py-12 flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-500" />
+          </div>
+          <h2 className="font-display text-2xl font-bold text-white mb-2">Payment Successful!</h2>
+          <p className="text-zinc-400 mb-8 max-w-sm">Thank you for dining with us. Your bill has been paid. We hope to see you again soon!</p>
+        </div>
+      ) : (
       <div className="px-4 py-5 space-y-4">
         {cart.totalItems > 0 && (
           <div className="bg-dark-card rounded-2xl border-2 border-brand/50 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
@@ -260,19 +286,44 @@ export default function CustomerOrdersView({
           </div>
         )}
       </div>
+      )}
 
-      {orderList.length > 0 && cart.totalItems === 0 && (
+      {orderList.length > 0 && cart.totalItems === 0 && !paymentSuccess && (
         <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom bg-dark/90 backdrop-blur-md border-t border-dark-border">
-          <button
-            onClick={() => router.push(`/${slug}/${tableId}`)}
-            type="button"
-            className="w-full py-3.5 rounded-2xl border-2 border-brand text-brand font-semibold flex items-center justify-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Order more
-          </button>
+          <div className="flex items-center gap-3">
+             <button
+               onClick={() => router.push(`/${slug}/${tableId}`)}
+               type="button"
+               className="flex-1 py-3.5 rounded-2xl border-2 border-brand text-brand font-semibold flex items-center justify-center gap-2"
+             >
+               <Plus className="w-4 h-4" />
+               Order more
+             </button>
+             
+             {/* Only show pay bill if there's orders to pay for. (This could be hidden if bill is already 0, but for now we assume they have a balance) */}
+             <button
+               onClick={handlePayBillClick}
+               type="button"
+               className="flex-1 py-3.5 rounded-2xl text-white font-semibold flex items-center justify-center gap-2"
+               style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+             >
+               Pay Bill
+             </button>
+          </div>
         </div>
       )}
+
+      <PaymentModal 
+         isOpen={isPaymentModalOpen}
+         onClose={() => setPaymentModalOpen(false)}
+         bill={billData}
+         restaurantId={restaurantId}
+         onPaymentSuccess={() => {
+            setPaymentModalOpen(false);
+            setPaymentSuccess(true);
+            // Optionally, clear orders or redirect
+         }}
+      />
     </div>
   );
 }

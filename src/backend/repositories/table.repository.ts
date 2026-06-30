@@ -47,7 +47,7 @@ export class TableRepository {
       .from("restaurant_tables")
       .select("id, restaurant_id, table_number, status, current_session_id, qr_token")
       .eq("id", tableId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;

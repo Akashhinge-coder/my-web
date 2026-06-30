@@ -1,4 +1,4 @@
-import { createClient } from "@/config/supabase/server";
+import { createClient, createAdminClient } from "@/config/supabase/server";
 import type {
   SettingsProfileUpdateDTO,
   SettingsTaxUpdateDTO,
@@ -42,6 +42,18 @@ export class RestaurantRepository {
 
   static async getSettingsById(id: string): Promise<RestaurantSettingsRow> {
     const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("restaurants")
+      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+    return data as RestaurantSettingsRow;
+  }
+
+  static async getSettingsByIdAdmin(id: string): Promise<RestaurantSettingsRow> {
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("restaurants")
       .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")

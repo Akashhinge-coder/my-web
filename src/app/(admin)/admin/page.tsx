@@ -19,6 +19,7 @@ export default async function AdminDashboard() {
     occupiedTables,
     reservedTables,
     cleaningTables,
+    awaitingPaymentTables,
     totalTables,
     totalCovers,
     activeSessionCount,
@@ -81,6 +82,7 @@ export default async function AdminDashboard() {
     { label: "Occupied", count: occupiedTables, color: "text-red-500", bg: "bg-red-500/10 border-red-500/20" },
     { label: "Reserved", count: reservedTables, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
     { label: "Cleaning", count: cleaningTables, color: "text-blue-500", bg: "bg-blue-500/10 border-blue-500/20" },
+    { label: "Awaiting Pay", count: awaitingPaymentTables, color: "text-purple-500", bg: "bg-purple-500/10 border-purple-500/20" },
   ];
 
   return (
@@ -189,6 +191,7 @@ export default async function AdminDashboard() {
                 occupied: "bg-red-500/20 border-red-500/30 text-red-600 dark:text-red-400",
                 reserved: "bg-amber-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400",
                 cleaning: "bg-blue-500/20 border-blue-500/30 text-blue-600 dark:text-blue-400",
+                awaiting_payment: "bg-purple-500/20 border-purple-500/30 text-purple-600 dark:text-purple-400",
               };
               return (
                 <div
@@ -214,8 +217,8 @@ export default async function AdminDashboard() {
           <h2 className="font-sans font-semibold text-admin-text mb-5">
             Today&apos;s Payments
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {(["upi", "gpay", "phonepe", "paytm", "cash", "card"] as const).map((method) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {(["razorpay", "cash", "pos"] as const).map((method) => {
               const methodPayments = payments.filter((payment) => payment.method === method);
               const total = methodPayments.reduce((sum, payment) => sum + payment.amountPaid, 0);
               if (total === 0) return null;

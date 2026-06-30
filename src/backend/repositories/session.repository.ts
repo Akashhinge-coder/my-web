@@ -5,7 +5,7 @@ export class SessionRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot")
+      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot, version")
       .eq("id", sessionId)
       .single();
 
@@ -17,7 +17,7 @@ export class SessionRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot")
+      .select("id, restaurant_id, table_id, status, total_amount, host_participant_id, session_mode_snapshot, version")
       .eq("table_id", tableId)
       .eq("status", "active")
       .order("started_at", { ascending: false })
@@ -38,7 +38,7 @@ export class SessionRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, session_token, expires_at, host_participant_id, session_mode_snapshot")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, expires_at, host_participant_id, session_mode_snapshot, version")
       .eq("session_token", token)
       .maybeSingle();
 
@@ -50,7 +50,7 @@ export class SessionRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot, version")
       .eq("table_id", tableId)
       .eq("status", "active")
       .order("started_at", { ascending: false })
@@ -78,7 +78,7 @@ export class SessionRepository {
         total_amount: 0,
         session_mode_snapshot: params.sessionModeSnapshot,
       })
-      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot")
+      .select("id, restaurant_id, table_id, status, total_amount, session_token, host_participant_id, session_mode_snapshot, version")
       .single();
 
     if (error) throw error;

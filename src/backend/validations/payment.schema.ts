@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const paymentConfirmationSchema = z.object({
   sessionId: z.string().uuid(),
-  method: z.enum(["upi", "gpay", "phonepe", "paytm", "cash", "card"]),
+  method: z.enum(["cash", "pos"]),
   amountPaid: z.coerce.number().nonnegative().optional(),
 });
 
