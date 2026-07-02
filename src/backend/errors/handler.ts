@@ -7,6 +7,15 @@ import { ValidationError } from "@/backend/errors/ValidationError";
 import { ConflictError } from "@/backend/errors/ConflictError";
 
 export function handleError(error: unknown): NextResponse {
+  // Rethrow Next.js dynamic server errors so Next.js can handle them correctly
+  if (
+    error &&
+    typeof error === "object" &&
+    (error as any).digest === "DYNAMIC_SERVER_USAGE"
+  ) {
+    throw error;
+  }
+
   if (error instanceof ZodError) {
     return NextResponse.json(
       {
