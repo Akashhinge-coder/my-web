@@ -66,18 +66,21 @@ export class BillingService {
 
     const changeReturned = dto.method === "cash" ? Math.max(0, amountPaid - bill.total) : 0;
 
-    // Use the new PaymentService manual payment flow
-    await PaymentService.completeManualPayment({
-      sessionId: dto.sessionId,
-      restaurantId: access.restaurant.id,
-      method: dto.method as "cash" | "pos",
-      amount: bill.total,
-      currency: "INR",
-      billSnapshot: session.orders, // Or the combined bill
-      sessionVersion: session.version || 1, // Fallback if missing
-      staffId: access.staffId, 
-      checkoutId: dto.sessionId, // Session ID as proxy for checkoutId
-    });
+    // Only create a payment record if the amount is greater than 0
+    if (bill.total > 0) {
+      // Use the new PaymentService manual payment flow
+      await PaymentService.completeManualPayment({
+        sessionId: dto.sessionId,
+        restaurantId: access.restaurant.id,
+        method: dto.method as "cash" | "pos",
+        amount: bill.total,
+        currency: "INR",
+        billSnapshot: session.orders, // Or the combined bill
+        sessionVersion: session.version || 1, // Fallback if missing
+        staffId: access.staffId, 
+        checkoutId: dto.sessionId, // Session ID as proxy for checkoutId
+      });
+    }
 
     // Close session and table
     await BillingRepository.closeSession(access.restaurant.id, dto.sessionId);
