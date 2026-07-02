@@ -51,9 +51,9 @@ export default function AdminTopbar({ restaurant, userEmail }: Props) {
   const fallbackMenuHref = restaurantSlug ? `/${restaurantSlug}` : "/admin";
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md px-6 md:px-8 py-3 flex items-center justify-between gap-4 border-b border-admin-border-2" style={{ background: 'color-mix(in oklch, var(--admin-card) 85%, transparent)' }}>
+    <header className="sticky top-0 z-20 backdrop-blur-md px-4 md:px-8 py-3 flex items-center justify-between gap-4 border-b border-admin-border-2" style={{ background: 'color-mix(in oklch, var(--admin-card) 85%, transparent)' }}>
       {/* Left — breadcrumb on mobile becomes logo space */}
-      <div className="flex items-center gap-3 ml-10 md:ml-0">
+      <div className="flex items-center gap-3 ml-12 md:ml-0">
         <div className="hidden md:flex items-center gap-1.5 text-xs" style={{ color: 'var(--admin-faint)' }}>
           <span className="text-foreground font-medium">{restaurantName}</span>
         </div>

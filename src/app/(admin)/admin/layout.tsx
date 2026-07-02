@@ -32,7 +32,7 @@ export default function AdminLayout({
           restaurant={restaurant}
           userEmail={userEmail}
         />
-        <main className="flex-1 p-6 md:p-8 overflow-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-auto">
           {loading ? (
             <div className="text-sm text-ink-4">Loading admin session...</div>
           ) : error ? (

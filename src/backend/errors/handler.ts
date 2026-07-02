@@ -126,7 +126,7 @@ export function handleError(error: unknown): NextResponse {
     }
   }
 
-  console.error("[Unhandled Error]", error);
+  console.error("[MENUARA UNHANDLED]", error);
   return NextResponse.json(
     { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
     { status: 500 }

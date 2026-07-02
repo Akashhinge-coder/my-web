@@ -96,7 +96,7 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map((stat) => (
           <Link key={stat.label} href={stat.href} className="stat-card-admin group hover:border-accent-cyan/30 transition-all">
             <div className="flex items-start justify-between mb-3">
@@ -116,8 +116,8 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card-admin p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="lg:col-span-2 card-admin p-4 md:p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-sans font-semibold text-admin-text">Live Orders</h2>
             <Link href="/admin/orders" className="text-xs text-accent-cyan hover:text-accent-cyan/80 flex items-center gap-1 transition-colors">
@@ -167,7 +167,7 @@ export default async function AdminDashboard() {
           )}
         </div>
 
-        <div className="card-admin p-6">
+        <div className="card-admin p-4 md:p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-sans font-semibold text-admin-text">Table Status</h2>
             <Link href="/admin/tables" className="text-xs text-accent-cyan hover:text-accent-cyan/80 flex items-center gap-1 transition-colors">
@@ -175,7 +175,7 @@ export default async function AdminDashboard() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
             {tableSummary.map((s) => (
               <div key={s.label} className={`p-2.5 rounded-xl border ${s.bg} text-center`}>
                 <p className={`text-xl font-display font-semibold ${s.color}`}>{s.count}</p>
@@ -184,7 +184,7 @@ export default async function AdminDashboard() {
             ))}
           </div>
 
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 md:gap-2">
             {tables.slice(0, 20).map((table) => {
               const colors: Record<string, string> = {
                 available: "bg-emerald-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
@@ -213,7 +213,7 @@ export default async function AdminDashboard() {
       </div>
 
       {payments.length > 0 && (
-        <div className="card-admin p-6">
+        <div className="card-admin p-4 md:p-6">
           <h2 className="font-sans font-semibold text-admin-text mb-5">
             Today&apos;s Payments
           </h2>
