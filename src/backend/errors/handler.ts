@@ -8,11 +8,16 @@ import { ConflictError } from "@/backend/errors/ConflictError";
 
 export function handleError(error: unknown): NextResponse {
   // Rethrow Next.js dynamic server errors so Next.js can handle them correctly
-  if (
-    error &&
-    typeof error === "object" &&
-    (error as any).digest === "DYNAMIC_SERVER_USAGE"
-  ) {
+  const isDynamicError = 
+    error && 
+    typeof error === "object" && 
+    (
+      (error as any).digest === "DYNAMIC_SERVER_USAGE" || 
+      (typeof (error as any).message === "string" && (error as any).message.includes("Dynamic server usage")) ||
+      (typeof (error as any).message === "string" && (error as any).message.includes("couldn't be rendered statically"))
+    );
+
+  if (isDynamicError) {
     throw error;
   }
 
