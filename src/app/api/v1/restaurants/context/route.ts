@@ -2,6 +2,7 @@ import { handleError } from "@/backend/errors/handler";
 import { RestaurantService } from "@/backend/services/restaurant.service";
 import { ok } from "@/backend/utils/apiResponse";
 
+export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const restaurant = await RestaurantService.getActiveForCurrentUser();
