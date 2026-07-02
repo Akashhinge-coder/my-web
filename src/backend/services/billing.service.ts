@@ -14,7 +14,8 @@ import type {
   BillingRestaurant,
   BillingSession,
 } from "@/types/billing";
-import { PaymentService } from "@/backend/services/payment/payment.service";
+import type { UserRole } from "@/types/domain";
+import { PaymentService } from "@/backend/services/payment/PaymentService";
 import { createAdminClient } from "@/config/supabase/server";
 
 export class BillingService {
@@ -74,7 +75,8 @@ export class BillingService {
       currency: "INR",
       billSnapshot: session.orders, // Or the combined bill
       sessionVersion: session.version || 1, // Fallback if missing
-      staffId: access.staffId || "system", // Or however we track it
+      staffId: access.staffId, 
+      checkoutId: dto.sessionId, // Session ID as proxy for checkoutId
     });
 
     // Close session and table

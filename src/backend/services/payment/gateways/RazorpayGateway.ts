@@ -40,6 +40,26 @@ export class RazorpayGateway implements PaymentGateway {
     return data.id;
   }
 
+  async fetchOrder(orderId: string): Promise<{ status: string; paymentId?: string }> {
+    if (this.keyId === "rzp_test_mock123") {
+      return { status: "paid", paymentId: "mock_payment_" + Math.random().toString(36).substring(2, 9) };
+    }
+
+    const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+      headers: {
+        Authorization: "Basic " + Buffer.from(`${this.keyId}:${this.keySecret}`).toString("base64"),
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Razorpay fetch order failed: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    // Assuming status logic maps to Razorpay's native order status ('created', 'attempted', 'paid')
+    return { status: data.status, paymentId: data.payments?.items?.[0]?.id };
+  }
+
   verifyWebhook(payload: string, signature: string): boolean {
     if (this.keySecret === "mock_secret") return true;
 

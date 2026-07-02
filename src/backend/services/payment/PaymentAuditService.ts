@@ -26,6 +26,7 @@ export class PaymentAuditService {
       actor_type: event.actorType,
       actor_id: event.actorId,
       payload: event.payload,
+      schema_version: event.payload.schemaVersion || 1,
     });
 
     if (error) {

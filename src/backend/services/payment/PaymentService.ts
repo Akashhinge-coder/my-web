@@ -6,9 +6,12 @@ import { PaymentAuditService } from "./PaymentAuditService";
 import { PaymentSnapshot } from "./PaymentSnapshot";
 import { PaymentHasher } from "./PaymentHasher";
 import { PaymentValidator } from "./PaymentValidator";
+import { IdempotencyService } from "./IdempotencyService";
 
 // In V2, we only support Razorpay for online gateways right now, but it's abstracted.
 const gateway = new RazorpayGateway();
+
+export type VerificationMode = "WEBHOOK_SIGNATURE" | "TRUSTED_GATEWAY_FETCH" | "MANUAL_STAFF" | "SYSTEM_RECOVERY";
 
 export class PaymentService {
   /**
@@ -22,7 +25,15 @@ export class PaymentService {
     billSnapshot: any;
     sessionVersion: number;
     checkoutId: string;
+    idempotencyKey?: string;
   }): Promise<{ payment: Payment; orderId: string }> {
+    if (params.idempotencyKey) {
+      const lock = await IdempotencyService.checkOrLock(params.idempotencyKey);
+      if (lock.locked && lock.cachedResponse?.status === 200) {
+        return lock.cachedResponse.body; // Return identical previous response
+      }
+    }
+
     const billHash = PaymentHasher.hashBillSnapshot(params.billSnapshot);
     
     // Check for existing pending payments
@@ -31,9 +42,19 @@ export class PaymentService {
     if (pendingPayment) {
       if (new Date(pendingPayment.expires_at).getTime() > Date.now()) {
         if (!pendingPayment.gateway_order_id) {
-          throw new Error("Pending payment exists but lacks a gateway_order_id");
+          console.warn("Found corrupted pending payment without gateway_order_id, expiring it immediately.");
+          await PaymentRepository.processPaymentTransition(
+            pendingPayment.id,
+            pendingPayment.version,
+            "expired",
+            "expired",
+            params.checkoutId,
+            "PaymentExpired",
+            { paymentId: pendingPayment.id, reason: "Corrupted state (missing gateway_order_id)" }
+          );
+        } else {
+          return { payment: pendingPayment, orderId: pendingPayment.gateway_order_id };
         }
-        return { payment: pendingPayment, orderId: pendingPayment.gateway_order_id };
       } else {
         // Expire old payment atomically via Outbox
         await PaymentRepository.processPaymentTransition(
@@ -49,9 +70,12 @@ export class PaymentService {
     }
 
     const expiresAt = new Date(Date.now() + 15 * 60000).toISOString(); // 15 mins
+    const paymentReference = `PAY-${params.restaurantId.substring(0, 4)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
     const payment = await PaymentRepository.createPayment({
       session_id: params.sessionId,
       restaurant_id: params.restaurantId,
+      payment_reference: paymentReference,
       attempt_number: (pendingPayment?.attempt_number || 0) + 1,
       payment_method: "razorpay",
       gateway: "razorpay",
@@ -71,12 +95,14 @@ export class PaymentService {
       eventType: "PAYMENT_CREATED",
       aggregateId: payment.id,
       actorType: "CUSTOMER",
-      payload: { amount: params.amount, currency: params.currency }
+      payload: { amount: params.amount, currency: params.currency, schemaVersion: 1, traceId: params.checkoutId }
     });
 
     try {
       const orderId = await gateway.createPaymentIntent(params.amount, params.currency);
       
+      await PaymentRepository.updateGatewayOrderId(payment.id, orderId);
+
       const success = await PaymentRepository.processPaymentTransition(
         payment.id,
         payment.version,
@@ -84,11 +110,15 @@ export class PaymentService {
         "created",
         params.checkoutId,
         "PaymentPending",
-        { paymentId: payment.id, orderId }
+        { paymentId: payment.id, orderId, schemaVersion: 1 }
       );
       
       if (success) {
-        return { payment: { ...payment, gateway_order_id: orderId }, orderId };
+        const responseBody = { payment: { ...payment, gateway_order_id: orderId }, orderId };
+        if (params.idempotencyKey) {
+          await IdempotencyService.saveResponse(params.idempotencyKey, 200, responseBody, { "Content-Type": "application/json" });
+        }
+        return responseBody;
       }
       throw new Error("Concurrency error locking payment");
     } catch (e: any) {
@@ -99,8 +129,11 @@ export class PaymentService {
         "failed",
         params.checkoutId,
         "PaymentFailed",
-        { paymentId: payment.id, reason: e.message }
+        { paymentId: payment.id, reason: e.message, schemaVersion: 1 }
       );
+      if (params.idempotencyKey) {
+        await IdempotencyService.saveResponse(params.idempotencyKey, 500, { error: "Gateway failure: " + e.message }, { "Content-Type": "application/json" });
+      }
       throw new Error("Gateway failure: " + e.message);
     }
   }
@@ -116,7 +149,7 @@ export class PaymentService {
     currency: string;
     billSnapshot: any;
     sessionVersion: number;
-    staffId: string;
+    staffId: string | null;
     checkoutId: string;
   }) {
     const billHash = PaymentHasher.hashBillSnapshot(params.billSnapshot);
@@ -136,9 +169,12 @@ export class PaymentService {
     }
 
     const expiresAt = new Date().toISOString(); 
+    const paymentReference = `PAY-${params.restaurantId.substring(0, 4)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
     const payment = await PaymentRepository.createPayment({
       session_id: params.sessionId,
       restaurant_id: params.restaurantId,
+      payment_reference: paymentReference,
       attempt_number: (pendingPayment?.attempt_number || 0) + 1,
       payment_method: params.method,
       gateway: null,
@@ -177,7 +213,7 @@ export class PaymentService {
       eventType: "MANUAL_PAYMENT_RECORDED",
       aggregateId: payment.id,
       actorType: "STAFF",
-      actorId: params.staffId,
+      actorId: params.staffId || undefined,
       payload: { method: params.method, amount: params.amount }
     });
 
@@ -185,15 +221,27 @@ export class PaymentService {
   }
 
   /**
-   * Webhook processing
+   * Webhook or Reconciled processing
    */
-  static async processWebhook(gatewayOrderId: string, gatewayPaymentId: string, signature: string, payload: string, amount: number, currency: string) {
-    if (!gateway.verifyWebhook(payload, signature)) {
-      throw new Error("Invalid signature");
+  static async processWebhook(
+    gatewayOrderId: string,
+    gatewayPaymentId: string,
+    signature: string,
+    payload: string,
+    amount: number,
+    currency: string,
+    verificationMode: VerificationMode = "WEBHOOK_SIGNATURE"
+  ): Promise<boolean> {
+    const payment = await PaymentRepository.findPaymentByGatewayOrderId(gatewayOrderId);
+
+    if (!payment) {
+      console.warn(`Webhook received for unknown order_id: ${gatewayOrderId}`);
+      return false;
     }
 
-    const payment = await PaymentRepository.findPaymentByGatewayOrderId(gatewayOrderId);
-    if (!payment) throw new Error("Payment not found");
+    if (verificationMode === "WEBHOOK_SIGNATURE" && !gateway.verifyWebhook(payload, signature)) {
+      throw new Error("Invalid webhook signature");
+    }
 
     if (payment.payment_status === "captured") {
       return true; // Idempotent success
@@ -222,8 +270,8 @@ export class PaymentService {
         paymentId: payment.id,
         eventType: "PAYMENT_CAPTURED",
         aggregateId: payment.id,
-        actorType: "WEBHOOK",
-        payload: { gatewayPaymentId, amount }
+        actorType: verificationMode === "TRUSTED_GATEWAY_FETCH" ? "SYSTEM" : "WEBHOOK",
+        payload: { gatewayPaymentId, amount, schemaVersion: 1, traceId: payment.session_id }
       });
     }
 

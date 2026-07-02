@@ -9,6 +9,7 @@ export class PaymentRepository {
   static async createPayment(data: {
     session_id: string;
     restaurant_id: string;
+    payment_reference: string;
     attempt_number: number;
     payment_method: PaymentMethod;
     gateway: string | null;
@@ -110,5 +111,15 @@ export class PaymentRepository {
 
     if (error) throw error;
     return data as Payment | null;
+  }
+
+  static async updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void> {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("payments")
+      .update({ gateway_order_id: gatewayOrderId })
+      .eq("id", paymentId);
+
+    if (error) throw error;
   }
 }

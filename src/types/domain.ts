@@ -219,6 +219,7 @@ export interface Payment {
   id: string;
   session_id: string;
   restaurant_id: string;
+  payment_reference: string;
   attempt_number: number;
   payment_method: PaymentMethod;
   gateway: string | null;

@@ -42,26 +42,41 @@ export class OutboxProcessor {
           .from("outbox_events")
           .update({
             status: "PROCESSED",
-            processed_at: new Date().toISOString()
+            processed_at: new Date().toISOString(),
           })
           .eq("id", event.id);
-
-      } catch (e: any) {
-        console.error(`Failed to process outbox event ${event.id}:`, e);
+      } catch (err: any) {
+        console.error(`[Outbox] Error processing event ${event.id}:`, err);
         
-        // Exponential backoff
-        const attempt = event.attempt_count + 1;
-        const nextRetry = new Date(Date.now() + Math.pow(2, attempt) * 1000).toISOString();
+        const nextAttempt = event.attempt_count + 1;
+        const maxRetries = 5;
+        
+        if (nextAttempt >= maxRetries) {
+          console.warn(`[Outbox] Event ${event.id} reached max retries. Moving to DEAD.`);
+          await supabase
+            .from("outbox_events")
+            .update({
+              status: "DEAD",
+              attempt_count: nextAttempt,
+              last_error: err.message,
+              error_details: { stack: err.stack, time: new Date().toISOString() }
+            })
+            .eq("id", event.id);
+        } else {
+          // Exponential backoff
+          const delaySeconds = Math.pow(2, nextAttempt) * 10;
+          const nextRetryAt = new Date(Date.now() + delaySeconds * 1000).toISOString();
 
-        await supabase
-          .from("outbox_events")
-          .update({
-            attempt_count: attempt,
-            last_error: e.message || "Unknown error",
-            next_retry_at: nextRetry,
-            status: attempt >= 5 ? "FAILED" : "PENDING"
-          })
-          .eq("id", event.id);
+          await supabase
+            .from("outbox_events")
+            .update({
+              status: "PENDING",
+              attempt_count: nextAttempt,
+              next_retry_at: nextRetryAt,
+              last_error: err.message,
+            })
+            .eq("id", event.id);
+        }
       }
     }
   }

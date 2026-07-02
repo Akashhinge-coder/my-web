@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PaymentService } from "@/backend/services/payment/payment.service";
+import { PaymentService } from "@/backend/services/payment/PaymentService";
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +22,8 @@ export async function POST(req: Request) {
       currency,
       billSnapshot,
       sessionVersion,
-      staffId
+      staffId,
+      checkoutId: sessionId
     });
 
     if (success) {
