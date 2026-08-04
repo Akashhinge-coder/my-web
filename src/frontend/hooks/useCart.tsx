@@ -8,6 +8,8 @@ interface CartState {
   items: CartItem[];
   restaurantId: string;
   restaurantSlug: string;
+  restaurantName: string;
+  restaurantLogoUrl: string | null;
   tableId: string;
   sessionId: string | null;
   sessionError: string | null;
@@ -74,7 +76,18 @@ function reducer(state: CartState, action: Action): CartState {
     case "FINISH_BOOTSTRAP":
       return { ...state, isBootstrapping: false };
     case "LOAD":
-      return { ...state, ...action.state, sessionError: null, isBootstrapping: state.isBootstrapping, isLoaded: true };
+      return { 
+        ...state, 
+        ...action.state, 
+        restaurantId: state.restaurantId,
+        restaurantSlug: state.restaurantSlug,
+        restaurantName: state.restaurantName,
+        restaurantLogoUrl: state.restaurantLogoUrl,
+        tableId: state.tableId,
+        sessionError: null, 
+        isBootstrapping: state.isBootstrapping, 
+        isLoaded: true 
+      };
     case "LOAD_EMPTY":
       return { ...state, isLoaded: true };
     default:
@@ -102,11 +115,15 @@ export function CartProvider({
   children,
   restaurantId,
   restaurantSlug,
+  restaurantName,
+  restaurantLogoUrl,
   tableId,
 }: {
   children: ReactNode;
   restaurantId: string;
   restaurantSlug: string;
+  restaurantName: string;
+  restaurantLogoUrl: string | null;
   tableId: string;
 }) {
   const STORAGE_KEY = `menuara_cart_${tableId}`;
@@ -115,6 +132,8 @@ export function CartProvider({
     items: [],
     restaurantId,
     restaurantSlug,
+    restaurantName,
+    restaurantLogoUrl,
     tableId,
     sessionId: null,
     sessionError: null,

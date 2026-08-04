@@ -48,7 +48,6 @@ export default function AdminTopbar({ restaurant, userEmail }: Props) {
 
   const restaurantName = restaurant?.name || "MENUARA";
   const restaurantSlug = restaurant?.slug || "";
-  const fallbackMenuHref = restaurantSlug ? `/${restaurantSlug}` : "/admin";
 
   return (
     <header className="sticky top-0 z-20 backdrop-blur-md px-4 md:px-8 py-3 flex items-center justify-between gap-4 border-b border-admin-border-2" style={{ background: 'color-mix(in oklch, var(--admin-card) 85%, transparent)' }}>
@@ -61,16 +60,16 @@ export default function AdminTopbar({ restaurant, userEmail }: Props) {
 
       {/* Right */}
       <div className="flex items-center gap-2 ml-auto">
-        {/* Customer menu link */}
+        {/* Reservation link */}
         <Link
-          href={fallbackMenuHref}
+          href={restaurantSlug ? `/${restaurantSlug}/reserve` : "/admin"}
           target={restaurantSlug ? "_blank" : undefined}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all hover:text-foreground border border-admin-border-2"
           style={{ color: 'var(--admin-subtle)' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'color-mix(in oklch, var(--primary) 35%, transparent)'; e.currentTarget.style.color = 'var(--primary)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--admin-border-2)'; e.currentTarget.style.color = 'var(--admin-subtle)'; }}
         >
-          Customer menu
+          Reservation link
           <ExternalLink className="w-3 h-3" />
         </Link>
 

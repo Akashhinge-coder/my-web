@@ -1,5 +1,6 @@
 import { createClient } from "@/config/supabase/server";
 import { createAdminClient } from "@/config/supabase/server";
+import { IAMService } from "@/backend/services/iam.service";
 
 export interface AdminSessionRestaurant {
   id: string;
@@ -17,11 +18,13 @@ export interface AdminSessionDTO {
   } | null;
   restaurant: AdminSessionRestaurant | null;
   role: string;
+  permissions: string[];
 }
 
 interface StaffSessionRow {
+  id: string;
   restaurant_id: string;
-  role: string;
+  role_id: string;
   name: string | null;
   restaurants?: AdminSessionRestaurant | AdminSessionRestaurant[] | null;
 }
@@ -62,6 +65,22 @@ export class AuthService {
       ? await this.getStaffRestaurant(admin, user.id)
       : null;
 
+    let permissions: string[] = [];
+    let role = "admin";
+    
+    if (ownedRestaurant) {
+      // Owners get superadmin equivalent permissions (or all permissions)
+      // We can just set a special flag or all permissions
+      role = "admin";
+      // Let's assume admin role has all permissions from ROLE_TEMPLATES
+      const { ROLE_TEMPLATES } = await import("@/config/permissions");
+      permissions = ROLE_TEMPLATES["admin"] || [];
+    } else if (staffRecord) {
+      role = staffRecord.role_id;
+      const effective = await IAMService.getEffectivePermissions(staffRecord.id, staffRecord.restaurant.id);
+      permissions = Array.from(effective);
+    }
+
     return {
       authenticated: true,
       user: {
@@ -69,7 +88,8 @@ export class AuthService {
         email: user.email ?? "",
       },
       restaurant: ownedRestaurant ?? staffRecord?.restaurant ?? null,
-      role: staffRecord?.role ?? "admin",
+      role: role,
+      permissions,
     };
   }
 
@@ -90,10 +110,10 @@ export class AuthService {
   private static async getStaffRestaurant(
     supabase: ReturnType<typeof createAdminClient>,
     userId: string
-  ): Promise<{ restaurant: AdminSessionRestaurant; role: string } | null> {
+  ): Promise<{ id: string; restaurant: AdminSessionRestaurant; role_id: string } | null> {
     const { data, error } = await supabase
       .from("staff")
-      .select("restaurant_id, role, name, restaurants(id, name, slug, logo_url)")
+      .select("id, restaurant_id, role_id, name, restaurants(id, name, slug, logo_url)")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -103,8 +123,9 @@ export class AuthService {
     if (!row || !restaurant) return null;
 
     return {
+      id: row.id,
       restaurant,
-      role: row.role,
+      role_id: row.role_id,
     };
   }
 }

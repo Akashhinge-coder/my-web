@@ -16,6 +16,7 @@ export interface AdminSession {
   } | null;
   restaurant: AdminSessionRestaurant;
   role: string;
+  permissions: string[];
 }
 
 export const authApi = {

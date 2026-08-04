@@ -64,6 +64,7 @@ interface DishCardProps {
   onAdd: () => void;
   onIncrement: () => void;
   onDecrement: () => void;
+  priority?: boolean;
 }
 
 function DishCard({
@@ -75,6 +76,7 @@ function DishCard({
   onAdd,
   onIncrement,
   onDecrement,
+  priority = false,
 }: DishCardProps) {
   const router = useRouter();
   const hasAR = dishHasPublishedAr(dish);
@@ -104,8 +106,9 @@ function DishCard({
             fill
             sizes="(max-width: 640px) 50vw, 33vw"
             quality={75}
-            loading="lazy"
+            priority={priority}
             className="object-cover transition-transform duration-300 hover:scale-105"
+            style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-3xl">
@@ -290,7 +293,7 @@ function DishModal({
         <div className="overflow-y-auto scrollbar-hide flex-1 pb-24">
           <div className="relative h-[40vh] min-h-[280px] w-full bg-midnight-tertiary">
             {isValidImageSrc(dish.image_url) ? (
-              <Image src={dish.image_url!} alt={dish.name} fill sizes="(max-width: 640px) 100vw, 448px" quality={85} className="object-cover" priority />
+              <Image src={dish.image_url!} alt={dish.name} fill sizes="(max-width: 640px) 100vw, 448px" quality={85} className="object-cover" priority style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🍽</div>
             )}
@@ -416,20 +419,24 @@ interface ComboCardProps {
   combo: Combo;
   dishes: CustomerDish[];
   quantity: number;
+  tableId: string;
   onAdd: () => void;
   onIncrement: () => void;
   onDecrement: () => void;
   onInfo: () => void;
+  priority?: boolean;
 }
 
 function ComboCard({
   combo,
   dishes,
   quantity,
+  tableId,
   onAdd,
   onIncrement,
   onDecrement,
   onInfo,
+  priority = false,
 }: ComboCardProps) {
   const comboDishes = useMemo(() => {
     return (combo.dish_ids ?? [])
@@ -455,8 +462,9 @@ function ComboCard({
             fill
             sizes="(max-width: 640px) 100vw, 50vw"
             quality={75}
-            loading="lazy"
+            priority={priority}
             className="object-cover transition-transform duration-300 hover:scale-105"
+            style={comboDishes[0] ? { objectPosition: `${comboDishes[0].image_focus_x * 100}% ${comboDishes[0].image_focus_y * 100}%` } : undefined}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">🍱</div>
@@ -500,36 +508,37 @@ function ComboCard({
           </span>
 
           <div className="flex-shrink-0">
-            {quantity === 0 ? (
-              <button
-                type="button"
-                onClick={onAdd}
-                className="add-to-cart-btn shadow-sm"
-                aria-label="Add to cart"
-              >
-                <Plus className="w-4 h-4 stroke-[3]" />
-              </button>
-            ) : (
-              <div className="flex items-center justify-between bg-midnight-tertiary border border-[#F59E0B]/50 rounded-full overflow-hidden h-[34px] w-[80px] shadow-sm">
+            {tableId !== "preview" &&
+              (quantity === 0 ? (
                 <button
                   type="button"
-                  onClick={onDecrement}
-                  className="text-[#F59E0B] w-7 h-full flex items-center justify-center active:bg-[#F59E0B]/10 hover:bg-[#F59E0B]/5 transition-colors"
-                  aria-label="Decrease quantity"
+                  onClick={onAdd}
+                  className="add-to-cart-btn shadow-sm"
+                  aria-label="Add to cart"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4 stroke-[3]" />
                 </button>
-                <span className="font-bold text-white text-[13px]">{quantity}</span>
-                <button
-                  type="button"
-                  onClick={onIncrement}
-                  className="text-[#F59E0B] w-7 h-full flex items-center justify-center active:bg-[#F59E0B]/10 hover:bg-[#F59E0B]/5 transition-colors"
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center justify-between bg-midnight-tertiary border border-[#F59E0B]/50 rounded-full overflow-hidden h-[34px] w-[80px] shadow-sm">
+                  <button
+                    type="button"
+                    onClick={onDecrement}
+                    className="text-[#F59E0B] w-7 h-full flex items-center justify-center active:bg-[#F59E0B]/10 hover:bg-[#F59E0B]/5 transition-colors"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="font-bold text-white text-[13px]">{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={onIncrement}
+                    className="text-[#F59E0B] w-7 h-full flex items-center justify-center active:bg-[#F59E0B]/10 hover:bg-[#F59E0B]/5 transition-colors"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
       </div>
@@ -576,7 +585,7 @@ function ComboModal({
         <div className="overflow-y-auto scrollbar-hide flex-1 pb-24">
           <div className="relative h-[40vh] min-h-[280px] w-full bg-[#0B101E]">
             {isValidImageSrc(firstDishImage) ? (
-              <Image src={firstDishImage!} alt={combo.name} fill unoptimized className="object-cover" />
+              <Image src={firstDishImage!} alt={combo.name} fill unoptimized className="object-cover" style={comboDishes[0] ? { objectPosition: `${comboDishes[0].image_focus_x * 100}% ${comboDishes[0].image_focus_y * 100}%` } : undefined} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-6xl opacity-30">🍱</div>
             )}
@@ -612,7 +621,7 @@ function ComboModal({
                 {comboDishes.map((dish) => (
                   <div key={dish.id} className="flex items-center gap-3 bg-midnight-tertiary p-3 rounded-2xl border border-midnight-border">
                     {isValidImageSrc(dish.image_url) ? (
-                      <Image src={dish.image_url!} alt={dish.name} width={48} height={48} unoptimized className="w-12 h-12 rounded-xl object-cover border border-midnight-border shadow-sm" />
+                      <Image src={dish.image_url!} alt={dish.name} width={48} height={48} unoptimized className="w-12 h-12 rounded-xl object-cover border border-midnight-border shadow-sm" style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }} />
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-dark flex items-center justify-center text-xl border border-midnight-border shadow-sm">🍽</div>
                     )}
@@ -838,14 +847,23 @@ export default function CustomerMenuView({
 
   if (loading || cart.state.isBootstrapping) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-midnight px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-midnight px-6 text-center">
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)]"
-          style={{ background: BRAND_GRADIENT }}
+          className="w-20 h-20 rounded-[1.25rem] flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)] overflow-hidden shrink-0 animate-pulse"
+          style={cart.state.restaurantLogoUrl ? undefined : { background: BRAND_GRADIENT }}
         >
-          <UtensilsCrossed className="w-8 h-8 animate-pulse" />
+          {cart.state.restaurantLogoUrl ? (
+            <Image src={cart.state.restaurantLogoUrl} width={80} height={80} unoptimized priority className="w-full h-full object-cover" alt="Logo" />
+          ) : (
+             <div className="w-full h-full flex items-center justify-center text-[#0B101E] text-[32px] font-bold">
+               {cart.state.restaurantName[0]}
+             </div>
+          )}
         </div>
-        <p className="text-zinc-400 text-sm font-medium">Preparing menu…</p>
+        <div>
+          <h2 className="text-xl font-bold text-white mb-1">{cart.state.restaurantName}</h2>
+          <p className="text-zinc-400 text-sm font-medium">Preparing menu…</p>
+        </div>
         <div className="w-full max-w-sm space-y-3 mt-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -862,17 +880,25 @@ export default function CustomerMenuView({
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-midnight px-6 text-center">
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)] animate-bounce"
-          style={{ background: BRAND_GRADIENT }}
+          className="w-20 h-20 rounded-[1.25rem] flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)] overflow-hidden shrink-0 animate-bounce"
+          style={cart.state.restaurantLogoUrl ? undefined : { background: BRAND_GRADIENT }}
         >
-          <UtensilsCrossed className="w-8 h-8" />
+          {cart.state.restaurantLogoUrl ? (
+            <Image src={cart.state.restaurantLogoUrl} width={80} height={80} unoptimized priority className="w-full h-full object-cover" alt="Logo" />
+          ) : (
+             <div className="w-full h-full flex items-center justify-center text-[#0B101E] text-[32px] font-bold">
+               {cart.state.restaurantName[0]}
+             </div>
+          )}
         </div>
-        <h2 className="text-xl font-bold text-white">QR Scan Required</h2>
-        <p className="text-zinc-400 text-sm max-w-sm">
-          {cart.state.sessionError === "QR scan required to order" 
-            ? "Please scan the physical QR code located on your table to browse the menu and place orders."
-            : cart.state.sessionError}
-        </p>
+        <div>
+          <h2 className="text-xl font-bold text-white mb-1">QR Scan Required</h2>
+          <p className="text-zinc-400 text-sm max-w-sm">
+            {cart.state.sessionError === "QR scan required to order" 
+              ? "Please scan the physical QR code located on your table to browse the menu and place orders."
+              : cart.state.sessionError}
+          </p>
+        </div>
       </div>
     );
   }
@@ -898,23 +924,33 @@ export default function CustomerMenuView({
     >
       {/* Hero Section */}
       <section
-        className="relative flex flex-col justify-end min-h-[65vh] overflow-hidden"
-        style={{ minHeight: "65dvh" }}
+        className={cn(
+          "relative flex flex-col justify-end overflow-hidden",
+          restaurant.hero_enabled ? "min-h-[65vh]" : "min-h-[25vh] bg-[#0B101E]"
+        )}
+        style={restaurant.hero_enabled ? { minHeight: "65dvh" } : undefined}
         aria-label="Restaurant hero"
       >
         {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800&auto=format&fit=crop')" }}
-          aria-hidden="true"
-        />
+        {restaurant.hero_enabled && (
+          <div
+            className="absolute inset-0 bg-cover bg-no-repeat"
+            style={{ 
+              backgroundImage: `url('${restaurant.hero_image_url || 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=1200&auto=format&fit=crop'}')`,
+              backgroundPosition: `${restaurant.hero_focus_x * 100}% ${restaurant.hero_focus_y * 100}%`,
+              opacity: restaurant.hero_image_url ? 1 : 0.8, // Dim fallbacks slightly
+            }}
+            aria-hidden="true"
+          />
+        )}
 
         {/* Gradient Overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 40%, rgba(5,5,5,0.95) 85%, #000000 100%)",
+            background: restaurant.hero_enabled 
+              ? `linear-gradient(to bottom, rgba(0,0,0,${restaurant.hero_overlay_opacity}) 0%, rgba(0,0,0,${restaurant.hero_overlay_opacity + 0.3}) 40%, rgba(5,5,5,0.95) 85%, #000000 100%)`
+              : "transparent",
           }}
           aria-hidden="true"
         />
@@ -966,7 +1002,7 @@ export default function CustomerMenuView({
               }}
             >
               {restaurant.logo_url ? (
-                 <Image src={restaurant.logo_url} width={44} height={44} unoptimized className="w-full h-full object-cover" alt="Logo" />
+                 <Image src={restaurant.logo_url} width={44} height={44} unoptimized priority className="w-full h-full object-cover" alt="Logo" />
               ) : (
                  <div className="w-full h-full flex items-center justify-center text-[#0B101E] text-[18px] font-bold">
                    {restaurant.name[0]}
@@ -1211,20 +1247,22 @@ export default function CustomerMenuView({
 
               <div className="animate-fade-in grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {category.id === "combos-category-id" ? (
-                  sectionCombos?.map((combo) => {
+                  sectionCombos?.map((combo, index) => {
                     const handlers = comboCartHandlers(combo);
                     return (
                       <ComboCard
                         key={combo.id}
                         combo={combo}
                         dishes={dishes}
+                        tableId={tableId}
                         onInfo={() => setSelectedCombo(combo)}
+                        priority={index < 4}
                         {...handlers}
                       />
                     );
                   })
                 ) : (
-                  sectionDishes.map((dish) => {
+                  sectionDishes.map((dish, index) => {
                     const handlers = cartHandlers(dish);
                     return (
                       <DishCard
@@ -1233,6 +1271,7 @@ export default function CustomerMenuView({
                         slug={slug}
                         tableId={tableId}
                         onInfo={() => setSelectedDish(dish)}
+                        priority={index < 12}
                         {...handlers}
                       />
                     );
@@ -1252,23 +1291,40 @@ export default function CustomerMenuView({
         isCartVisible={cart.totalItems > 0}
       />
 
-      {/* Bottom cart bar */}
-      <button
-        type="button"
-        onClick={() => router.push(`/${slug}/${tableId}/cart`)}
-        className={cn("cart-fab", cart.totalItems > 0 && "cart-fab--visible")}
-      >
-        <div className="flex items-center gap-2">
-          <span className="cart-fab__icon">🛒</span>
-          <span>
-            {cart.totalItems} Item{cart.totalItems !== 1 ? "s" : ""} Added
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="font-bold">{formatINR(pricing.grandTotal)}</span>
-          <span className="font-bold text-lg leading-none ml-1">→</span>
-        </div>
-      </button>
+      {/* Bottom Action Bar */}
+      {cart.totalItems > 0 ? (
+        <button
+          type="button"
+          onClick={() => router.push(`/${slug}/${tableId}/cart`)}
+          className="cart-fab cart-fab--visible"
+        >
+          <div className="flex items-center gap-2">
+            <span className="cart-fab__icon">🛒</span>
+            <span>
+              {cart.totalItems} Item{cart.totalItems !== 1 ? "s" : ""} Added
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-bold">{formatINR(pricing.grandTotal)}</span>
+            <span className="font-bold text-lg leading-none ml-1">→</span>
+          </div>
+        </button>
+      ) : activeOrdersCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => router.push(`/${slug}/${tableId}/orders`)}
+          className="cart-fab cart-fab--visible"
+        >
+          <div className="flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-white opacity-90" />
+            <span className="font-semibold tracking-wide">View Active Orders</span>
+          </div>
+          <div className="flex items-center gap-1 bg-white/20 px-3 py-1.5 rounded-xl backdrop-blur-md">
+            <span className="font-bold text-sm tracking-wider uppercase">Pay Bill</span>
+            <span className="font-bold text-lg leading-none ml-1">→</span>
+          </div>
+        </button>
+      ) : null}
 
       {selectedDish && (
         <DishModal

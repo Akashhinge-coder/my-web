@@ -155,6 +155,8 @@ export function toCreateDishDto(form: {
   allergy_tags: string[];
   dish_size: string;
   image_url: string;
+  image_focus_x: number;
+  image_focus_y: number;
 }): CreateDishDTO {
   return {
     name: form.name.trim(),
@@ -169,5 +171,7 @@ export function toCreateDishDto(form: {
     allergyTags: form.allergy_tags,
     dishSize: form.dish_size as CreateDishDTO["dishSize"],
     imageUrl: form.image_url || null,
+    imageFocusX: form.image_focus_x,
+    imageFocusY: form.image_focus_y,
   };
 }

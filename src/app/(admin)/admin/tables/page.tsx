@@ -190,7 +190,7 @@ export default function TablesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {tables.map((table) => {
+          {[...tables].sort((a, b) => a.table_number.localeCompare(b.table_number, undefined, { numeric: true, sensitivity: 'base' })).map((table) => {
             const cfg = STATUS_CONFIG[table.status as TableStatusKey];
             return (
               <div key={table.id} className={cn("card-admin-hover p-4 flex flex-col gap-3 transition-all", `hover:${cfg.bg}`)}>

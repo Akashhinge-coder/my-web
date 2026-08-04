@@ -1,28 +1,25 @@
 import crypto from "crypto";
-import { PaymentGateway } from "./PaymentGateway";
+import { PaymentGateway, GatewayConfig } from "./PaymentGateway";
 
 export class RazorpayGateway implements PaymentGateway {
-  private keyId: string;
-  private keySecret: string;
+  private config: GatewayConfig;
 
-  constructor() {
-    this.keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_mock123";
-    this.keySecret = process.env.RAZORPAY_KEY_SECRET || "mock_secret";
+  constructor(config: GatewayConfig) {
+    this.config = config;
   }
 
   async createPaymentIntent(amount: number, currency: string, metadata?: Record<string, string>): Promise<string> {
-    if (this.keyId === "rzp_test_mock123") {
+    if (this.config.mode === 'TEST' && this.config.keyId === "rzp_test_mock123") {
       return "order_mock_" + Math.random().toString(36).substring(2, 9);
     }
     
-    // Convert to minor units (paise)
     const amountInSubunits = Math.round(amount * 100);
 
     const res = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Basic " + Buffer.from(`${this.keyId}:${this.keySecret}`).toString("base64"),
+        Authorization: "Basic " + Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64"),
       },
       body: JSON.stringify({
         amount: amountInSubunits,
@@ -41,13 +38,13 @@ export class RazorpayGateway implements PaymentGateway {
   }
 
   async fetchOrder(orderId: string): Promise<{ status: string; paymentId?: string }> {
-    if (this.keyId === "rzp_test_mock123") {
+    if (this.config.mode === 'TEST' && this.config.keyId === "rzp_test_mock123") {
       return { status: "paid", paymentId: "mock_payment_" + Math.random().toString(36).substring(2, 9) };
     }
 
     const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
       headers: {
-        Authorization: "Basic " + Buffer.from(`${this.keyId}:${this.keySecret}`).toString("base64"),
+        Authorization: "Basic " + Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64"),
       }
     });
 
@@ -56,19 +53,39 @@ export class RazorpayGateway implements PaymentGateway {
     }
 
     const data = await res.json();
-    // Assuming status logic maps to Razorpay's native order status ('created', 'attempted', 'paid')
     return { status: data.status, paymentId: data.payments?.items?.[0]?.id };
   }
 
   verifyWebhook(payload: string, signature: string): boolean {
-    if (this.keySecret === "mock_secret") return true;
+    if (this.config.mode === 'TEST' && this.config.keySecret === "mock_secret") return true;
 
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET || this.keySecret)
+    // 1. Try Current Secret
+    const currentSecret = this.config.webhookSecret || this.config.keySecret;
+    const expectedCurrentSignature = crypto
+      .createHmac("sha256", currentSecret)
       .update(payload)
       .digest("hex");
 
-    return expectedSignature === signature;
+    if (expectedCurrentSignature === signature) {
+      return true;
+    }
+
+    // 2. Try Previous Secret (Grace Period Fallback)
+    if (this.config.previousValidUntil && this.config.previousValidUntil.getTime() > Date.now()) {
+      const previousSecret = this.config.previousWebhookSecret || this.config.previousKeySecret;
+      if (previousSecret) {
+        const expectedPreviousSignature = crypto
+          .createHmac("sha256", previousSecret)
+          .update(payload)
+          .digest("hex");
+          
+        if (expectedPreviousSignature === signature) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   async fetchPayment(paymentId: string): Promise<{ status: string; amount: number; currency: string }> {
@@ -78,7 +95,7 @@ export class RazorpayGateway implements PaymentGateway {
 
     const res = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
       headers: {
-        Authorization: "Basic " + Buffer.from(`${this.keyId}:${this.keySecret}`).toString("base64"),
+        Authorization: "Basic " + Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64"),
       },
     });
 
@@ -95,8 +112,6 @@ export class RazorpayGateway implements PaymentGateway {
   }
 
   async cancelPaymentIntent(orderId: string): Promise<void> {
-    // Razorpay orders cannot be explicitly cancelled via API in most cases, they just expire.
-    // However, if we need to implement it, we would do it here.
     return Promise.resolve();
   }
 
@@ -114,7 +129,7 @@ export class RazorpayGateway implements PaymentGateway {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Basic " + Buffer.from(`${this.keyId}:${this.keySecret}`).toString("base64"),
+        Authorization: "Basic " + Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64"),
       },
       body: JSON.stringify(body),
     });
@@ -126,4 +141,37 @@ export class RazorpayGateway implements PaymentGateway {
     const data = await res.json();
     return data.id;
   }
+
+  async testConnection(): Promise<{ merchantName?: string; status?: string; [key: string]: any }> {
+    if (this.config.mode === 'TEST' && this.config.keyId === 'rzp_test_mock123') {
+      return { merchantName: 'Mock Sandbox Merchant', status: 'ACTIVE' };
+    }
+    
+    // We can call /v1/orders with amount 0 or just a generic authenticated fetch to Razorpay if possible.
+    // Razorpay doesn't have a strict "whoami" endpoint for standard merchants, but /v1/customers or /v1/orders?count=1 works to verify auth.
+    const res = await fetch("https://api.razorpay.com/v1/orders?count=1", {
+      headers: {
+        Authorization: "Basic " + Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64"),
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error("Razorpay connection failed. Invalid Key ID or Secret.");
+    }
+    
+    return { status: "ACTIVE", mode: this.config.keyId.startsWith("rzp_test_") ? "TEST" : "LIVE" };
+  }
+
+  supportsRefund(): boolean {
+    return true;
+  }
+
+  supportsPartialRefund(): boolean {
+    return true;
+  }
+
+  supportsCapture(): boolean {
+    return true; // Razorpay supports two-step capture
+  }
 }
+

@@ -148,7 +148,10 @@ export async function updateOrderStatus(
 export async function getSessionBill(req: NextRequest) {
   try {
     const query = parseQuery(billQuerySchema, req.nextUrl.searchParams);
-    const bill = await OrderService.getBill(query.slug, query.tableId);
+    const bill = await OrderService.getBill(query.slug, query.tableId, {
+      loyaltyPhone: query.loyaltyPhone,
+      loyaltyPointsToRedeem: query.loyaltyPointsToRedeem,
+    });
     return ok(bill);
   } catch (error) {
     return handleError(error);

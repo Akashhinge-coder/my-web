@@ -75,6 +75,11 @@ export interface RestaurantMenuRow {
   id: string;
   name: string;
   logo_url: string | null;
+  hero_image_url?: string | null;
+  hero_focus_x?: number | string;
+  hero_focus_y?: number | string;
+  hero_overlay_opacity?: number | string;
+  hero_enabled?: boolean;
   gst_number?: string | null;
   phone?: string;
   cgst_rate?: number | string;

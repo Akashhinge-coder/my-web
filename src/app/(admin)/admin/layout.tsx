@@ -19,12 +19,14 @@ export default function AdminLayout({
   };
   const userRole = session?.role ?? "admin";
   const userEmail = session?.user?.email ?? "";
+  const permissions = session?.permissions ?? [];
 
   return (
     <div className="min-h-screen flex admin-theme bg-background text-foreground">
       <AdminSidebar
         restaurant={restaurant}
         userRole={userRole}
+        permissions={permissions}
       />
 
       <div className="flex-1 flex flex-col min-w-0 ml-0 md:ml-60">

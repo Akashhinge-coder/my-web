@@ -67,10 +67,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   if (!res.ok || "error" in body) {
     const failure = body as ApiFailure;
     throw new ApiClientError(
-      failure.error?.code ?? "INTERNAL_ERROR",
-      failure.error?.message ?? "Request failed",
+      typeof failure.error === 'object' && failure.error !== null ? failure.error.code ?? "INTERNAL_ERROR" : "INTERNAL_ERROR",
+      typeof failure.error === 'object' && failure.error !== null ? failure.error.message ?? "Request failed" : (typeof failure.error === 'string' ? failure.error : "Request failed"),
       res.status,
-      failure.error?.details ?? ("fields" in (failure.error ?? {}) ? (failure.error as { fields?: unknown }).fields : undefined)
+      typeof failure.error === 'object' && failure.error !== null ? (failure.error.details ?? (("fields" in failure.error) ? (failure.error as any).fields : undefined)) : undefined
     );
   }
 

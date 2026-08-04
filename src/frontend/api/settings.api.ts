@@ -8,10 +8,17 @@ export interface RestaurantSettings {
   address: string | null;
   gstNumber: string | null;
   logoUrl: string | null;
+  heroImageUrl: string | null;
+  heroFocusX: number;
+  heroFocusY: number;
+  heroOverlayOpacity: number;
+  heroEnabled: boolean;
   language: string;
   cgstRate: number;
   sgstRate: number;
   sessionMode: "open" | "host_approval";
+  maxReservationDaysInAdvance: number;
+  onlineReservationLimitPercent: number;
 }
 
 export interface SettingsProfilePayload {
@@ -19,6 +26,11 @@ export interface SettingsProfilePayload {
   phone: string;
   address?: string | null;
   logoUrl?: string | null;
+  heroImageUrl?: string | null;
+  heroFocusX?: number;
+  heroFocusY?: number;
+  heroOverlayOpacity?: number;
+  heroEnabled?: boolean;
   language: string;
   sessionMode?: "open" | "host_approval";
 }
@@ -29,7 +41,10 @@ export interface SettingsTaxPayload {
   sgstRate: number;
 }
 
-export type SettingsPayload = SettingsProfilePayload & SettingsTaxPayload;
+export type SettingsPayload = SettingsProfilePayload & SettingsTaxPayload & {
+  maxReservationDaysInAdvance?: number;
+  onlineReservationLimitPercent?: number;
+};
 
 export const settingsApi = {
   get() {
@@ -54,6 +69,19 @@ export const settingsApi = {
     return apiFetch<RestaurantSettings>("/api/v1/settings/tax", {
       method: "PATCH",
       body: JSON.stringify(payload),
+    });
+  },
+
+  uploadMedia(type: "logo" | "hero", formData: FormData) {
+    return fetch(`/api/v1/settings/media?type=${type}`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  removeMedia(type: "logo" | "hero") {
+    return fetch(`/api/v1/settings/media?type=${type}`, {
+      method: "DELETE",
     });
   },
 };

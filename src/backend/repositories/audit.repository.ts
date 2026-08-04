@@ -19,7 +19,11 @@ export type AuditAction =
   | "ACTIVATE_RESTAURANT"
   | "DEACTIVATE_RESTAURANT"
   | "ROLE_CHANGE"
+  | "ROLE_CHANGED"
   | "STAFF_DELETE"
+  | "STAFF_CREATED"
+  | "ACCOUNT_SUSPENDED"
+  | "PASSWORD_RESET"
   | "PLATFORM_CONFIGURATION_CHANGE";
 
 export class AuditRepository {

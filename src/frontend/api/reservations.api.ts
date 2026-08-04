@@ -29,4 +29,16 @@ export const reservationsApi = {
       body: JSON.stringify({ status }),
     });
   },
+
+  verifyRequest(id: string): Promise<ReservationWithTable> {
+    return apiFetch<ReservationWithTable>(`/api/v1/reservation-requests/${id}/verify`, {
+      method: "POST",
+    });
+  },
+
+  rejectRequest(id: string): Promise<void> {
+    return apiFetch<void>(`/api/v1/reservation-requests/${id}/reject`, {
+      method: "POST",
+    });
+  },
 };

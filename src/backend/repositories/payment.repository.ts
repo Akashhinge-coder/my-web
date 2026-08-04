@@ -20,7 +20,7 @@ export class PaymentRepository {
     bill_snapshot: any;
     bill_hash: string;
     session_version: number;
-    expires_at: string;
+    expires_at?: string;
     parent_payment_id?: string;
   }): Promise<Payment> {
     const supabase = createAdminClient();
@@ -66,7 +66,10 @@ export class PaymentRepository {
     outboxEventType: string,
     outboxPayload: any,
     receiptSnapshot?: any,
-    receiptNumber?: string
+    receiptNumber?: string,
+    loyaltyAccountId?: string,
+    loyaltyPointsToRedeem?: number,
+    loyaltyPointsToEarn?: number
   ): Promise<boolean> {
     const supabase = createAdminClient();
     const { data, error } = await supabase.rpc("process_payment_transition", {
@@ -79,6 +82,9 @@ export class PaymentRepository {
       p_outbox_aggregate_id: outboxAggregateId,
       p_outbox_event_type: outboxEventType,
       p_outbox_payload: outboxPayload,
+      p_loyalty_account_id: loyaltyAccountId || null,
+      p_loyalty_points: loyaltyPointsToRedeem || null,
+      p_loyalty_earn_points: loyaltyPointsToEarn || null,
     });
 
     if (error) throw error;

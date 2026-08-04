@@ -12,6 +12,11 @@ export interface RestaurantSettingsRow {
   address: string | null;
   gst_number: string | null;
   logo_url: string | null;
+  hero_image_url: string | null;
+  hero_focus_x: number;
+  hero_focus_y: number;
+  hero_overlay_opacity: number;
+  hero_enabled: boolean;
   language: string;
   cgst_rate: number;
   sgst_rate: number;
@@ -44,7 +49,7 @@ export class RestaurantRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("restaurants")
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
+      .select("id, name, slug, phone, address, gst_number, logo_url, hero_image_url, hero_focus_x, hero_focus_y, hero_overlay_opacity, hero_enabled, language, cgst_rate, sgst_rate, session_mode")
       .eq("id", id)
       .single();
 
@@ -56,7 +61,7 @@ export class RestaurantRepository {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("restaurants")
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
+      .select("id, name, slug, phone, address, gst_number, logo_url, hero_image_url, hero_focus_x, hero_focus_y, hero_overlay_opacity, hero_enabled, language, cgst_rate, sgst_rate, session_mode")
       .eq("id", id)
       .single();
 
@@ -76,11 +81,16 @@ export class RestaurantRepository {
         phone: dto.phone,
         address: dto.address ?? null,
         logo_url: dto.logoUrl ?? null,
+        hero_image_url: dto.heroImageUrl ?? null,
+        hero_focus_x: dto.heroFocusX ?? 0.5,
+        hero_focus_y: dto.heroFocusY ?? 0.5,
+        hero_overlay_opacity: dto.heroOverlayOpacity ?? 0.35,
+        hero_enabled: dto.heroEnabled ?? true,
         language: dto.language,
         ...(dto.sessionMode ? { session_mode: dto.sessionMode } : {}),
       })
       .eq("id", restaurantId)
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
+      .select("id, name, slug, phone, address, gst_number, logo_url, hero_image_url, hero_focus_x, hero_focus_y, hero_overlay_opacity, hero_enabled, language, cgst_rate, sgst_rate, session_mode")
       .single();
 
     if (error) throw error;
@@ -100,7 +110,7 @@ export class RestaurantRepository {
         sgst_rate: dto.sgstRate,
       })
       .eq("id", restaurantId)
-      .select("id, name, slug, phone, address, gst_number, logo_url, language, cgst_rate, sgst_rate, session_mode")
+      .select("id, name, slug, phone, address, gst_number, logo_url, hero_image_url, hero_focus_x, hero_focus_y, hero_overlay_opacity, hero_enabled, language, cgst_rate, sgst_rate, session_mode")
       .single();
 
     if (error) throw error;

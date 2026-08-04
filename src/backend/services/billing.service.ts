@@ -120,11 +120,11 @@ export class BillingService {
       throw new AuthError("Billing access required", 403, "FORBIDDEN");
     }
 
-    requireRole(staffAccess.role, ["admin", "manager"]);
+    requireRole(staffAccess.role_id, ["admin", "manager"]);
     return {
       restaurant: staffAccess.restaurant,
       staffId: staffAccess.staffId,
-      role: staffAccess.role,
+      role: staffAccess.role_id,
     };
   }
 

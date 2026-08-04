@@ -38,6 +38,8 @@ export default async function CustomerLayout({
     <CartProvider
       restaurantId={restaurant.id}
       restaurantSlug={restaurant.slug}
+      restaurantName={restaurant.name}
+      restaurantLogoUrl={restaurant.logo_url}
       tableId={tableId}
     >
       <div className="min-h-screen bg-surface font-sans">

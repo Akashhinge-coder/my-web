@@ -1,3 +1,13 @@
+export interface GatewayConfig {
+  keyId: string;
+  keySecret: string;
+  webhookSecret?: string;
+  previousKeySecret?: string;
+  previousWebhookSecret?: string;
+  previousValidUntil?: Date;
+  mode: 'TEST' | 'LIVE';
+}
+
 export interface PaymentGateway {
   /**
    * Creates a payment intent/order on the gateway's side.
@@ -34,4 +44,25 @@ export interface PaymentGateway {
    * @param amount Optional partial amount. If undefined, full refund.
    */
   refundPayment(paymentId: string, amount?: number): Promise<string>;
+
+  /**
+   * Tests the connection to the payment gateway using the provided credentials.
+   * @returns Metadata about the connected account (e.g., merchant name, status) or throws an error.
+   */
+  testConnection(): Promise<{ merchantName?: string; status?: string; [key: string]: any }>;
+
+  /**
+   * Indicates if the gateway supports refunds.
+   */
+  supportsRefund(): boolean;
+
+  /**
+   * Indicates if the gateway supports partial refunds.
+   */
+  supportsPartialRefund(): boolean;
+
+  /**
+   * Indicates if the gateway supports delayed capture (two-step payments).
+   */
+  supportsCapture(): boolean;
 }

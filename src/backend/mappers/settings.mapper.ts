@@ -13,6 +13,11 @@ export interface RestaurantSettingsDTO {
   address: string | null;
   gstNumber: string | null;
   logoUrl: string | null;
+  heroImageUrl: string | null;
+  heroFocusX: number;
+  heroFocusY: number;
+  heroOverlayOpacity: number;
+  heroEnabled: boolean;
   language: string;
   cgstRate: number;
   sgstRate: number;
@@ -28,6 +33,11 @@ export function mapRestaurantSettings(row: RestaurantSettingsRow): RestaurantSet
     address: row.address,
     gstNumber: row.gst_number,
     logoUrl: row.logo_url,
+    heroImageUrl: row.hero_image_url ?? null,
+    heroFocusX: Number(row.hero_focus_x ?? 0.5),
+    heroFocusY: Number(row.hero_focus_y ?? 0.5),
+    heroOverlayOpacity: Number(row.hero_overlay_opacity ?? 0.35),
+    heroEnabled: row.hero_enabled ?? true,
     language: row.language,
     cgstRate: Number(row.cgst_rate),
     sgstRate: Number(row.sgst_rate),
@@ -41,6 +51,11 @@ export function mapSettingsProfile(dto: SettingsUpdateDTO): SettingsProfileUpdat
     phone: dto.phone,
     address: dto.address,
     logoUrl: dto.logoUrl,
+    heroImageUrl: dto.heroImageUrl,
+    heroFocusX: dto.heroFocusX,
+    heroFocusY: dto.heroFocusY,
+    heroOverlayOpacity: dto.heroOverlayOpacity,
+    heroEnabled: dto.heroEnabled,
     language: dto.language,
     sessionMode: dto.sessionMode,
   };

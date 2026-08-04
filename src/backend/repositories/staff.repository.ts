@@ -10,7 +10,8 @@ export class StaffRepository {
       .from("staff")
       .select("*")
       .eq("restaurant_id", restaurantId)
-      .order("role");
+      .is("deleted_at", null)
+      .order("role_id");
 
     if (error) throw error;
     return mapStaffRows((data ?? []) as StaffRow[]);
@@ -36,11 +37,11 @@ export class StaffRepository {
       .insert({
         restaurant_id: restaurantId,
         name: dto.name.trim(),
-        role: dto.role,
+        role_id: dto.role_id,
         phone: dto.phone?.trim() || null,
         shift_start: dto.shift_start || null,
         shift_end: dto.shift_end || null,
-        is_active: true,
+        status: "ACTIVE",
       })
       .select("*")
       .single();
@@ -57,7 +58,7 @@ export class StaffRepository {
     const payload: Record<string, unknown> = {};
 
     if (dto.name !== undefined) payload.name = dto.name.trim();
-    if (dto.role !== undefined) payload.role = dto.role;
+    if (dto.role_id !== undefined) payload.role_id = dto.role_id;
     if (dto.phone !== undefined) payload.phone = dto.phone?.trim() || null;
     if (dto.shift_start !== undefined) payload.shift_start = dto.shift_start || null;
     if (dto.shift_end !== undefined) payload.shift_end = dto.shift_end || null;
@@ -84,7 +85,7 @@ export class StaffRepository {
     const supabase = await createClient();
     const { error } = await supabase
       .from("staff")
-      .update({ is_active: false })
+      .update({ status: "SUSPENDED" })
       .eq("restaurant_id", restaurantId)
       .eq("id", staffId);
 
@@ -99,7 +100,7 @@ export class StaffRepository {
     const supabase = await createClient();
     const { error } = await supabase
       .from("staff")
-      .delete()
+      .update({ deleted_at: new Date().toISOString(), status: "LEFT" })
       .eq("restaurant_id", restaurantId)
       .eq("id", staffId);
 

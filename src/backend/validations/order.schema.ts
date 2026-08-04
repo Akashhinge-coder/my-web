@@ -63,4 +63,6 @@ export const sessionOrdersQuerySchema = z.object({
 export const billQuerySchema = z.object({
   slug: z.string().min(1),
   tableId: z.string().uuid(),
+  loyaltyPhone: z.string().optional(),
+  loyaltyPointsToRedeem: z.coerce.number().int().positive().optional(),
 });

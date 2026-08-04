@@ -19,9 +19,10 @@ interface DishCardProps {
   onInfo: () => void;
   slug: string;
   tableId: string;
+  priority?: boolean;
 }
 
-export function DishCard({ dish, onInfo, slug, tableId }: DishCardProps) {
+export function DishCard({ dish, onInfo, slug, tableId, priority = false }: DishCardProps) {
   const router = useRouter();
   const hasAR = (
     dish as unknown as { dish_ar_assets?: { is_published: boolean }[] }
@@ -124,8 +125,9 @@ export function DishCard({ dish, onInfo, slug, tableId }: DishCardProps) {
                 height={80}
                 sizes="80px"
                 quality={75}
-                loading="lazy"
+                priority={priority}
                 className="object-cover w-full h-full"
+                style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }}
               />
             ) : (
               <span className="flex items-center justify-center w-full h-full text-2xl">

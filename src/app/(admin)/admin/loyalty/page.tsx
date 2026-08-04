@@ -8,13 +8,14 @@ import {
   type LoyaltyDashboard,
 } from "@/frontend/api/loyalty.api";
 import { formatINR, formatDate } from "@/lib/utils";
-import { Gift, Search, Star, TrendingUp, Users, Phone, Loader2 } from "lucide-react";
+import { Gift, Search, Star, TrendingUp, Users, Phone, Loader2, Power } from "lucide-react";
 
 export default function LoyaltyPage() {
   const [dashboard, setDashboard] = useState<LoyaltyDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -38,6 +39,8 @@ export default function LoyaltyPage() {
 
   const accounts = dashboard?.accounts ?? [];
   const settings = dashboard?.settings ?? {
+    earnEnabled: true,
+    redeemEnabled: true,
     pointsPerHundred: 10,
     minimumPointsToRedeem: 100,
     redemptionRate: 0.1,
@@ -55,6 +58,23 @@ export default function LoyaltyPage() {
     account.phone.includes(search) ||
     (account.name && account.name.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const toggleProgram = async () => {
+    if (!dashboard) return;
+    try {
+      setSavingSettings(true);
+      const isCurrentlyEnabled = settings.earnEnabled || settings.redeemEnabled;
+      const newSettings = await loyaltyApi.updateSettings({
+        earnEnabled: !isCurrentlyEnabled,
+        redeemEnabled: !isCurrentlyEnabled,
+      });
+      setDashboard({ ...dashboard, settings: newSettings });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update settings");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -105,7 +125,21 @@ export default function LoyaltyPage() {
       </div>
 
       <div className="card-admin p-5 bg-card">
-        <h3 className="font-semibold text-foreground mb-4">Program Settings</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground">Program Settings</h3>
+          <button
+            onClick={toggleProgram}
+            disabled={savingSettings || loading}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              settings.earnEnabled || settings.redeemEnabled
+                ? "bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500/20"
+                : "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20"
+            }`}
+          >
+            {savingSettings ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />}
+            {settings.earnEnabled || settings.redeemEnabled ? "Program Active" : "Program Disabled"}
+          </button>
+        </div>
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="label">Points earned per Rs.100</label>

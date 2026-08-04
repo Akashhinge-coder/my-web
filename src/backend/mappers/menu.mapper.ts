@@ -17,7 +17,7 @@ import type {
 } from "@/types/menu";
 import type { Category, Combo, Dish, DishARAsset, FoodType } from "@/types/domain";
 
-function toNumber(value: number | string): number {
+function toNumber(value: unknown): number {
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? n : 0;
 }
@@ -44,7 +44,7 @@ function isCategoryRow(row: unknown): row is CategoryRow {
   );
 }
 
-function isDishRow(row: unknown): row is DishRow {
+function isDishRow(row: unknown): row is DishRow & Record<string, unknown> {
   return (
     typeof row === "object" &&
     row !== null &&
@@ -105,7 +105,7 @@ export function mapCategoryRows(rows: unknown[]): Category[] {
   return rows.filter(isCategoryRow).map(mapCategoryRow);
 }
 
-export function mapDishRow(row: DishRow): Dish {
+export function mapDishRow(row: DishRow & Record<string, unknown>): Dish {
   return {
     id: row.id,
     restaurant_id: row.restaurant_id,
@@ -116,6 +116,8 @@ export function mapDishRow(row: DishRow): Dish {
     description_hindi: row.description_hindi,
     price: toNumber(row.price),
     image_url: row.image_url,
+    image_focus_x: toNumber((row.image_focus_x as number | undefined) ?? 0.5),
+    image_focus_y: toNumber((row.image_focus_y as number | undefined) ?? 0.5),
     food_type: toFoodType(row.food_type),
     spice_level: row.spice_level,
     is_available: row.is_available,
@@ -144,15 +146,11 @@ export function mapAdminDishRow(row: DishRow & Record<string, unknown>): AdminDi
 }
 
 export function mapCustomerDishRows(rows: unknown[]): CustomerDish[] {
-  return rows.filter(isDishRow).map((row) =>
-    mapCustomerDishRow(row as DishRow & Record<string, unknown>)
-  );
+  return (rows.filter(isDishRow) as Array<DishRow & Record<string, unknown>>).map(mapCustomerDishRow);
 }
 
 export function mapAdminDishRows(rows: unknown[]): AdminDish[] {
-  return rows.filter(isDishRow).map((row) =>
-    mapAdminDishRow(row as DishRow & Record<string, unknown>)
-  );
+  return (rows.filter(isDishRow) as Array<DishRow & Record<string, unknown>>).map(mapAdminDishRow);
 }
 
 export function mapDishPriceRow(row: DishPriceRow): {
@@ -228,6 +226,11 @@ export function mapRestaurantMenuRow(row: RestaurantMenuRow): CustomerMenuBundle
     id: row.id,
     name: row.name,
     logo_url: row.logo_url ?? null,
+    hero_image_url: row.hero_image_url ?? null,
+    hero_focus_x: toNumber(row.hero_focus_x ?? 0.5),
+    hero_focus_y: toNumber(row.hero_focus_y ?? 0.5),
+    hero_overlay_opacity: toNumber(row.hero_overlay_opacity ?? 0.35),
+    hero_enabled: row.hero_enabled ?? true,
   };
 }
 export function mapTableMenuRow(row: TableMenuRow): CustomerMenuBundle["table"] {

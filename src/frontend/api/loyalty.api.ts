@@ -1,6 +1,8 @@
 import { apiFetch } from "@/frontend/api/http";
 
 export interface LoyaltyProgramSettings {
+  earnEnabled: boolean;
+  redeemEnabled: boolean;
   pointsPerHundred: number;
   minimumPointsToRedeem: number;
   redemptionRate: number;
@@ -58,6 +60,13 @@ export const loyaltyApi = {
   redeem(payload: LoyaltyRedeemPayload) {
     return apiFetch<LoyaltyRedemptionQuote>("/api/v1/loyalty/redeem", {
       method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  updateSettings(payload: Partial<LoyaltyProgramSettings>) {
+    return apiFetch<LoyaltyProgramSettings>("/api/v1/loyalty/settings", {
+      method: "PATCH",
       body: JSON.stringify(payload),
     });
   },

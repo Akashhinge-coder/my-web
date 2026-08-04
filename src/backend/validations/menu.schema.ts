@@ -50,6 +50,8 @@ export const createDishSchema = z.object({
   allergyTags: z.array(z.string().max(40)).default([]),
   dishSize: dishSizeSchema.default("M"),
   imageUrl: optionalUrl,
+  imageFocusX: z.number().min(0).max(1).default(0.5),
+  imageFocusY: z.number().min(0).max(1).default(0.5),
   sortOrder: z.number().int().min(0).optional(),
 });
 

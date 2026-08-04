@@ -44,12 +44,12 @@ export async function resolveRestaurantAccess(): Promise<RestaurantAccess> {
     throw new AuthError("Restaurant access required", 403, "FORBIDDEN");
   }
 
-  requireRole(staff.role, OPERATIONS_ROLES);
+  requireRole(staff.role_id, OPERATIONS_ROLES);
   return {
     restaurantId: staff.restaurant.id,
     restaurantName: staff.restaurant.name,
     restaurantSlug: staff.restaurant.slug,
     restaurantPhone: staff.restaurant.phone,
-    role: staff.role,
+    role: staff.role_id,
   };
 }

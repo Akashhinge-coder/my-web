@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { ApiClientError } from "@/frontend/api/http";
 import { settingsApi, type RestaurantSettings } from "@/frontend/api/settings.api";
@@ -19,9 +19,12 @@ import {
   Percent,
   Upload,
   Users,
+  ImageUp,
 } from "lucide-react";
+import { ImageFocusEditor } from "@/frontend/components/admin/ImageFocusEditor";
 
 export default function SettingsPage() {
+  const heroFileInputRef = useRef<HTMLInputElement>(null);
   const [restaurant, setRestaurant] = useState<RestaurantSettings | null>(null);
   const [form, setForm] = useState<Partial<RestaurantSettings>>({});
   const [saving, setSaving] = useState(false);
@@ -31,6 +34,10 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadHeroError, setUploadHeroError] = useState("");
+  const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -42,6 +49,7 @@ export default function SettingsPage() {
         setRestaurant(data);
         setForm(data);
         setPreviewUrl(data.logoUrl || null);
+        setHeroPreviewUrl(data.heroImageUrl || null);
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Unable to load settings");
@@ -200,6 +208,128 @@ export default function SettingsPage() {
     }
   };
 
+  const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingHero(true);
+    setUploadHeroError("");
+
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadHeroError("Invalid file type. Only PNG, JPEG, and WebP are allowed.");
+      setUploadingHero(false);
+      return;
+    }
+
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setUploadHeroError("File size exceeds 5 MB limit.");
+      setUploadingHero(false);
+      return;
+    }
+
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let width = img.width;
+      let height = img.height;
+      const maxDim = 1200;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        setUploadHeroError("Unable to initialize image scaling context.");
+        setUploadingHero(false);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        async (blob) => {
+          if (!blob) {
+            setUploadHeroError("Image compression failed.");
+            setUploadingHero(false);
+            return;
+          }
+
+          const localPreviewUrl = URL.createObjectURL(blob);
+          setHeroPreviewUrl(localPreviewUrl);
+
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", blob, "hero.webp");
+
+          try {
+            const res = await settingsApi.uploadMedia("hero", uploadFormData);
+
+            if (!res.ok) {
+              const errData = await res.json();
+              throw new Error(errData.error || "Failed to upload hero image.");
+            }
+
+            const data = await res.json();
+            setForm((prev) => ({ ...prev, heroImageUrl: data.url }));
+            setRestaurant((prev) => prev ? { ...prev, heroImageUrl: data.url } : null);
+            setHeroPreviewUrl(data.url);
+
+          } catch (err) {
+            setUploadHeroError(err instanceof Error ? err.message : "Error uploading hero image.");
+            setHeroPreviewUrl(form.heroImageUrl || null);
+          } finally {
+            setUploadingHero(false);
+          }
+        },
+        "image/webp",
+        0.8
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setUploadHeroError("Failed to load image file.");
+      setUploadingHero(false);
+    };
+  };
+
+  const handleRemoveHero = async () => {
+    setUploadingHero(true);
+    setUploadHeroError("");
+
+    try {
+      const res = await settingsApi.removeMedia("hero");
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to remove hero image.");
+      }
+
+      setForm((prev) => ({ ...prev, heroImageUrl: null }));
+      setRestaurant((prev) => (prev ? { ...prev, heroImageUrl: null } : null));
+      setHeroPreviewUrl(null);
+
+    } catch (err) {
+      setUploadHeroError(err instanceof Error ? err.message : "Error removing hero image.");
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
   function getApiErrorMessage(err: unknown): string {
     if (err instanceof ApiClientError) {
       const fields = err.details as Record<string, string[] | undefined> | undefined;
@@ -224,11 +354,18 @@ export default function SettingsPage() {
         phone: form.phone ?? restaurant.phone,
         address: form.address ?? null,
         logoUrl: form.logoUrl ?? null,
+        heroImageUrl: form.heroImageUrl ?? null,
+        heroFocusX: form.heroFocusX ?? restaurant.heroFocusX ?? 0.5,
+        heroFocusY: form.heroFocusY ?? restaurant.heroFocusY ?? 0.5,
+        heroOverlayOpacity: form.heroOverlayOpacity ?? restaurant.heroOverlayOpacity ?? 0.35,
+        heroEnabled: form.heroEnabled ?? restaurant.heroEnabled ?? true,
         language: form.language ?? restaurant.language,
         sessionMode: form.sessionMode ?? restaurant.sessionMode,
         gstNumber: form.gstNumber ?? null,
         cgstRate: form.cgstRate ?? restaurant.cgstRate,
         sgstRate: form.sgstRate ?? restaurant.sgstRate,
+        maxReservationDaysInAdvance: form.maxReservationDaysInAdvance ?? restaurant.maxReservationDaysInAdvance,
+        onlineReservationLimitPercent: form.onlineReservationLimitPercent ?? restaurant.onlineReservationLimitPercent,
       });
 
       setRestaurant(updated);
@@ -373,6 +510,71 @@ export default function SettingsPage() {
 
       <div className="card-admin p-6 space-y-5">
         <div className="flex items-center gap-2 mb-2">
+          <ImageUp className="w-4 h-4 text-accent-cyan" />
+          <h2 className="font-semibold text-admin-text">Customer Menu Hero</h2>
+        </div>
+
+        <div>
+          <label className="label text-admin-muted flex items-center justify-between">
+            Hero Banner Image
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span className="text-xs text-admin-subtle font-medium">Enable</span>
+              <div className="relative inline-block w-8 h-4 rounded-full bg-admin-card-2 border border-admin-border-2 transition-colors duration-200 ease-in-out">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={form.heroEnabled ?? true}
+                  onChange={(e) => set("heroEnabled", e.target.checked ? "true" : "")}
+                  // We simulate boolean with string for generic set() or just update form directly
+                />
+                <div
+                  className={cn(
+                    "absolute left-0 top-0 bottom-0 w-4 h-4 bg-admin-subtle rounded-full transition-transform duration-200 ease-in-out scale-75",
+                    (form.heroEnabled ?? true) ? "translate-x-4 bg-accent-cyan" : "translate-x-0"
+                  )}
+                />
+                <input 
+                  type="checkbox"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  checked={form.heroEnabled ?? true}
+                  onChange={(e) => setForm((p) => ({ ...p, heroEnabled: e.target.checked }))}
+                />
+              </div>
+            </label>
+          </label>
+          
+          <input
+            ref={heroFileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={handleHeroFileChange}
+          />
+
+          <div className={cn("mt-3 transition-opacity", (form.heroEnabled ?? true) ? "opacity-100" : "opacity-40 pointer-events-none")}>
+            <ImageFocusEditor
+              src={heroPreviewUrl || 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=1200&auto=format&fit=crop'}
+              focusX={form.heroFocusX ?? 0.5}
+              focusY={form.heroFocusY ?? 0.5}
+              onChange={(x, y) => setForm(p => ({ ...p, heroFocusX: x, heroFocusY: y }))}
+              onRemove={heroPreviewUrl ? handleRemoveHero : undefined}
+              onChangeImage={() => heroFileInputRef.current?.click()}
+              isUploading={uploadingHero}
+              aspectRatio="aspect-[4/5]"
+              previewType="hero"
+            />
+          </div>
+          {uploadHeroError && (
+            <p className="text-xs text-red-400 mt-2 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {uploadHeroError}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="card-admin p-6 space-y-5">
+        <div className="flex items-center gap-2 mb-2">
           <FileText className="w-4 h-4 text-accent-cyan" />
           <h2 className="font-semibold text-admin-text">GST Settings</h2>
         </div>
@@ -456,6 +658,40 @@ export default function SettingsPage() {
               {lang.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="card-admin p-6 space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Users className="w-4 h-4 text-accent-cyan" />
+          <h2 className="font-semibold text-admin-text">Reservation Settings</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="label text-admin-muted">Max Days in Advance</label>
+            <input
+              className="input-admin"
+              type="number"
+              min="1"
+              max="365"
+              value={form.maxReservationDaysInAdvance ?? 7}
+              onChange={(e) => set("maxReservationDaysInAdvance", parseInt(e.target.value))}
+            />
+            <p className="text-xs text-admin-subtle mt-1">How far ahead customers can book.</p>
+          </div>
+          <div>
+            <label className="label text-admin-muted flex items-center gap-1.5"><Percent className="w-3 h-3" />Online Limit</label>
+            <input
+              className="input-admin"
+              type="number"
+              min="10"
+              max="100"
+              step="5"
+              value={form.onlineReservationLimitPercent ?? 70}
+              onChange={(e) => set("onlineReservationLimitPercent", parseInt(e.target.value))}
+            />
+            <p className="text-xs text-admin-subtle mt-1">Percentage of capacity for online.</p>
+          </div>
         </div>
       </div>
 

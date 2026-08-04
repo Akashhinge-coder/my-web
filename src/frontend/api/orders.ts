@@ -113,8 +113,11 @@ export const ordersApi = {
     });
   },
 
-  getBill(slug: string, tableId: string) {
-    const search = new URLSearchParams({ slug, tableId });
+  getBill(slug: string, tableId: string, loyaltyPhone?: string, loyaltyPointsToRedeem?: number) {
+    const params: Record<string, string> = { slug, tableId };
+    if (loyaltyPhone) params.loyaltyPhone = loyaltyPhone;
+    if (loyaltyPointsToRedeem) params.loyaltyPointsToRedeem = loyaltyPointsToRedeem.toString();
+    const search = new URLSearchParams(params);
     return apiFetch<SessionBill>(`/api/v1/orders/bill?${search}`);
   },
 };

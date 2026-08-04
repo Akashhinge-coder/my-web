@@ -22,7 +22,7 @@ const KITCHEN_ORDER_SELECT = `
 
 const CUSTOMER_ORDER_SELECT = `
   id, order_number, status, total, grand_total, created_at, placed_by_name, placed_by_participant_id,
-  order_items(quantity, item_name, item_type, combo_id)
+  order_items(id, quantity, item_name, item_type, combo_id)
 `;
 
 const BILL_ORDER_SELECT = `

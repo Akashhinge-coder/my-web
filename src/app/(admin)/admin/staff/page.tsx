@@ -3,8 +3,9 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from "react";
 import { staffApi } from "@/frontend/api/staff.api";
 import { cn } from "@/lib/utils";
-import { Plus, Edit2, Trash2, Check, X, Loader2, Users, Shield } from "lucide-react";
-import type { Staff, UserRole } from "@/types/domain";
+import { Plus, Edit2, Trash2, Check, X, Loader2, Users, Shield, Copy } from "lucide-react";
+import type { Staff } from "@/types/domain";
+import { DEFAULT_PERMISSIONS, ROLE_TEMPLATES } from "@/config/permissions";
 
 const ROLES = [
   { value: "admin",   label: "Admin",   color: "text-chart-4", bg: "bg-chart-4/10 border-chart-4/20", desc: "Full access" },
@@ -13,7 +14,7 @@ const ROLES = [
   { value: "kitchen", label: "Kitchen", color: "text-chart-5", bg: "bg-chart-5/10 border-chart-5/20", desc: "Display only" },
 ];
 
-const EMPTY = { name: "", role: "waiter" as UserRole, phone: "", shift_start: "09:00", shift_end: "21:00" };
+const EMPTY = { name: "", role_id: "waiter", phone: "", shift_start: "09:00", shift_end: "21:00", permission_ids: ROLE_TEMPLATES["waiter"] };
 
 export default function StaffPage() {
   const [staff,    setStaff]   = useState<Staff[]>([]);
@@ -22,6 +23,9 @@ export default function StaffPage() {
   const [form,     setForm]    = useState({ ...EMPTY });
   const [saving,   setSaving]  = useState(false);
   const [editId,   setEditId]  = useState<string | null>(null);
+  
+  // Credentials modal state
+  const [credentials, setCredentials] = useState<{ username: string; password: string } | null>(null);
 
   const fetchStaff = useCallback(async () => {
     try {
@@ -36,21 +40,38 @@ export default function StaffPage() {
 
   useEffect(() => { fetchStaff(); }, [fetchStaff]);
 
+  const handleRoleChange = (role_id: string) => {
+    setForm(p => ({ ...p, role_id, permission_ids: ROLE_TEMPLATES[role_id] || [] }));
+  };
+
+  const togglePermission = (permId: string) => {
+    setForm(p => {
+      const perms = new Set(p.permission_ids);
+      if (perms.has(permId)) perms.delete(permId);
+      else perms.add(permId);
+      return { ...p, permission_ids: Array.from(perms) };
+    });
+  };
+
   async function saveStaff() {
     if (!form.name) return;
     setSaving(true);
     try {
       const payload = {
         name: form.name.trim(),
-        role: form.role,
+        role_id: form.role_id,
         phone: form.phone || null,
         shift_start: form.shift_start || null,
         shift_end: form.shift_end || null,
+        permission_ids: form.permission_ids,
       };
       if (editId) {
         await staffApi.update(editId, payload);
       } else {
-        await staffApi.create(payload);
+        const res = await staffApi.create(payload);
+        if (res.credentials) {
+          setCredentials(res.credentials);
+        }
       }
       setShowAdd(false);
       setEditId(null);
@@ -64,7 +85,7 @@ export default function StaffPage() {
   }
 
   async function deleteStaff(id: string) {
-    if (!confirm("Remove this staff member?")) return;
+    if (!confirm("Suspend this staff member? They will lose access immediately.")) return;
     try {
       await staffApi.delete(id);
       await fetchStaff();
@@ -74,15 +95,29 @@ export default function StaffPage() {
   }
 
   function openEdit(s: Staff) {
-    setForm({ name: s.name, role: s.role, phone: s.phone || "", shift_start: s.shift_start || "09:00", shift_end: s.shift_end || "21:00" });
+    // Note: In a real app we'd fetch their exact current overrides. For now, assuming default.
+    setForm({ 
+      name: s.name, 
+      role_id: s.role_id, 
+      phone: s.phone || "", 
+      shift_start: s.shift_start || "09:00", 
+      shift_end: s.shift_end || "21:00",
+      permission_ids: ROLE_TEMPLATES[s.role_id] || []
+    });
     setEditId(s.id);
     setShowAdd(true);
   }
 
+  const copyCredentials = () => {
+    if (!credentials) return;
+    navigator.clipboard.writeText(`Username: ${credentials.username}\nPassword: ${credentials.password}`);
+    alert("Copied to clipboard!");
+  };
+
   const roleConfig = (role: string) => ROLES.find(r => r.value === role) || ROLES[2];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative">
       <div className="flex items-start justify-between gap-4">
         <div className="page-header mb-0">
           <h1 className="page-title text-foreground">Staff</h1>
@@ -101,7 +136,7 @@ export default function StaffPage() {
               <span className={cn("text-xs font-medium", role.color)}>{role.label}</span>
             </div>
             <p className={cn("text-2xl font-display font-semibold", role.color)}>
-              {staff.filter(s => s.role === role.value).length}
+              {staff.filter(s => s.role_id === role.value && s.status === "ACTIVE").length}
             </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{role.desc}</p>
           </div>
@@ -132,15 +167,35 @@ export default function StaffPage() {
             <div className="flex gap-2 flex-wrap">
               {ROLES.map(role => (
                 <button key={role.value}
-                  onClick={() => setForm(p => ({ ...p, role: role.value as UserRole }))}
+                  onClick={() => handleRoleChange(role.value)}
                   className={cn("px-3 py-2 rounded-xl border text-xs font-medium transition-all",
-                    form.role === role.value ? `${role.bg} ${role.color}` : "border-border text-muted-foreground hover:bg-muted/50"
+                    form.role_id === role.value ? `${role.bg} ${role.color}` : "border-border text-muted-foreground hover:bg-muted/50"
                   )}
                 >
                   {role.label}
                   <span className="ml-1 opacity-60">· {role.desc}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Permissions overrides */}
+          <div className="mb-5 p-4 rounded-xl border border-border bg-muted/20">
+            <label className="label text-muted-foreground mb-2 block">Custom Permissions (Overrides)</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {DEFAULT_PERMISSIONS.map(p => {
+                const isSelected = form.permission_ids.includes(p.id);
+                return (
+                  <label key={p.id} className="flex items-center gap-2 text-sm text-foreground cursor-pointer group">
+                    <div className={cn("w-4 h-4 rounded border flex items-center justify-center transition-colors", 
+                      isSelected ? "bg-primary border-primary text-primary-foreground" : "border-border group-hover:border-primary/50")}>
+                      {isSelected && <Check className="w-3 h-3" />}
+                    </div>
+                    <input type="checkbox" className="hidden" checked={isSelected} onChange={() => togglePermission(p.id)} />
+                    <span className="truncate" title={p.description || p.name}>{p.name}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -185,9 +240,9 @@ export default function StaffPage() {
       ) : (
         <div className="space-y-3">
           {staff.map(s => {
-            const cfg = roleConfig(s.role);
+            const cfg = roleConfig(s.role_id);
             return (
-              <div key={s.id} className="card-admin card-hover p-4 flex items-center gap-4 bg-card">
+              <div key={s.id} className={cn("card-admin card-hover p-4 flex items-center gap-4", s.status !== "ACTIVE" ? "bg-muted/30 opacity-60" : "bg-card")}>
                 <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground font-bold flex-shrink-0">
                   {s.name.charAt(0).toUpperCase()}
                 </div>
@@ -197,8 +252,14 @@ export default function StaffPage() {
                     <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium", cfg.bg, cfg.color)}>
                       {cfg.label}
                     </span>
+                    {s.status !== "ACTIVE" && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full border bg-destructive/10 text-destructive border-destructive/20 font-medium">
+                        {s.status}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {s.username && <span>👤 @{s.username}</span>}
                     {s.phone && <span>📱 {s.phone}</span>}
                     {s.shift_start && s.shift_end && (
                       <span>🕐 {s.shift_start} – {s.shift_end}</span>
@@ -206,16 +267,70 @@ export default function StaffPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => openEdit(s)} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
+                  <button onClick={() => async function resetPwd() {
+                    if (!confirm("Are you sure you want to reset this staff member's password?")) return;
+                    try {
+                      const res = await staffApi.resetPassword(s.id);
+                      setCredentials({ username: s.username || "unknown", password: res.password });
+                      alert("Password reset successfully. Please copy the new temporary password.");
+                    } catch (err) {
+                      console.error(err);
+                      alert("Failed to reset password.");
+                    }
+                  }()} className="p-2 rounded-xl text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all" title="Reset Password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5"/></svg>
+                  </button>
+                  <button onClick={() => openEdit(s)} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all" title="Edit Staff">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => deleteStaff(s.id)} className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {s.status === "ACTIVE" && (
+                    <button onClick={() => deleteStaff(s.id)} className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all" title="Suspend Staff">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Credentials Modal */}
+      {credentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="card-admin max-w-sm w-full p-6 border-primary/30 shadow-2xl relative">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+              <Check className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-display font-semibold text-foreground text-center mb-2">Staff Created</h2>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Please save these credentials now. For security reasons, the password cannot be viewed again.
+            </p>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Username</label>
+                <div className="p-3 bg-muted rounded-xl border border-border mt-1 font-mono text-sm select-all">
+                  {credentials.username}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Temporary Password</label>
+                <div className="p-3 bg-muted rounded-xl border border-border mt-1 font-mono text-sm select-all">
+                  {credentials.password}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={copyCredentials} className="btn-md btn-outline flex-1">
+                <Copy className="w-4 h-4" /> Copy
+              </button>
+              <button onClick={() => setCredentials(null)} className="btn-md btn-accent flex-1">
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

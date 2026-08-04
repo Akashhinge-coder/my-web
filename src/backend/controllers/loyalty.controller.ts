@@ -29,3 +29,12 @@ export async function redeemLoyaltyPoints(req: NextRequest) {
     return handleError(error);
   }
 }
+
+export async function updateLoyaltySettings(req: NextRequest) {
+  try {
+    const updates = await req.json();
+    return ok(await LoyaltyService.updateSettings(updates));
+  } catch (error) {
+    return handleError(error);
+  }
+}

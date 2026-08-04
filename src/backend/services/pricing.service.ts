@@ -85,6 +85,12 @@ export class PricingService {
     const tax = this.calculateTax(taxableAmount, context.restaurantSettings);
     const totalDiscount = roundMoney(happyHourDiscount + couponDiscount + loyaltyDiscount);
 
+    // Calculate earned points on the post-discount taxable amount
+    let loyaltyPointsEarned = 0;
+    if (context.loyaltyPoints?.earnEnabled && context.loyaltyPoints.pointsPerHundred) {
+      loyaltyPointsEarned = Math.floor(taxableAmount / 100) * context.loyaltyPoints.pointsPerHundred;
+    }
+
     return {
       subtotal,
       happyHourDiscount,
@@ -96,6 +102,7 @@ export class PricingService {
       gst: tax.gst,
       totalDiscount,
       grandTotal: roundMoney(taxableAmount + tax.gst),
+      loyaltyPointsEarned,
     };
   }
 
@@ -127,6 +134,7 @@ export class PricingService {
       gst: roundMoney(pricing.reduce((sum, item) => sum + item.gst, 0)),
       totalDiscount: roundMoney(pricing.reduce((sum, item) => sum + item.totalDiscount, 0)),
       grandTotal: roundMoney(pricing.reduce((sum, item) => sum + item.grandTotal, 0)),
+      loyaltyPointsEarned: pricing.reduce((sum, item) => sum + (item.loyaltyPointsEarned || 0), 0),
     };
   }
 

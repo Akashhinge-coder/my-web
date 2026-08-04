@@ -37,6 +37,7 @@ export function DishModal({ dish, onClose, slug, tableId }: DishModalProps) {
               quality={80}
               className="object-cover"
               priority
+              style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }}
             />
             {hasAR && (
               <button

@@ -30,9 +30,10 @@ export class IntegrationsRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("payments")
-      .select("amount_paid, method")
+      .select("amount, payment_method")
       .eq("restaurant_id", restaurantId)
-      .gte("confirmed_at", fromISO);
+      .eq("payment_status", "captured")
+      .gte("paid_at", fromISO);
 
     if (error) throw error;
     return (data ?? []) as IntegrationsPaymentRow[];

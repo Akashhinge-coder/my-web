@@ -21,6 +21,8 @@ export interface LoyaltyDiscount {
   redemptionRate: number;
   maxRedemptionPercent: number;
   minimumPointsToRedeem?: number;
+  pointsPerHundred?: number;
+  earnEnabled?: boolean;
 }
 
 export interface HappyHourDiscount {
@@ -71,6 +73,7 @@ export interface PricingResult extends TaxBreakdown {
   happyHourDiscount: number;
   totalDiscount: number;
   grandTotal: number;
+  loyaltyPointsEarned?: number;
 }
 
 export type OrderPricingDto = PricingResult;

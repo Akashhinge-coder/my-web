@@ -622,7 +622,7 @@ export class OrderService {
     return OrderRepository.updateStatus(restaurantId, orderId, nextStatus);
   }
 
-  static async getBill(slug: string, tableId: string) {
+  static async getBill(slug: string, tableId: string, options?: { loyaltyPhone?: string; loyaltyPointsToRedeem?: number }) {
     const restaurant = await RestaurantRepository.getBySlug(slug);
     if (!restaurant) throw new NotFoundError("Restaurant not found");
 
@@ -673,6 +673,51 @@ export class OrderService {
       }))
     );
 
+    let finalPricing = pricing;
+    let loyaltyQuote = null;
+
+    if (options?.loyaltyPhone && options?.loyaltyPointsToRedeem) {
+      // Calculate dynamic loyalty discount on the fly for the session bill
+      const baseAmount = Math.max(0, pricing.subtotal - pricing.happyHourDiscount - pricing.couponDiscount);
+      
+      if (baseAmount > 0) {
+        try {
+          const account = await LoyaltyRepository.findAccountByPhone(restaurant.id, options.loyaltyPhone);
+          if (account) {
+            const settings = await LoyaltyRepository.getSettings(restaurant.id);
+            if (settings && settings.redeem_enabled) {
+              const maxDiscount = (baseAmount * Number(settings.max_redemption_percent)) / 100;
+              const requestedDiscount = options.loyaltyPointsToRedeem * Number(settings.redemption_rate);
+              
+              if (requestedDiscount <= maxDiscount && options.loyaltyPointsToRedeem <= account.available_points) {
+                const discount = requestedDiscount;
+                
+                finalPricing = {
+                  ...pricing,
+                  loyaltyDiscount: discount,
+                  totalDiscount: pricing.couponDiscount + pricing.happyHourDiscount + discount,
+                  taxableAmount: Math.max(0, pricing.subtotal - (pricing.couponDiscount + pricing.happyHourDiscount + discount)),
+                };
+                
+                // Recalculate taxes based on new taxable amount
+                finalPricing.cgst = (finalPricing.taxableAmount * restaurant.cgst_rate) / 100;
+                finalPricing.sgst = (finalPricing.taxableAmount * restaurant.sgst_rate) / 100;
+                finalPricing.gst = finalPricing.cgst + finalPricing.sgst;
+                finalPricing.grandTotal = finalPricing.taxableAmount + finalPricing.gst;
+
+                loyaltyQuote = {
+                  accountId: account.id,
+                  pointsToRedeem: options.loyaltyPointsToRedeem
+                };
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Failed to apply loyalty to bill dynamically:", err);
+        }
+      }
+    }
+
     const session = await SessionRepository.findById(table.current_session_id);
 
     return {
@@ -685,7 +730,8 @@ export class OrderService {
       },
       table: { table_number: table.table_number },
       orders,
-      pricing,
+      pricing: finalPricing,
+      loyalty: loyaltyQuote,
       sessionId: table.current_session_id,
       sessionVersion: session ? session.version : 1,
     };

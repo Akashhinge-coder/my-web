@@ -25,15 +25,35 @@ const DAY_BY_INDEX: Record<number, string> = {
 export class HappyHoursService {
   static isWithinWindow(now: Date, startTime: string, endTime: string): boolean {
     const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    return current >= startTime && current <= endTime;
+    if (startTime <= endTime) {
+      return current >= startTime && current <= endTime;
+    } else {
+      return current >= startTime || current <= endTime;
+    }
   }
 
   static isActive(rule: HappyHourDTO, timestamp: Date | string = new Date()): boolean {
     if (!rule.isActive) return false;
 
     const activeAt = timestamp instanceof Date ? timestamp : new Date(timestamp);
-    const day = DAY_BY_INDEX[activeAt.getDay()];
-    return rule.days.includes(day) && this.isWithinWindow(activeAt, rule.startTime, rule.endTime);
+    const currentDay = DAY_BY_INDEX[activeAt.getDay()];
+    const current = `${String(activeAt.getHours()).padStart(2, "0")}:${String(activeAt.getMinutes()).padStart(2, "0")}`;
+
+    let matchesDay = false;
+
+    if (rule.startTime > rule.endTime) {
+      if (current <= rule.endTime) {
+        const prev = new Date(activeAt);
+        prev.setDate(prev.getDate() - 1);
+        matchesDay = !rule.days?.length || rule.days.includes(DAY_BY_INDEX[prev.getDay()]);
+      } else if (current >= rule.startTime) {
+        matchesDay = !rule.days?.length || rule.days.includes(currentDay);
+      }
+    } else {
+      matchesDay = !rule.days?.length || rule.days.includes(currentDay);
+    }
+
+    return matchesDay && this.isWithinWindow(activeAt, rule.startTime, rule.endTime);
   }
 
   static async list(): Promise<HappyHourDTO[]> {

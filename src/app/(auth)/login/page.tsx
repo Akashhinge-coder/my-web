@@ -11,7 +11,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const [email, setEmail]       = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [restaurantSlug, setRestaurantSlug] = useState("");
+  const isUsername = identifier.length > 0 && !identifier.includes("@");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
@@ -30,17 +32,22 @@ function LoginForm() {
     setError("");
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password, restaurantSlug }),
       });
-      if (authError) throw authError;
-      router.push("/admin");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
+
+      if (data.requirePasswordChange) {
+        router.push("/update-password");
+      } else {
+        router.push("/admin");
+      }
       router.refresh();
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Login failed. Please try again."
-      );
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,19 +79,34 @@ function LoginForm() {
       {/* Card */}
       <div className="card-dark p-8 border-dark-border">
         <form onSubmit={handleLogin} className="space-y-5">
-          {/* Email */}
+          {/* Identifier (Email or Username) */}
           <div>
-            <label className="label text-ink-3">Email address</label>
+            <label className="label text-ink-3">Email address or Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="input-dark"
-              placeholder="you@restaurant.com"
+              placeholder="you@restaurant.com or username"
               required
               autoFocus
             />
           </div>
+
+          {/* Restaurant Slug (Conditional) */}
+          {isUsername && (
+            <div className="animate-fade-in">
+              <label className="label text-ink-3">Restaurant Code</label>
+              <input
+                type="text"
+                value={restaurantSlug}
+                onChange={(e) => setRestaurantSlug(e.target.value)}
+                className="input-dark"
+                placeholder="e.g. my-restaurant"
+                required={isUsername}
+              />
+            </div>
+          )}
 
           {/* Password */}
           <div>

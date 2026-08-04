@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { waitlistApi } from "@/frontend/api/waitlist.api";
 import { cn, timeAgo } from "@/lib/utils";
 import { Plus, Users, Check, X, MessageCircle, Loader2, Clock } from "lucide-react";
+import { useLiveFeed } from "@/frontend/hooks/useLiveFeed";
 import type { Waitlist } from "@/types/domain";
 
 const EMPTY = { guest_name: "", guest_phone: "", party_size: "2" };
@@ -29,6 +30,12 @@ export default function WaitlistPage() {
   }, []);
 
   useEffect(() => { fetchWaitlist(); }, [fetchWaitlist]);
+
+  // Real-time updates
+  useLiveFeed({
+    resource: 'waitlist',
+    onUpdate: () => fetchWaitlist(),
+  });
 
   async function addToWaitlist() {
     if (!form.guest_name || !form.guest_phone) return;

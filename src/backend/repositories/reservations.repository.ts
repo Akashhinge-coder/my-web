@@ -39,6 +39,41 @@ export class ReservationsRepository {
     }));
   }
 
+  static async findRequested(restaurantId: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("reservation_requests")
+      .select("*")
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "REQUESTED")
+      .order("requested_time");
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async findExpired(restaurantId: string) {
+    const supabase = await createClient();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("reservation_requests")
+      .select("*")
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "REQUESTED")
+      .lt("expires_at", now);
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async findPendingReminders(restaurantId: string) {
+    return [];
+  }
+
+  static async findNoShows(restaurantId: string) {
+    return [];
+  }
+
   static async findById(restaurantId: string, reservationId: string): Promise<ReservationWithTable | null> {
     const supabase = await createClient();
     const { data, error } = await supabase

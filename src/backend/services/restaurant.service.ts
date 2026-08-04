@@ -35,7 +35,7 @@ export class RestaurantService {
 
     const { data: staffRecord } = await supabase
       .from("staff")
-      .select("restaurant_id, role, restaurants(id, name, slug, logo_url, is_active)")
+      .select("restaurant_id, role_id, restaurants(id, name, slug, logo_url, is_active)")
       .eq("user_id", user.id)
       .maybeSingle();
 

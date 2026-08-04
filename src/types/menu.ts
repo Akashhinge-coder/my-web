@@ -17,6 +17,11 @@ export interface CustomerMenuBundle {
     id: string;
     name: string;
     logo_url: string | null;
+    hero_image_url: string | null;
+    hero_focus_x: number;
+    hero_focus_y: number;
+    hero_overlay_opacity: number;
+    hero_enabled: boolean;
   };
   table: {
     table_number: string;

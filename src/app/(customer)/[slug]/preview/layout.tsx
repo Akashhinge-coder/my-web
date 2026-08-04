@@ -28,6 +28,8 @@ export default async function PreviewLayout({
     <CartProvider
       restaurantId={restaurant.id}
       restaurantSlug={restaurant.slug}
+      restaurantName={restaurant.name}
+      restaurantLogoUrl={restaurant.logo_url}
       tableId="preview"
     >
       <div className="min-h-screen bg-surface font-sans">

@@ -7,6 +7,10 @@ import type { Order } from "@/types/domain";
 import { ordersApi } from "@/frontend/api/orders";
 import { useRestaurantOrders } from "@/frontend/hooks/useOrderFeed";
 import { useAdminRestaurant } from "@/frontend/hooks/useAdminRestaurant";
+import { useCashRequests, type CashRequest } from "@/frontend/hooks/useCashRequests";
+import { CollectCashDialog } from "./CollectCashDialog";
+import { IndianRupee } from "lucide-react";
+import { apiFetch } from "@/frontend/api/http";
 
 const STATUS_CONFIG = {
   pending: { label: "Pending", color: "text-amber-600 dark:text-amber-400", next: "cooking", nextLabel: "Start Cooking" },
@@ -20,9 +24,15 @@ type FilterType = "all" | "pending" | "cooking" | "served";
 export default function AdminOrdersView() {
   const { restaurantId, loading: restaurantLoading } = useAdminRestaurant();
   const sessionLoaded = !restaurantLoading && Boolean(restaurantId);
-  const { data: orders = [], loading, refresh } = useRestaurantOrders(sessionLoaded, "today");
+  const { data: orders = [], loading, refresh: refreshOrders } = useRestaurantOrders(sessionLoaded, "today");
+  const { requests: cashRequests, loading: cashLoading, refresh: refreshCash } = useCashRequests(sessionLoaded);
   const [filter, setFilter] = useState<FilterType>("all");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [selectedCashRequest, setSelectedCashRequest] = useState<CashRequest | null>(null);
+
+  const refresh = async () => {
+    await Promise.all([refreshOrders(), refreshCash()]);
+  };
 
   const orderList = (orders ?? []) as Order[];
 
@@ -49,7 +59,15 @@ export default function AdminOrdersView() {
     served: orderList.filter((o) => o.status === "served").length,
   };
 
-  const isLoading = restaurantLoading || loading;
+  const isLoading = restaurantLoading || loading || cashLoading;
+
+  const handleConfirmCash = async (request: CashRequest) => {
+    await apiFetch("/api/payments/cash-confirm", {
+      method: "POST",
+      body: JSON.stringify({ paymentId: request.id, checkoutId: request.session_id })
+    });
+    await refresh();
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -90,6 +108,56 @@ export default function AdminOrdersView() {
           </button>
         ))}
       </div>
+
+      {!isLoading && cashRequests.length > 0 && (
+        <div className="space-y-4 mb-6">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Requires Action</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {cashRequests.map((req) => {
+              const tables = req.session?.restaurant_tables;
+              const tableNum = Array.isArray(tables) ? tables[0]?.table_number : tables?.table_number;
+              const minutes = Math.floor((Date.now() - new Date(req.created_at).getTime()) / 60000);
+              const colorClass = minutes > 8 ? "border-red-500/50 bg-red-500/5" 
+                               : minutes > 3 ? "border-orange-500/50 bg-orange-500/5" 
+                               : "border-emerald-500/50 bg-emerald-500/5";
+
+              return (
+                <div key={req.id} className={cn("card-admin p-5 flex flex-col gap-4 transition-all border", colorClass)}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-display font-semibold text-foreground text-lg flex items-center gap-2">
+                          <IndianRupee className="w-5 h-5 text-amber-500" />
+                          Cash Requested
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold bg-muted border border-border">
+                          {tableNum?.replace("T", "") || "—"}
+                        </span>
+                        Table {tableNum || "—"}
+                        <span className="text-border">·</span>
+                        <Clock className="w-3 h-3" />
+                        {timeAgo(req.created_at)}
+                      </div>
+                    </div>
+                    <span className="text-sm font-bold text-foreground bg-muted border border-border px-2.5 py-1 rounded-lg">
+                      {formatINR(req.amount)}
+                    </span>
+                  </div>
+                  
+                  <button 
+                    onClick={() => setSelectedCashRequest(req)}
+                    className="w-full py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-sm font-semibold transition-colors mt-2"
+                  >
+                    Collect Cash
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -206,6 +274,14 @@ export default function AdminOrdersView() {
             );
           })}
         </div>
+      )}
+
+      {selectedCashRequest && (
+        <CollectCashDialog 
+          request={selectedCashRequest} 
+          onClose={() => setSelectedCashRequest(null)}
+          onConfirm={() => handleConfirmCash(selectedCashRequest)}
+        />
       )}
     </div>
   );

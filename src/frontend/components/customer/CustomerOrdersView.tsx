@@ -20,15 +20,17 @@ import type { SessionBill } from "@/frontend/api/orders";
 import { restaurantsApi } from "@/frontend/api/restaurants";
 import { useSessionOrders } from "@/frontend/hooks/useOrderFeed";
 import type { Order } from "@/types/domain";
-import { PaymentModal } from "./PaymentModal";
+import { CheckoutProvider, useCheckout } from "./checkout/CheckoutContext";
+import { CheckoutDrawer } from "./checkout/CheckoutDrawer";
 
 const STATUS_CONFIG = {
   pending: { label: "Waiting", color: "text-amber-400", bg: "bg-amber-900/30  border-amber-900/50", icon: Clock },
   cooking: { label: "Cooking", color: "text-orange-400", bg: "bg-orange-900/30 border-orange-900/50", icon: ChefHat },
   served: { label: "Served", color: "text-green-400", bg: "bg-green-900/30  border-green-900/50", icon: CheckCircle2 },
+  completed: { label: "Completed", color: "text-emerald-400", bg: "bg-emerald-900/30 border-emerald-900/50", icon: CheckCircle2 },
 };
 
-export default function CustomerOrdersView({
+function CustomerOrdersViewInner({
   slug,
   tableId,
 }: {
@@ -48,16 +50,13 @@ export default function CustomerOrdersView({
   const { data: orders = [], loading, error, setData } = useSessionOrders(sessionId);
   const orderList = (orders ?? []) as Order[];
 
-  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [billData, setBillData] = useState<SessionBill | null>(null);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const { openCheckout } = useCheckout();
 
   const handlePayBillClick = async () => {
-    if (!slug || !tableId) return;
+    if (!slug || !tableId || !restaurantId) return;
     try {
        const bill = await ordersApi.getBill(slug, tableId);
-       setBillData(bill);
-       setPaymentModalOpen(true);
+       openCheckout(bill, restaurantId);
     } catch (err) {
        alert("Could not load bill details. Please try again.");
     }
@@ -114,15 +113,6 @@ export default function CustomerOrdersView({
         <h1 className="font-display text-xl font-semibold text-white">Your Orders</h1>
       </div>
 
-      {paymentSuccess ? (
-        <div className="px-4 py-12 flex flex-col items-center justify-center text-center">
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-10 h-10 text-green-500" />
-          </div>
-          <h2 className="font-display text-2xl font-bold text-white mb-2">Payment Successful!</h2>
-          <p className="text-zinc-400 mb-8 max-w-sm">Thank you for dining with us. Your bill has been paid. We hope to see you again soon!</p>
-        </div>
-      ) : (
       <div className="px-4 py-5 space-y-4">
         {cart.totalItems > 0 && (
           <div className="bg-dark-card rounded-2xl border-2 border-brand/50 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
@@ -140,6 +130,24 @@ export default function CustomerOrdersView({
                 </div>
               ))}
             </div>
+            {pricing.happyHourDiscount > 0 && (
+              <div className="flex justify-between text-sm text-green-600 mb-2">
+                <span>Happy hour</span>
+                <span>-{formatINR(pricing.happyHourDiscount)}</span>
+              </div>
+            )}
+            {pricing.couponDiscount > 0 && (
+              <div className="flex justify-between text-sm text-green-600 mb-2">
+                <span>Coupon</span>
+                <span>-{formatINR(pricing.couponDiscount)}</span>
+              </div>
+            )}
+            {pricing.loyaltyDiscount > 0 && (
+              <div className="flex justify-between text-sm text-green-400 mb-2">
+                <span>Loyalty</span>
+                <span>-{formatINR(pricing.loyaltyDiscount)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between pt-3 border-t border-dark-border mb-4">
               <span className="font-semibold text-white">Total</span>
               <span className="font-display font-semibold text-white text-lg">
@@ -151,7 +159,7 @@ export default function CustomerOrdersView({
               disabled={placing || pricingLoading}
               type="button"
               className="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+              style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", boxShadow: "0 4px 20px rgba(245, 158, 11, 0.35)" }}
             >
               {placing ? (
                 <>
@@ -286,10 +294,9 @@ export default function CustomerOrdersView({
           </div>
         )}
       </div>
-      )}
 
-      {orderList.length > 0 && cart.totalItems === 0 && !paymentSuccess && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom bg-dark/90 backdrop-blur-md border-t border-dark-border">
+      {orderList.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom bg-dark/90 backdrop-blur-md border-t border-dark-border z-50">
           <div className="flex items-center gap-3">
              <button
                onClick={() => router.push(`/${slug}/${tableId}`)}
@@ -305,7 +312,7 @@ export default function CustomerOrdersView({
                onClick={handlePayBillClick}
                type="button"
                className="flex-1 py-3.5 rounded-2xl text-white font-semibold flex items-center justify-center gap-2"
-               style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+               style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", boxShadow: "0 4px 20px rgba(245, 158, 11, 0.35)" }}
              >
                Pay Bill
              </button>
@@ -313,17 +320,15 @@ export default function CustomerOrdersView({
         </div>
       )}
 
-      <PaymentModal 
-         isOpen={isPaymentModalOpen}
-         onClose={() => setPaymentModalOpen(false)}
-         bill={billData}
-         restaurantId={restaurantId}
-         onPaymentSuccess={() => {
-            setPaymentModalOpen(false);
-            setPaymentSuccess(true);
-            // Optionally, clear orders or redirect
-         }}
-      />
+      <CheckoutDrawer />
     </div>
+  );
+}
+
+export default function CustomerOrdersView(props: { slug: string; tableId: string }) {
+  return (
+    <CheckoutProvider>
+      <CustomerOrdersViewInner {...props} />
+    </CheckoutProvider>
   );
 }

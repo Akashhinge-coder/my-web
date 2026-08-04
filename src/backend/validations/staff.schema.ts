@@ -8,15 +8,13 @@ import { z } from "zod";
  */
 export const ownerSafeRoleSchema = z.enum(["admin", "manager", "waiter", "kitchen"]);
 
-/** Alias kept for backward compatibility within this module. */
-export const staffRoleSchema = ownerSafeRoleSchema;
-
 export const createStaffSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
-  role: ownerSafeRoleSchema,
+  role_id: ownerSafeRoleSchema,
   phone: z.string().optional().nullable(),
   shift_start: z.string().optional().nullable(),
   shift_end: z.string().optional().nullable(),
+  permission_ids: z.array(z.string()).optional(),
 });
 
 export const updateStaffSchema = createStaffSchema.partial();
@@ -28,7 +26,7 @@ export const updateStaffSchema = createStaffSchema.partial();
 export const staffInviteSchema = z.object({
   name: z.string().min(2).max(120),
   phone: z.string().optional(),
-  role: ownerSafeRoleSchema,
+  role_id: ownerSafeRoleSchema,
 });
 
 export type CreateStaffDTO = z.infer<typeof createStaffSchema>;

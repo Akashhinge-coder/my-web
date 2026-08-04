@@ -119,7 +119,7 @@ export class MenuRepository {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("dishes")
-      .select("id, category_id, name, price, food_type, image_url, is_available")
+      .select("id, category_id, name, price, food_type, image_url, image_focus_x, image_focus_y, is_available")
       .eq("restaurant_id", restaurantId)
       .in("id", dishIds);
 
@@ -187,6 +187,8 @@ export class MenuRepository {
         allergy_tags: dto.allergyTags ?? [],
         dish_size: dto.dishSize ?? "M",
         image_url: dto.imageUrl || null,
+        image_focus_x: dto.imageFocusX ?? 0.5,
+        image_focus_y: dto.imageFocusY ?? 0.5,
         sort_order: dto.sortOrder ?? 0,
       })
       .select(ADMIN_DISH_SELECT)
@@ -217,6 +219,8 @@ export class MenuRepository {
     if (dto.allergyTags !== undefined) patch.allergy_tags = dto.allergyTags;
     if (dto.dishSize !== undefined) patch.dish_size = dto.dishSize;
     if (dto.imageUrl !== undefined) patch.image_url = dto.imageUrl || null;
+    if (dto.imageFocusX !== undefined) patch.image_focus_x = dto.imageFocusX;
+    if (dto.imageFocusY !== undefined) patch.image_focus_y = dto.imageFocusY;
     if (dto.sortOrder !== undefined) patch.sort_order = dto.sortOrder;
 
     const { data, error } = await supabase

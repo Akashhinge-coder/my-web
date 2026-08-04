@@ -7,6 +7,7 @@ import { SessionRepository } from "@/backend/repositories/session.repository";
 import { TableRepository } from "@/backend/repositories/table.repository";
 import { RestaurantRepository } from "@/backend/repositories/restaurant.repository";
 import { SessionParticipantRepository } from "@/backend/repositories/session_participant.repository";
+import { LoyaltyRepository } from "@/backend/repositories/loyalty.repository";
 import { ok, fail } from "@/backend/utils/apiResponse";
 
 const bootstrapSessionSchema = z.object({
@@ -101,6 +102,14 @@ export async function bootstrapSession(req: NextRequest) {
         status: "approved"
       });
 
+      if (phone) {
+        try {
+          await LoyaltyRepository.ensureAccount(table.restaurant_id, phone, name.trim());
+        } catch (err) {
+          console.error("Failed to ensure loyalty account", err);
+        }
+      }
+
       await SessionRepository.updateHostParticipant(newSession.id, participant.id);
       await TableRepository.markOccupied(tableId, newSession.id, table.restaurant_id);
 
@@ -130,6 +139,14 @@ export async function bootstrapSession(req: NextRequest) {
         role: "guest",
         status,
       });
+
+      if (phone) {
+        try {
+          await LoyaltyRepository.ensureAccount(table.restaurant_id, phone, name.trim());
+        } catch (err) {
+          console.error("Failed to ensure loyalty account", err);
+        }
+      }
 
       cookieStore.set("participant_token", participantToken, {
         httpOnly: true,

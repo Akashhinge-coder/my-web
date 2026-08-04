@@ -7,19 +7,35 @@ import {
   type IntegrationsStats,
 } from "@/frontend/api/integrations.api";
 import { formatINR, generateWhatsAppEODReport } from "@/lib/utils";
-import { Link2, MessageCircle, TrendingUp, Check } from "lucide-react";
+import { Link2, MessageCircle, TrendingUp, Check, Settings, AlertTriangle } from "lucide-react";
+import RazorpayConfigModal from "./components/RazorpayConfigModal";
+import { fetchIntegrationStatus } from "./actions";
 
 export default function IntegrationsPage() {
   const [restaurant, setRestaurant] = useState<IntegrationsRestaurant | null>(null);
   const [todayStats, setTodayStats] = useState<IntegrationsStats>({ revenue: 0, orders: 0, covers: 0, topDish: "—", upi: 0, cash: 0, card: 0 });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [rzpStatus, setRzpStatus] = useState<any>(null);
+  const [showRzpModal, setShowRzpModal] = useState(false);
+
+  const fetchIntegrations = async (restId: string) => {
+    try {
+      const status = await fetchIntegrationStatus(restId, 'razorpay');
+      setRzpStatus(status || { status: 'PENDING' });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     async function init() {
       const dashboard = await integrationsApi.getDashboard();
       setRestaurant(dashboard.restaurant);
       setTodayStats(dashboard.stats);
+      if (dashboard.restaurant) {
+        await fetchIntegrations(dashboard.restaurant.id);
+      }
     }
     init();
   }, []);
@@ -61,17 +77,18 @@ export default function IntegrationsPage() {
       color: "text-orange-400",
       bg: "bg-orange-400/10 border-orange-400/20",
       steps: ["Apply for Swiggy Merchant API", "Enter your API credentials here", "Orders appear in unified kitchen display"],
-    },
-    {
-      id: "razorpay",
-      name: "Razorpay",
-      desc: "UPI payments, GPay, PhonePe, Paytm QR — all processed through Razorpay.",
-      status: "configured",
-      color: "text-blue-400",
-      bg: "bg-blue-400/10 border-blue-400/20",
-      steps: [],
-    },
+    }
   ];
+
+  const getRzpBadge = () => {
+    if (!rzpStatus || rzpStatus.status === 'PENDING') {
+      return <span className="text-[10px] px-2 py-0.5 rounded-full border font-medium bg-[#facc15]/10 border-[#facc15]/20 text-[#facc15]">Setup Required</span>;
+    }
+    if (rzpStatus.status === 'ACTIVE') {
+      return <span className="text-[10px] px-2 py-0.5 rounded-full border font-medium bg-[#34d399]/10 border-[#34d399]/20 text-[#34d399]">✓ {rzpStatus.mode === 'LIVE' ? 'Live' : 'Sandbox'}</span>;
+    }
+    return <span className="text-[10px] px-2 py-0.5 rounded-full border font-medium bg-red-500/10 border-red-500/20 text-red-400"><AlertTriangle className="w-3 h-3 inline mr-1" />{rzpStatus.status}</span>;
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -123,6 +140,39 @@ export default function IntegrationsPage() {
 
       {/* Other integrations */}
       <div className="space-y-4">
+        {/* Razorpay Card */}
+        <div className="card-admin p-6 border-accent-cyan/20">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 bg-blue-400/10 border-blue-400/20">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-white">Razorpay Payments</h3>
+                  {getRzpBadge()}
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">Accept UPI, GPay, PhonePe, Paytm QR — with automated reconciliation and zero liability.</p>
+                
+                {rzpStatus && rzpStatus.status === 'ACTIVE' && (
+                  <div className="mt-3 text-[11px] text-slate-500 space-y-1">
+                    <p>Merchant: <span className="text-slate-300 font-medium">{rzpStatus.metadata?.merchantName || 'Unknown'}</span></p>
+                    <p>Secret: <span className="font-mono text-slate-400">••••••••••••••</span></p>
+                    <p>Last Rotated: {new Date(rzpStatus.last_rotated_at).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowRzpModal(true)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-admin-card-2 border border-admin-border-2 text-white hover:border-accent-cyan hover:text-accent-cyan transition-colors flex items-center gap-1.5"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              {rzpStatus?.status === 'ACTIVE' ? 'Replace Secret' : 'Configure'}
+            </button>
+          </div>
+        </div>
+
         {INTEGRATIONS.map(int => (
           <div key={int.id} className="card-admin p-6">
             <div className="flex items-start justify-between gap-4 mb-3">
@@ -161,6 +211,15 @@ export default function IntegrationsPage() {
           </div>
         ))}
       </div>
+
+      {restaurant && (
+        <RazorpayConfigModal 
+          isOpen={showRzpModal}
+          onClose={() => setShowRzpModal(false)}
+          restaurantId={restaurant.id}
+          onSuccess={() => fetchIntegrations(restaurant.id)}
+        />
+      )}
     </div>
   );
 }

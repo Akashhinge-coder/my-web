@@ -4,7 +4,15 @@
 
 // ── Auth & Restaurants ──────────────────────────────────────
 
-export type UserRole = "admin" | "manager" | "waiter" | "kitchen" | "superadmin";
+export type StaffStatus = "INVITED" | "ACTIVE" | "SUSPENDED" | "LEFT" | "LOCKED";
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  system_role: boolean;
+  permission_version: number;
+}
 
 export interface Restaurant {
   id: string;
@@ -21,7 +29,27 @@ export interface Restaurant {
   currency: string;    // INR
   is_active: boolean;
   session_mode: "open" | "host_approval";
+  max_reservation_days_in_advance: number; // default 7
+  online_reservation_limit_percent: number; // default 70
+  reservation_hold_minutes: number;
+  no_show_grace_minutes: number;
+  allow_walk_ins: boolean;
+  reservation_buffer_minutes: number;
+  auto_confirm_reservations: boolean;
+  require_phone_verification: boolean;
+  minimum_notice_minutes: number;
   created_at: string;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  group: string;
+  description: string | null;
+  dangerous: boolean;
+  requires_confirmation: boolean;
+  audit_required: boolean;
+  confirmation_strategy: "PASSWORD" | "OTP" | "DOUBLE_CONFIRMATION" | "NONE";
 }
 
 export interface Staff {
@@ -29,12 +57,44 @@ export interface Staff {
   restaurant_id: string;
   user_id: string | null;
   name: string;
-  role: UserRole;
+  role_id: string;
+  username: string | null;
   phone: string | null;
   shift_start: string | null;
   shift_end: string | null;
-  is_active: boolean;
+  must_change_password: boolean;
+  password_changed_at: string | null;
+  temporary_password_expires_at: string | null;
+  failed_login_attempts: number;
+  locked_until: string | null;
+  last_login_at: string | null;
+  status: StaffStatus;
+  is_emergency_admin: boolean;
+  deleted_at: string | null;
+  provider: string | null;
+  provider_user_id: string | null;
+  is_active: boolean; // deprecated, use status
   created_at: string;
+  // Relations
+  role?: Role;
+}
+
+export interface StaffPermissionOverride {
+  staff_id: string;
+  permission_id: string;
+  is_granted: boolean;
+}
+
+export interface StaffSession {
+  id: string;
+  staff_id: string;
+  session_id: string;
+  device_name: string | null;
+  ip: string | null;
+  user_agent: string | null;
+  created_at: string;
+  last_seen_at: string;
+  revoked_at: string | null;
 }
 
 // ── Tables & Sessions ───────────────────────────────────────
@@ -120,6 +180,8 @@ export interface Dish {
   description_hindi: string | null;
   price: number;
   image_url: string | null;
+  image_focus_x: number;
+  image_focus_y: number;
   food_type: FoodType;
   spice_level: number;   // 0–5
   is_available: boolean;
@@ -292,21 +354,64 @@ export interface LoyaltyAccount {
   last_visited: string | null;
 }
 
-// ── Reservations & Waitlist ─────────────────────────────────
+// ── Guest Queue (Reservations & Waitlist) ───────────────────
 
-export type ReservationStatus = "confirmed" | "seated" | "cancelled" | "no_show";
+export type ReservationRequestStatus = "REQUESTED" | "VERIFIED" | "REJECTED" | "EXPIRED";
+export type ReservationStatus = "CONFIRMED" | "ARRIVED" | "SEATED" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
+
+export interface ReservationRequest {
+  id: string;
+  restaurant_id: string;
+  customer_name: string;
+  phone: string;
+  party_size: number;
+  requested_time: string;
+  status: ReservationRequestStatus;
+  
+  // Explicit Metadata
+  occasion: string | null;
+  preferred_area: string | null;
+  notes: string | null;
+  marketing_source: string | null;
+  device: string | null;
+  language: string | null;
+  campaign: string | null;
+  referrer: string | null;
+  high_chair: boolean;
+  wheelchair: boolean;
+  
+  metadata: Record<string, any>; // JSONB for custom fields
+  expires_at: string | null;
+  created_at: string;
+}
 
 export interface Reservation {
   id: string;
+  reservation_request_id: string | null;
   restaurant_id: string;
-  table_id: string | null;
+  status: ReservationStatus;
+  version: number;
+  created_at: string;
+  // Note: guest details copied from request for analytical independence
   guest_name: string;
   guest_phone: string;
   party_size: number;
   reserved_at: string;
   notes: string | null;
-  status: ReservationStatus;
+
+  // Explicit Metadata
+  occasion: string | null;
+  preferred_area: string | null;
+  marketing_source: string | null;
+  device: string | null;
+  language: string | null;
+  campaign: string | null;
+  referrer: string | null;
+  high_chair: boolean;
+  wheelchair: boolean;
 }
+
+export type WaitlistPriority = "STANDARD" | "VIP" | "LOYALTY" | "ELDERLY" | "DISABLED" | "STAFF" | "MANUAL_OVERRIDE";
 
 export interface Waitlist {
   id: string;
@@ -314,6 +419,10 @@ export interface Waitlist {
   guest_name: string;
   guest_phone: string;
   party_size: number;
+  quoted_wait_minutes: number | null;
+  arrival_time: string | null;
+  priority: WaitlistPriority;
+  metadata: Record<string, any>;
   joined_at: string;
   notified_at: string | null;
   status: "waiting" | "notified" | "seated" | "left";

@@ -45,3 +45,11 @@ export async function deleteStaffMember(staffId: string) {
   }
 }
 
+export async function resetStaffPassword(staffId: string) {
+  try {
+    const result = await StaffService.resetPassword(staffId);
+    return ok(result);
+  } catch (error) {
+    return handleError(error);
+  }
+}

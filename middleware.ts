@@ -55,6 +55,38 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Staff Account Invariants
+  if (currentUser && !isCustomerRoute) {
+    // We only check staff invariants if they are not just an owner
+    // A more efficient way is to check the user in staff table
+    const { data: staff } = await supabase
+      .from("staff")
+      .select("status, locked_until, must_change_password")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (staff) {
+      if (staff.status !== "ACTIVE") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url); // Should sign out or show error
+      }
+      
+      if (staff.locked_until && new Date(staff.locked_until) > new Date()) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
+
+      // Enforce password change
+      if (staff.must_change_password && pathname !== "/update-password" && !pathname.startsWith("/api/v1/auth/password/reset")) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/update-password";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   if (currentUser && (pathname === "/login" || pathname === "/register")) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";

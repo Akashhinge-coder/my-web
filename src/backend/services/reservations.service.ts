@@ -14,13 +14,15 @@ export class ReservationsService {
     today.setHours(0, 0, 0, 0);
     const fromISO = today.toISOString();
 
-    const [reservations, tables] = await Promise.all([
+    const [requests, reservations, tables] = await Promise.all([
+      ReservationsRepository.findRequested(access.restaurantId),
       ReservationsRepository.listUpcoming(access.restaurantId, fromISO),
       ReservationsRepository.listTablesForRestaurant(access.restaurantId),
     ]);
 
     return {
       restaurantName: access.restaurantName,
+      requests,
       reservations,
       tables,
     };

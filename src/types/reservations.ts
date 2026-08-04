@@ -1,4 +1,4 @@
-import type { Reservation, Table, TableStatus } from "@/types/domain";
+import type { Reservation, Table, TableStatus, ReservationRequest } from "@/types/domain";
 
 export interface ReservationWithTable extends Reservation {
   restaurant_tables?: { table_number: string } | null;
@@ -13,6 +13,7 @@ export interface ReservationTableOption {
 
 export interface ReservationsPageData {
   restaurantName: string;
+  requests: ReservationRequest[];
   reservations: ReservationWithTable[];
   tables: ReservationTableOption[];
 }

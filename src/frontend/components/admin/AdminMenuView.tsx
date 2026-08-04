@@ -16,15 +16,14 @@ import {
   Loader2,
   UtensilsCrossed,
   ImageUp,
-  Trash,
 } from "lucide-react";
 import { menuApi, toCreateDishDto } from "@/frontend/api/menu";
 import { useAdminMenu } from "@/frontend/hooks/useMenu";
 import { useAdminRestaurant } from "@/frontend/hooks/useAdminRestaurant";
-import { cn, formatINR } from "@/lib/utils";
+import { cn, formatINR, compressImage } from "@/lib/utils";
 import type { Category, Dish, FoodType } from "@/types/domain";
 import { dishHasPublishedAr, type AdminDish } from "@/types/menu";
-
+import { ImageFocusEditor } from "./ImageFocusEditor";
 const FOOD_TYPES: { value: FoodType; label: string }[] = [
   { value: "veg", label: "Veg" },
   { value: "non_veg", label: "Non-Veg" },
@@ -56,6 +55,8 @@ type DishForm = {
   allergy_tags: string[];
   dish_size: (typeof DISH_SIZES)[number];
   image_url: string;
+  image_focus_x: number;
+  image_focus_y: number;
 };
 
 const EMPTY_DISH: DishForm = {
@@ -71,6 +72,8 @@ const EMPTY_DISH: DishForm = {
   allergy_tags: [],
   dish_size: "M",
   image_url: "",
+  image_focus_x: 0.5,
+  image_focus_y: 0.5,
 };
 
 type ModalMode = "add" | "edit";
@@ -89,6 +92,8 @@ function dishToForm(dish: AdminDish): DishForm {
     allergy_tags: dish.allergy_tags ?? [],
     dish_size: dish.dish_size,
     image_url: dish.image_url ?? "",
+    image_focus_x: dish.image_focus_x ?? 0.5,
+    image_focus_y: dish.image_focus_y ?? 0.5,
   };
 }
 
@@ -190,10 +195,22 @@ export default function AdminMenuView() {
   function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Local preview while uploading
-    const objectUrl = URL.createObjectURL(file);
-    setImagePreview(objectUrl);
-    void uploadDishImage(file);
+    
+    const processImage = async () => {
+      try {
+        const compressedFile = await compressImage(file, 1000, 0.7);
+        const objectUrl = URL.createObjectURL(compressedFile);
+        setImagePreview(objectUrl);
+        await uploadDishImage(compressedFile);
+      } catch (err) {
+        console.error("Image compression failed:", err);
+        const objectUrl = URL.createObjectURL(file);
+        setImagePreview(objectUrl);
+        await uploadDishImage(file);
+      }
+    };
+    
+    void processImage();
     // Reset input so same file can be re-selected
     e.target.value = "";
   }
@@ -429,7 +446,7 @@ export default function AdminMenuView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredDishes.map((dish) => {
+          {filteredDishes.map((dish, index) => {
             const border = FOOD_BORDER[dish.food_type] ?? "border-green-600";
             const busy = actionId === dish.id;
             const hasAr = dishHasPublishedAr(dish);
@@ -449,7 +466,9 @@ export default function AdminMenuView() {
                       alt={dish.name || ""}
                       fill
                       unoptimized
+                      priority={index < 6}
                       className="object-cover"
+                      style={{ objectPosition: `${dish.image_focus_x * 100}% ${dish.image_focus_y * 100}%` }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -716,39 +735,17 @@ export default function AdminMenuView() {
 
               {imagePreview ? (
                 /* Preview state */
-                <div className="relative rounded-xl overflow-hidden border border-admin-border-2 group">
-                  <img
-                    src={imagePreview}
-                    alt="Dish preview"
-                    className="w-full h-44 object-cover"
-                  />
-                  {uploadingImage && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <Loader2 className="w-7 h-7 text-white animate-spin" />
-                      <span className="ml-2 text-white text-sm font-medium">Uploading…</span>
-                    </div>
-                  )}
-                  {!uploadingImage && (
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-all"
-                      >
-                        <ImageUp className="w-3.5 h-3.5" />
-                        Change
-                      </button>
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/20 backdrop-blur-sm border border-red-500/30 text-red-400 text-xs font-medium hover:bg-red-500/30 transition-all"
-                      >
-                        <Trash className="w-3.5 h-3.5" />
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <ImageFocusEditor
+                  src={imagePreview}
+                  focusX={form.image_focus_x}
+                  focusY={form.image_focus_y}
+                  onChange={(x, y) => setForm(p => ({ ...p, image_focus_x: x, image_focus_y: y }))}
+                  onRemove={removeImage}
+                  onChangeImage={() => fileInputRef.current?.click()}
+                  isUploading={uploadingImage}
+                  aspectRatio="aspect-[4/3]"
+                  previewType="dish"
+                />
               ) : (
                 /* Upload drop zone */
                 <button

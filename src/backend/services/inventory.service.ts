@@ -63,7 +63,7 @@ export class InventoryService {
       throw new AuthError("Inventory access required", 403, "FORBIDDEN");
     }
 
-    requireRole(staffAccess.role, INVENTORY_ROLES);
-    return { restaurantId: staffAccess.restaurant.id, role: staffAccess.role };
+    requireRole(staffAccess.role_id, INVENTORY_ROLES);
+    return { restaurantId: staffAccess.restaurant.id, role: staffAccess.role_id };
   }
 }

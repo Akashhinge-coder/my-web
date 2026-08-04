@@ -204,13 +204,19 @@ export default function WelcomePage({
       <div className="w-full max-w-sm bg-dark-card rounded-3xl p-8 shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-dark-border">
         <div className="flex flex-col items-center text-center mb-8">
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)] mb-4"
-            style={{ background: BRAND_GRADIENT }}
+            className="w-20 h-20 rounded-[1.25rem] flex items-center justify-center text-white shadow-[0_8px_30px_rgba(193,125,60,0.4)] mb-4 overflow-hidden shrink-0"
+            style={cart.state.restaurantLogoUrl ? undefined : { background: BRAND_GRADIENT }}
           >
-            <UtensilsCrossed className="w-8 h-8" />
+            {cart.state.restaurantLogoUrl ? (
+              <img src={cart.state.restaurantLogoUrl} className="w-full h-full object-cover" alt="Logo" />
+            ) : (
+               <div className="w-full h-full flex items-center justify-center text-[#0B101E] text-[32px] font-bold">
+                 {cart.state.restaurantName[0]}
+               </div>
+            )}
           </div>
           <h1 className="text-2xl font-display font-semibold text-white">
-            Welcome to the Table
+            Welcome to {cart.state.restaurantName}
           </h1>
           <p className="text-sm text-zinc-400 mt-2">
             Please enter your details to join the session.

@@ -5,7 +5,7 @@ import type { BillingRestaurant, BillingSession } from "@/types/billing";
 interface StaffAccessRow {
   id: string;
   restaurant_id: string;
-  role: UserRole;
+  role_id: UserRole;
   restaurants?: BillingRestaurant | BillingRestaurant[] | null;
 }
 
@@ -41,15 +41,15 @@ export class BillingRepository {
 
   static async getStaffAccessForUser(
     userId: string
-  ): Promise<{ staffId: string; role: UserRole; restaurant: BillingRestaurant } | null> {
+  ): Promise<{ staffId: string; role_id: UserRole; restaurant: BillingRestaurant } | null> {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("staff")
       .select(
-        "id, restaurant_id, role, restaurants(id, name, slug, phone, gst_number, cgst_rate, sgst_rate)"
+        "id, restaurant_id, role_id, restaurants(id, name, slug, phone, gst_number, cgst_rate, sgst_rate)"
       )
       .eq("user_id", userId)
-      .eq("is_active", true)
+      .eq("status", "ACTIVE")
       .maybeSingle();
 
     if (error) throw error;
@@ -59,7 +59,7 @@ export class BillingRepository {
       : row?.restaurants;
 
     if (!row || !restaurant) return null;
-    return { staffId: row.id, role: row.role, restaurant };
+    return { staffId: row.id, role_id: row.role_id, restaurant };
   }
 
   static async listActiveSessions(restaurantId: string): Promise<BillingSession[]> {

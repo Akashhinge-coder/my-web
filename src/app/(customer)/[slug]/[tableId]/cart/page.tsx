@@ -109,7 +109,7 @@ export default function CartPage() {
           onClick={() => router.push(`/${params.slug}/${params.tableId}/orders`)}
           disabled={pricingLoading || Boolean(error)}
           className="w-full py-4 rounded-2xl text-white font-semibold flex items-center justify-between px-5"
-          style={{ background: "linear-gradient(135deg,#C17D3C,#E8A85F)" }}
+          style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", boxShadow: "0 8px 32px rgba(245, 158, 11, 0.45)" }}
         >
           <span>Continue to Confirmation</span>
           <div className="flex items-center gap-1">

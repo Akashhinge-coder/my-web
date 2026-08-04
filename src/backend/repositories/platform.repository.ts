@@ -16,7 +16,7 @@ export class PlatformRepository {
       .from("staff")
       .select("id")
       .eq("user_id", userId)
-      .eq("role", "superadmin")
+      .eq("role_id", "superadmin")
       .limit(1);
 
     if (error) throw error;

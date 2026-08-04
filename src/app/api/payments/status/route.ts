@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { PaymentRepository } from "@/backend/repositories/payment.repository";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId");

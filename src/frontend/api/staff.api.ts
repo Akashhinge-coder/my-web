@@ -1,20 +1,22 @@
 import { apiFetch } from "@/frontend/api/http";
-import type { Staff, UserRole } from "@/types/domain";
+import type { Staff } from "@/types/domain";
 
 export interface CreateStaffBody {
   name: string;
-  role: UserRole;
+  role_id: string;
   phone?: string | null;
   shift_start?: string | null;
   shift_end?: string | null;
+  permission_ids?: string[];
 }
 
 export interface UpdateStaffBody {
   name?: string;
-  role?: UserRole;
+  role_id?: string;
   phone?: string | null;
   shift_start?: string | null;
   shift_end?: string | null;
+  permission_ids?: string[];
 }
 
 export const staffApi = {
@@ -22,8 +24,8 @@ export const staffApi = {
     return apiFetch<Staff[]>("/api/v1/staff");
   },
 
-  create(body: CreateStaffBody): Promise<Staff> {
-    return apiFetch<Staff>("/api/v1/staff", {
+  create(body: CreateStaffBody): Promise<{ staff: Staff; credentials?: { username: string; password: string } }> {
+    return apiFetch<{ staff: Staff; credentials?: { username: string; password: string } }>("/api/v1/staff", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -41,5 +43,10 @@ export const staffApi = {
       method: "DELETE",
     });
   },
-};
 
+  resetPassword(staffId: string): Promise<{ password: string }> {
+    return apiFetch<{ password: string }>(`/api/v1/staff/${staffId}/reset-password`, {
+      method: "POST",
+    });
+  },
+};

@@ -22,6 +22,11 @@ export const settingsProfileUpdateSchema = z.object({
   phone: phoneSchema,
   address: z.string().trim().max(500).optional().nullable().transform((value) => value || undefined),
   logoUrl: z.string().trim().url().optional().nullable().or(z.literal("")).transform((value) => value || undefined),
+  heroImageUrl: z.string().trim().url().optional().nullable().or(z.literal("")).transform((value) => value || undefined),
+  heroFocusX: z.number().min(0).max(1).optional(),
+  heroFocusY: z.number().min(0).max(1).optional(),
+  heroOverlayOpacity: z.number().min(0).max(1).optional(),
+  heroEnabled: z.boolean().optional(),
   language: z.enum(["en", "hi", "mr", "ta", "te"]),
   sessionMode: z.enum(["open", "host_approval"]).optional(),
 });

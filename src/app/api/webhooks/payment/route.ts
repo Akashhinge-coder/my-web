@@ -43,6 +43,7 @@ export async function POST(req: Request) {
         await PaymentService.processWebhook(
           entity.order_id,
           entity.id,
+          eventId,
           signature,
           rawBody,
           entity.amount / 100, // convert paise to major unit
