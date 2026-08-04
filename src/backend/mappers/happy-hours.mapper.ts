@@ -51,14 +51,30 @@ export function mapHappyHourToPricingDiscount(
   timestamp: Date | string = new Date()
 ): HappyHourDiscount {
   const activeAt = timestamp instanceof Date ? timestamp : new Date(timestamp);
-  const datePrefix = activeAt.toISOString().slice(0, 10);
+  
+  const [startHour, startMin] = happyHour.startTime.split(':').map(Number);
+  const startDate = new Date(activeAt);
+  startDate.setHours(startHour, startMin, 0, 0);
+
+  const [endHour, endMin] = happyHour.endTime.split(':').map(Number);
+  const endDate = new Date(activeAt);
+  endDate.setHours(endHour, endMin, 0, 0);
+
+  if (happyHour.startTime > happyHour.endTime) {
+    const current = `${String(activeAt.getHours()).padStart(2, "0")}:${String(activeAt.getMinutes()).padStart(2, "0")}`;
+    if (current <= happyHour.endTime) {
+      startDate.setDate(startDate.getDate() - 1);
+    } else {
+      endDate.setDate(endDate.getDate() + 1);
+    }
+  }
 
   return {
     id: happyHour.id,
     discountType: happyHour.discountType === "flat" ? "fixed" : "percentage",
     discountValue: happyHour.discountValue,
-    startsAt: `${datePrefix}T${happyHour.startTime}:00.000Z`,
-    endsAt: `${datePrefix}T${happyHour.endTime}:00.000Z`,
+    startsAt: startDate.toISOString(),
+    endsAt: endDate.toISOString(),
     percentage: happyHour.discountType === "percent" ? happyHour.discountValue : 0,
     itemIds: happyHour.itemIds,
     categoryIds: happyHour.categoryIds,

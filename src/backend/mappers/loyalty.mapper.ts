@@ -7,6 +7,7 @@ export interface LoyaltyAccountDTO {
   phone: string;
   name: string | null;
   totalPoints: number;
+  availablePoints: number;
   totalSpent: number;
   visitCount: number;
   lastVisited: string | null;
@@ -18,6 +19,7 @@ export function mapLoyaltyAccount(row: LoyaltyAccountRow): LoyaltyAccountDTO {
     phone: row.phone,
     name: row.name,
     totalPoints: Number(row.total_points),
+    availablePoints: Number(row.available_points ?? row.total_points),
     totalSpent: Number(row.total_spent),
     visitCount: row.visit_count,
     lastVisited: row.last_visited,
@@ -30,7 +32,7 @@ export function mapLoyaltyPricingInput(params: {
   settings: LoyaltyProgramSettings;
 }): LoyaltyDiscount {
   return {
-    pointsBalance: params.account.totalPoints,
+    pointsBalance: params.account.availablePoints,
     pointsToRedeem: params.pointsToRedeem,
     redemptionRate: params.settings.redemptionRate,
     maxRedemptionPercent: params.settings.maxRedemptionPercent,

@@ -27,8 +27,8 @@ export interface IntegrationsOrderRow {
 }
 
 export interface IntegrationsPaymentRow {
-  amount_paid: number | string;
-  method: string;
+  amount: number | string;
+  payment_method: string;
 }
 
 export interface IntegrationsSessionRow {
@@ -64,13 +64,13 @@ export function buildIntegrationsStats(params: {
     covers: params.sessions.reduce((sum, session) => sum + toNumber(session.guest_count), 0),
     topDish: Object.entries(dishCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—",
     upi: params.payments
-      .filter((payment) => ["upi", "gpay", "phonepe", "paytm"].includes(payment.method))
-      .reduce((sum, payment) => sum + toNumber(payment.amount_paid), 0),
+      .filter((payment) => ["upi", "gpay", "phonepe", "paytm"].includes(payment.payment_method))
+      .reduce((sum, payment) => sum + toNumber(payment.amount), 0),
     cash: params.payments
-      .filter((payment) => payment.method === "cash")
-      .reduce((sum, payment) => sum + toNumber(payment.amount_paid), 0),
+      .filter((payment) => payment.payment_method === "cash")
+      .reduce((sum, payment) => sum + toNumber(payment.amount), 0),
     card: params.payments
-      .filter((payment) => payment.method === "card")
-      .reduce((sum, payment) => sum + toNumber(payment.amount_paid), 0),
+      .filter((payment) => payment.payment_method === "card")
+      .reduce((sum, payment) => sum + toNumber(payment.amount), 0),
   };
 }
