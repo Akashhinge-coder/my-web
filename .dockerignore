@@ -14,6 +14,44 @@ docker-compose.yml
 test-results
 *-results.json
 *-audit-results.json
+error-log*.txt
 scratch
 .analysis
 .blackbox
+
+# Test files
+tests/
+test-*.js
+test-*.mjs
+test-*.ts
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Development scripts
+check-db.mjs
+fetch-admin-body.mjs
+fix.mjs
+restore-menu-view.mjs
+run-regression-audit.mjs
+run-tsc.js
+replace_dark.js
+test-webhook.js
+test-create-order.js
+test-cash-requests.js
+test-translit.js
+test-hh.js
+test-table-delete*.mjs
+test-find-source-code.mjs
+test-customer-route.mjs
+
+# Reference
+Reference UI/
+
+# Development-only documentation
+DEVELOPER_QUICK_REFERENCE.md
+DOCUMENTATION_INDEX.md
+MENUARA_ARCHITECTURE_DOCUMENTATION.md
+PRE_DEPLOYMENT_CHECKLIST.md
+JUNK_FILES_AUDIT.md

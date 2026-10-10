@@ -91,56 +91,23 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // 1. Create auth user
-      const { data: authData, error: authError } =
-        await supabase.auth.signUp({
+      // 1. Call backend to create user & restaurant bypassing RLS
+      const res = await fetch("/api/v1/auth/register-restaurant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           email: form.email,
           password: form.password,
-        });
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("User creation failed");
-
-      const slug = generateSlug(form.restaurantName);
-      const userId = authData.user.id;
-
-      // 2. Create restaurant record
-      const { data: restaurant, error: restError } = await supabase
-        .from("restaurants")
-        .insert({
-          owner_id: userId,
-          name: form.restaurantName.trim(),
-          slug,
-          phone: form.phone.replace(/\s/g, ""),
-          address: form.address || null,
-          gst_number: form.gstNumber || null,
-        })
-        .select()
-        .single();
-      if (restError) throw restError;
-
-      // 3. Create staff record for owner
-      await supabase.from("staff").insert({
-        restaurant_id: restaurant.id,
-        user_id: userId,
-        name: form.restaurantName.trim() + " Admin",
-        role: "admin",
-        phone: form.phone.replace(/\s/g, ""),
-        is_active: true,
+          restaurantName: form.restaurantName,
+          phone: form.phone,
+          address: form.address,
+          gstNumber: form.gstNumber,
+          tableCount: form.tableCount,
+        }),
       });
 
-      // 4. Create tables
-      const tableCount = parseInt(form.tableCount);
-      const tables = Array.from({ length: tableCount }, (_, i) => ({
-        restaurant_id: restaurant.id,
-        table_number: `T${i + 1}`,
-        seating_capacity: 4,
-        table_type: "regular" as const,
-        status: "available" as const,
-        floor: "Ground Floor",
-      }));
-      if (tables.length > 0) {
-        await supabase.from("restaurant_tables").insert(tables);
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to setup restaurant");
 
       setStep(4);
     } catch (err: any) {

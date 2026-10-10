@@ -21,9 +21,9 @@
 .idea/
 .vscode/settings.json
 
-# Exclude Markdown documentation files
-*.md
-docs/**/*.md
+# Exclude development-only documentation (keep README, DEPLOY, ARCHITECTURE)
+DOCUMENTATION_INDEX.md
+JUNK_FILES_AUDIT.md
 
 # debug
 *.log
@@ -48,6 +48,31 @@ next-env.d.ts
 # test & audit results
 test-results/
 *-results.json
+*-audit-results.json
+error-log*.txt
+
+# test files
+test-*.js
+test-*.mjs
+test-*.ts
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+tests/
+scratch/
+
+# Reference UI (development only)
+Reference UI/
+
+# dev scripts
+check-db.mjs
+fetch-admin-body.mjs
+fix.mjs
+restore-menu-view.mjs
+run-regression-audit.mjs
+run-tsc.js
+replace_dark.js
 *-audit-results.json
 
 # local scripts & scratch
